@@ -15,7 +15,7 @@ public class BobRustMonitorPicker {
 	private GraphicsConfiguration config;
 	
 	public BobRustMonitorPicker(JDialog parent) {
-		dialog = new JDialog(parent, "BobRust - Window Picker", ModalityType.APPLICATION_MODAL);
+		dialog = new JDialog(parent, "", ModalityType.APPLICATION_MODAL);
 		dialog.setUndecorated(true);
 		dialog.setAlwaysOnTop(true);
 		dialog.setBackground(new Color(0x20000000, true));

@@ -8,7 +8,7 @@ public class BorstSettings {
 	
 	// How many shapes to generate before it sends
 	// the data back to the caller.
-	public int CallbackShapes = 100;
+	public int CallbackInterval = 100;
 	
 	// The max amount of shapes to generate.
 	public int MaxShapes = 4000;

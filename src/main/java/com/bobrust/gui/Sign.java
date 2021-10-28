@@ -1,14 +1,26 @@
 package com.bobrust.gui;
 
+import java.awt.Color;
+
 public class Sign {
 	public final String name;
 	public final int width;
 	public final int height;
+	public final Color averageColor;
 	
 	public Sign(String name, int width, int height) {
+		this(name, width, height, null);
+	}
+	
+	public Sign(String name, int width, int height, Color averageColor) {
 		this.name = name;
 		this.width = width;
 		this.height = height;
+		this.averageColor = averageColor;
+	}
+	
+	public Color getAverageColor() {
+		return averageColor;
 	}
 	
 	@Override

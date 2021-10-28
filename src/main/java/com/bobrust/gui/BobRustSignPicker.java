@@ -15,7 +15,7 @@ public class BobRustSignPicker {
 	private final JDialog dialog;
 	private Sign selectedSign;
 	
-	public BobRustSignPicker(JDialog parent) {
+	public BobRustSignPicker(BobRustEditor gui, JDialog parent) {
 		dialog = new JDialog(parent, "Sign picker", ModalityType.APPLICATION_MODAL);
 		dialog.setSize(520, 670);
 		dialog.setResizable(false);
@@ -34,7 +34,10 @@ public class BobRustSignPicker {
 		Dimension buttonSize = new Dimension(120, 120);
 		Dimension imageSize = new Dimension(80, 80);
 		
-		for(final Sign sign : RustSigns.SIGNS.values()) {
+		Sign guiSign = gui.getSettingsSign();
+		selectedSign = guiSign;
+		
+		for(Sign sign : RustSigns.SIGNS.values()) {
 			BufferedImage signImage = null;
 			
 			try(InputStream stream = BobRustSignPicker.class.getResourceAsStream("/signs/%s.png".formatted(sign.name))) {
@@ -72,17 +75,15 @@ public class BobRustSignPicker {
 			buttonGroup.add(button);
 			dialog.getContentPane().add(button);
 			
-			if(selectedSign == null) {
+			if(guiSign == sign) {
 				button.setSelected(true);
-				selectedSign = sign;
 			}
 		}
 	}
 
-	public Sign openSignDialog(Point point) {
+	public void openSignDialog(Point point) {
 		dialog.setLocation(point);
 		dialog.setVisible(true);
-		return selectedSign;
 	}
 
 	public Sign getSelectedSign() {

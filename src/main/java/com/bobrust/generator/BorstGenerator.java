@@ -10,6 +10,7 @@ public class BorstGenerator {
 	private final Consumer<BorstData> callback;
 	private final BorstSettings settings;
 	private volatile Thread thread;
+	private volatile boolean isPaused;
 	
 	private BorstGenerator(BorstSettings settings, Consumer<BorstData> callback) {
 		this.callback = Objects.requireNonNull(callback);
@@ -18,6 +19,10 @@ public class BorstGenerator {
 	
 	public synchronized boolean isRunning() {
 		return thread != null;
+	}
+	
+	public synchronized boolean isPaused() {
+		return isPaused;
 	}
 	
 	/**
@@ -34,7 +39,7 @@ public class BorstGenerator {
 		}
 		
 		int length = settings.MaxShapes;
-		int interval = settings.CallbackShapes;
+		int interval = settings.CallbackInterval;
 		int background = settings.Background;
 		int alpha = BorstUtils.ALPHAS[settings.Alpha];
 		BorstImage image;
@@ -50,6 +55,8 @@ public class BorstGenerator {
 			}
 		}
 		
+		isPaused = false;
+		
 		Thread thread = new Thread(() -> {
 			Model model = new Model(image, background, alpha);
 			BorstData data = new BorstData(model);
@@ -59,6 +66,19 @@ public class BorstGenerator {
 					@SuppressWarnings("unused")
 					int n = model.Step();
 					
+					if(isPaused) {
+						try {
+							Thread.sleep(Long.MAX_VALUE);
+						} catch(InterruptedException e) {
+							// We unpaused or called stop()
+						} finally {
+							// If we still are paused we called stop()
+							if(isPaused) {
+								return;
+							}
+						}
+					}
+					
 					// Return if the current thread is interrupted.
 					if(Thread.currentThread().isInterrupted()) {
 						return;
@@ -66,12 +86,13 @@ public class BorstGenerator {
 					
 					if((i == length) || (i % interval) == 0) {
 						data.index = i;
-						this.callback.accept(data);
+						callback.accept(data);
 					}
 				}
 			} finally {
 				data.index = length;
-				this.callback.accept(data);
+				isPaused = false;
+				callback.accept(data);
 			}
 		}, "Borst Generator Thread");
 		thread.setDaemon(true);
@@ -106,6 +127,17 @@ public class BorstGenerator {
 		if(thread != null) {
 			thread.join();
 		}
+	}
+	
+	public synchronized void resume() {
+		if(thread != null && isPaused) {
+			isPaused = false;
+			thread.interrupt();
+		}
+	}
+	
+	public synchronized void pause() {
+		isPaused = true;
 	}
 	
 	public class BorstData {

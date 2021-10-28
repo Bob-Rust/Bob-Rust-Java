@@ -14,11 +14,11 @@ import com.bobrust.generator.BorstGenerator.BorstGeneratorBuilder;
 import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.generator.sorter.BorstSorter;
-import com.bobrust.gui.BobRust;
+import com.bobrust.gui.BobRustEditor;
 
 public class Main {
 	public static void main(String[] args) {
-		BobRust gui = new BobRust();
+		BobRustEditor gui = new BobRustEditor();
 		
 		//new Main();
 	}
@@ -27,7 +27,7 @@ public class Main {
 		BorstSettings settings = new BorstSettings();
 		settings.ImagePath = "src/main/resources/examples/wolf_512.png";
 		settings.MaxShapes = 2000;
-		settings.CallbackShapes = 100;
+		settings.CallbackInterval = 100;
 		settings.Background = 0xff000000;
 		settings.Alpha = 2;
 		settings.Width = 512;
