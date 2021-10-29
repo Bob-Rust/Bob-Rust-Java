@@ -3,16 +3,16 @@ package com.bobrust.generator;
 import java.util.Random;
 
 class Worker {
-	private BorstImage buffer;
-	private BorstImage target;
+	private final BorstImage buffer;
+	private final BorstImage target;
 	private BorstImage current;
-	
-	public int w;
-	public int h;
-	public Random rnd;
-	public float score = 0;
-	public int counter = 0;
+	public final Random rnd;
 	public final int alpha;
+	
+	public final int w;
+	public final int h;
+	public float score;
+	public int counter;
 
 	public Worker(BorstImage target, int alpha) {
 		this.w = target.width;

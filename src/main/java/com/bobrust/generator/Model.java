@@ -1,20 +1,22 @@
 package com.bobrust.generator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Model {
-	private Worker worker;
-	private BorstImage target;
-	private BorstImage context;
-	private int alpha;
+	private final Worker worker;
+	private final BorstImage target;
+	private final BorstImage context;
+	private final BorstImage beforeImage;
+	public final BorstImage current;
 		
-	public List<Circle> shapes;
-	public List<BorstColor> colors;
-	public BorstImage current;
-	public float score;
-	public int width;
-	public int height;
+	public final List<Circle> shapes;
+	public final List<BorstColor> colors;
+	public final int alpha;
+	public final int width;
+	public final int height;
+	protected float score;
 
 	public Model(BorstImage target, int backgroundRGB, int alpha) {
 		int w = target.width;
@@ -26,9 +28,8 @@ public class Model {
 		this.height = h;
 
 		this.current = new BorstImage(w, h);
-		for(int i = 0; i < w * h; i++) {
-			current.pixels[i] = backgroundRGB;
-		}
+		Arrays.fill(this.current.pixels, backgroundRGB);
+		this.beforeImage = new BorstImage(w, h);
 		
 		this.score = BorstCore.differenceFull(target, current);
 		this.context = new BorstImage(w, h);
@@ -36,14 +37,14 @@ public class Model {
 		this.alpha = alpha;
 	}
 
-	public void Add(Circle shape) {
-		BorstImage before = current.createCopy();
+	private void addShape(Circle shape) {
+		beforeImage.draw(current);
 
 		Scanline[] lines = shape.Rasterize();
 		BorstColor color = BorstCore.computeColor(target, current, lines, alpha);
 		
 		BorstCore.drawLines(current, color, lines, alpha);
-		float sc = BorstCore.differencePartial(target, before, current, score, lines);
+		float sc = BorstCore.differencePartial(target, beforeImage, current, score, lines);
 		
 		this.score = sc;
 		shapes.add(shape);
@@ -51,11 +52,11 @@ public class Model {
 		
 		BorstCore.drawLines(context, color, lines, alpha);
 	}
-
-	public int Step() {
+	
+	public synchronized int processStep() {
 		worker.Init(current, score);
 		State state = HillClimbGenerator.BestHillClimbState(worker, 1000, 100, 1);
-		Add(state.shape);
+		addShape(state.shape);
 
 		return worker.counter;
 	}

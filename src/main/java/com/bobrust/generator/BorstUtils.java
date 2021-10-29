@@ -4,28 +4,27 @@ public class BorstUtils {
 	public static final int[] ALPHAS = { 9, 18, 72, 136, 218, 255 };
 	public static final int[] SIZES = { 1, 2, 4, 6, 10, 13 };
 	
-	public static final int COMMON_OPACITY = 72;
 	public static final BorstColor[] COLORS = {
-		new BorstColor(46, 204, 112, COMMON_OPACITY),
-		new BorstColor(22, 161, 132, COMMON_OPACITY),
-		new BorstColor(52, 153, 218, COMMON_OPACITY),
-		new BorstColor(241, 195, 16, COMMON_OPACITY),
-		new BorstColor(143, 69, 173, COMMON_OPACITY),
-		new BorstColor(153, 163, 162, COMMON_OPACITY),
-		new BorstColor(52, 73, 93, COMMON_OPACITY),
-		new BorstColor(46, 158, 135, COMMON_OPACITY),
-		new BorstColor(30, 224, 24, COMMON_OPACITY),
-		new BorstColor(176, 122, 195, COMMON_OPACITY),
-		new BorstColor(231, 127, 33, COMMON_OPACITY),
-		new BorstColor(236, 240, 241, COMMON_OPACITY),
-		new BorstColor(38, 174, 96, COMMON_OPACITY),
-		new BorstColor(33, 203, 241, COMMON_OPACITY),
-		new BorstColor(126, 77, 41, COMMON_OPACITY),
-		new BorstColor(239, 68, 49, COMMON_OPACITY),
-		new BorstColor(74, 212, 188, COMMON_OPACITY),
-		new BorstColor(69, 48, 33, COMMON_OPACITY),
-		new BorstColor(49, 49, 49, COMMON_OPACITY),
-		new BorstColor(1, 2, 1, COMMON_OPACITY)
+		new BorstColor(46, 204, 112),
+		new BorstColor(22, 161, 132),
+		new BorstColor(52, 153, 218),
+		new BorstColor(241, 195, 16),
+		new BorstColor(143, 69, 173),
+		new BorstColor(153, 163, 162),
+		new BorstColor(52, 73, 93),
+		new BorstColor(46, 158, 135),
+		new BorstColor(30, 224, 24),
+		new BorstColor(176, 122, 195),
+		new BorstColor(231, 127, 33),
+		new BorstColor(236, 240, 241),
+		new BorstColor(38, 174, 96),
+		new BorstColor(33, 203, 241),
+		new BorstColor(126, 77, 41),
+		new BorstColor(239, 68, 49),
+		new BorstColor(74, 212, 188),
+		new BorstColor(69, 48, 33),
+		new BorstColor(49, 49, 49),
+		new BorstColor(1, 2, 1)
 	};
 	
 	// Precomputed lookup tables
@@ -70,7 +69,7 @@ public class BorstUtils {
 				result = i;
 			}
 		}
-	
+		
 		return result;
 	}
 	
@@ -110,16 +109,15 @@ public class BorstUtils {
 	
 	static {
 		ALPHA_INDEX_LOOKUP_TABLE = new int[256];
-		for(int i = 0; i < 13; i++) ALPHA_INDEX_LOOKUP_TABLE[i] = getClosestAlphaIndex0(i);
+		for(int i = 0; i < 256; i++) ALPHA_INDEX_LOOKUP_TABLE[i] = getClosestAlphaIndex0(i);
 		
 		ALPHA_VALUE_LOOKUP_TABLE = new int[256];
-		for(int i = 0; i < 13; i++) ALPHA_VALUE_LOOKUP_TABLE[i] = ALPHAS[getClosestAlphaIndex0(i)];
+		for(int i = 0; i < 256; i++) ALPHA_VALUE_LOOKUP_TABLE[i] = ALPHAS[getClosestAlphaIndex0(i)];
 		
 		SIZE_INDEX_LOOKUP_TABLE = new int[14];
-		for(int i = 0; i < 13; i++) SIZE_INDEX_LOOKUP_TABLE[i] = getClosestSizeIndex0(i);
+		for(int i = 0; i < 14; i++) SIZE_INDEX_LOOKUP_TABLE[i] = getClosestSizeIndex0(i);
 		
 		SIZE_VALUE_LOOKUP_TABLE = new int[14];
-		for(int i = 0; i < 13; i++) SIZE_VALUE_LOOKUP_TABLE[i] = SIZES[getClosestSizeIndex0(i)];
-		
+		for(int i = 0; i < 14; i++) SIZE_VALUE_LOOKUP_TABLE[i] = SIZES[getClosestSizeIndex0(i)];
 	}
 }

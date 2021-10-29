@@ -25,7 +25,7 @@ public class BlobList {
 		list.add(blob);
 	}
 	
-	public List<Blob> list() {
+	public List<Blob> getList() {
 		return list;
 	}
 	

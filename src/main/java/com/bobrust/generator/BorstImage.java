@@ -56,4 +56,8 @@ public class BorstImage {
 	public static BorstImage loadBorstImage(String path) throws IOException {
 		return new BorstImage(ImageIO.read(new File(path)));
 	}
+
+	public void draw(BorstImage image) {
+		System.arraycopy(image.pixels, 0, pixels, 0, pixels.length);
+	}
 }

@@ -40,6 +40,8 @@ public class BobRustEditor {
 	// Generator configuration
 	private Color settingsBackground = BobRustConstants.CANVAS_AVERAGE;
 	private Sign settingsSign;
+	private int clickInterval = 30;
+	private int autosaveInterval = 1000;
 	
 	// Properties
 	private final Properties properties;
@@ -157,6 +159,12 @@ public class BobRustEditor {
 		Integer settingsBackground = getSettingInteger("settings.background");
 		setSettingsBackground(settingsBackground == null ? null:new Color(settingsBackground));
 		
+		Integer clickInterval = getSettingInteger("settings.clickinterval");
+		setClickInterval(clickInterval == null ? 30:clickInterval);
+		
+		Integer autosaveInterval = getSettingInteger("settings.autosaveinterval");
+		setAutosaveInterval(autosaveInterval == null ? 1000:autosaveInterval);
+		
 		allowSaving = true;
 		saveSettings();
 	}
@@ -189,17 +197,17 @@ public class BobRustEditor {
 	}
 	
 	protected void setBorderColor(Color color) {
-		borderColor = color == null ? Color.lightGray:color;
+		borderColor = color == null ? new Color(0xff3333):color;
 		setProperty("editor.bordercolor", borderColor.getRGB());
 	}
 	
 	protected void setToolbarColor(Color color) {
-		toolbarColor = color == null ? Color.white:color;
+		toolbarColor = color == null ? new Color(0x3e322c):color;
 		setProperty("editor.toolbarcolor", toolbarColor.getRGB());
 	}
 	
 	protected void setLabelColor(Color color) {
-		labelColor = color == null ? Color.black:color;
+		labelColor = color == null ? Color.white:color;
 		setProperty("editor.labelcolor", labelColor.getRGB());
 	}
 	
@@ -235,7 +243,17 @@ public class BobRustEditor {
 	
 	protected void setSettingsBackground(Color color) {
 		settingsBackground = color;
-		setProperty("settings.background", color == null ? null:settingsBackground.getRGB());
+		setProperty("settings.background", color == null ? null:color.getRGB());
+	}
+	
+	protected void setClickInterval(int interval) {
+		clickInterval = interval;
+		setProperty("settings.clickinterval", clickInterval);
+	}
+	
+	protected void setAutosaveInterval(int interval) {
+		autosaveInterval = interval;
+		setProperty("settings.autosaveinterval", autosaveInterval);
 	}
 	
 	protected Color getBorderColor() {
@@ -258,24 +276,32 @@ public class BobRustEditor {
 		return Objects.requireNonNull(presetPath);
 	}
 	
-	protected int getSettingsAlpha() {
+	public int getSettingsAlpha() {
 		return borstSettings.Alpha;
 	}
 	
-	protected int getSettingsMaxShapes() {
+	public int getSettingsMaxShapes() {
 		return borstSettings.MaxShapes;
 	}
 	
-	protected int getSettingsCallbackInterval() {
+	public int getSettingsCallbackInterval() {
 		return borstSettings.CallbackInterval;
 	}
 	
-	protected Color getSettingsBackground() {
+	public int getSettingsAutosaveInterval() {
+		return autosaveInterval;
+	}
+	
+	public Color getSettingsBackground() {
 		return settingsBackground;
 	}
 	
-	protected Sign getSettingsSign() {
+	public Sign getSettingsSign() {
 		return Objects.requireNonNull(settingsSign);
+	}
+	
+	public int getSettingsClickInterval() {
+		return clickInterval;
 	}
 	
 	protected Color getSettingsBackgroundCalculated() {

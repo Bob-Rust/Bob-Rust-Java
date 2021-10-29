@@ -44,6 +44,7 @@ public class Circle {
 			r = BorstUtils.clampInt(c, 1, w);
 		}
 	}
+	
 
 	public Scanline[] Rasterize() {
 		int w = worker.w;
@@ -71,7 +72,7 @@ public class Circle {
 			x2 = (x2 >= w) ? (w - 1):x2;
 			list.add(new Scanline(yy, x1, x2));
 		}
-
+		
 		return list.toArray(Scanline[]::new);
 	}
 }

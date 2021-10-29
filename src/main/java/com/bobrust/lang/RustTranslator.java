@@ -54,7 +54,7 @@ public class RustTranslator {
 		if(dayIndex > 0) sb.append(dayIndex).append(" day").append(dayIndex == 1 ? " ":"s ");
 		if(hourIndex > 0) sb.append(hourIndex).append(" hour").append(hourIndex == 1 ? " ":"s ");
 		if(minuteIndex > 0) sb.append(minuteIndex).append(" minute").append(minuteIndex == 1 ? " ":"s ");
-		if(secondIndex > 0) sb.append(secondIndex).append(" second").append(secondIndex == 1 ? " ":"s ");
+		if(secondIndex > 0 || seconds == 0) sb.append(secondIndex).append(" second").append(secondIndex == 1 ? " ":"s ");
 		return sb.toString().trim();
 	}
 	
@@ -67,7 +67,7 @@ public class RustTranslator {
 		
 		StringBuilder sb = new StringBuilder();
 		if(minuteIndex > 0) sb.append(minuteIndex).append(" minute").append(minuteIndex == 1 ? " ":"s ");
-		if(secondIndex > 0) sb.append(secondIndex).append(" second").append(secondIndex == 1 ? " ":"s ");
+		if(secondIndex > 0 || seconds == 0) sb.append(secondIndex).append(" second").append(secondIndex == 1 ? " ":"s ");
 		return sb.toString().trim();
 	}
 }

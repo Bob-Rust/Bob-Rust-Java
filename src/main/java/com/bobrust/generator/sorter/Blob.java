@@ -19,7 +19,7 @@ public class Blob {
 		this.colorIndex = BorstUtils.getClosestColorIndex(color);
 		this.sizeIndex = BorstUtils.getClosestSizeIndex(size);
 		this.size = BorstUtils.SIZES[this.sizeIndex];
-		this.color = BorstUtils.COLORS[this.colorIndex].rgba & 0xffffff;
+		this.color = BorstUtils.COLORS[this.colorIndex].rgb;
 		this.hash = Objects.hash(this.x, this.y, this.size, this.color, this.colorIndex, this.sizeIndex);
 	}
 	

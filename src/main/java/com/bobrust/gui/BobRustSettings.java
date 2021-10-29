@@ -2,13 +2,11 @@ package com.bobrust.gui;
 
 import java.awt.*;
 import java.awt.Dialog.ModalityType;
-import java.text.NumberFormat;
-import java.util.Locale;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.text.NumberFormatter;
 
+import com.bobrust.gui.comp.JIntegerField;
 import com.bobrust.logging.LogUtils;
 import javax.swing.border.TitledBorder;
 
@@ -19,8 +17,9 @@ public class BobRustSettings {
 	private final JDialog dialog;
 	
 	private final JComboBox<Integer> alphaCombobox;
-	private final JFormattedTextField maxShapesTextField;
-	private final JFormattedTextField callbackIntervalTextField;
+	private final JIntegerField maxShapesTextField;
+	private final JIntegerField callbackIntervalTextField;
+	private final JIntegerField clickIntervalTextField;
 	
 	public BobRustSettings(BobRustEditor gui, JDialog parent) {
 		this.gui = gui;
@@ -116,9 +115,6 @@ public class BobRustSettings {
 		alphaCombobox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 0, 1, 2, 3, 4, 5 }));
 		alphaCombobox.setSelectedIndex(gui.getSettingsAlpha());
 		alphaPanel.add(alphaCombobox);
-
-		NumberFormat format = NumberFormat.getIntegerInstance(Locale.US);
-		format.setGroupingUsed(false);
 		
 		JPanel shapesPanel = new JPanel();
 		shapesPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -135,18 +131,10 @@ public class BobRustSettings {
 		shapesLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		shapesPanel.add(shapesLabel);
 		
-		NumberFormatter maxShapesFormatter = new NumberFormatter(format);
-		maxShapesFormatter.setValueClass(Integer.class);
-		maxShapesFormatter.setMinimum(0);
-		maxShapesFormatter.setMaximum(99999);
-		maxShapesFormatter.setAllowsInvalid(false);
-		maxShapesFormatter.setCommitsOnValidEdit(true);
-		
-		maxShapesTextField = new JFormattedTextField(maxShapesFormatter);
+		maxShapesTextField = new JIntegerField(gui.getSettingsMaxShapes());
 		maxShapesTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
 		maxShapesTextField.setFocusable(true);
 		maxShapesTextField.setMaximumSize(new Dimension(116, 20));
-		maxShapesTextField.setText(Integer.toString(gui.getSettingsMaxShapes()));
 		shapesLabel.setLabelFor(maxShapesTextField);
 		shapesPanel.add(maxShapesTextField);
 		
@@ -165,20 +153,38 @@ public class BobRustSettings {
 		callbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		callbackPanel.add(callbackLabel);
 		
-		NumberFormatter calbackIntervalFormatter = new NumberFormatter(format);
-		calbackIntervalFormatter.setValueClass(Integer.class);
-		calbackIntervalFormatter.setMinimum(1);
-		calbackIntervalFormatter.setMaximum(1000);
-		calbackIntervalFormatter.setAllowsInvalid(false);
-		calbackIntervalFormatter.setCommitsOnValidEdit(true);
-		
-		callbackIntervalTextField = new JFormattedTextField(calbackIntervalFormatter);
+		callbackIntervalTextField = new JIntegerField(gui.getSettingsCallbackInterval());
 		callbackIntervalTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
 		callbackIntervalTextField.setFocusable(true);
 		callbackIntervalTextField.setMaximumSize(new Dimension(116, 20));
-		callbackIntervalTextField.setText(Integer.toString(gui.getSettingsCallbackInterval()));
 		callbackLabel.setLabelFor(callbackIntervalTextField);
 		callbackPanel.add(callbackIntervalTextField);
+		
+		{
+			JPanel clickIntervalPanel = new JPanel();
+			clickIntervalPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			clickIntervalPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+			clickIntervalPanel.setPreferredSize(optionSize);
+			clickIntervalPanel.setMinimumSize(optionSize);
+			clickIntervalPanel.setMaximumSize(optionSize);
+			panel.add(clickIntervalPanel);
+			clickIntervalPanel.setLayout(new BoxLayout(clickIntervalPanel, BoxLayout.Y_AXIS));
+			
+			JLabel clickIntervalLabel = new JLabel("Clicks per second");
+			clickIntervalLabel.setToolTipText("The amount of clicks per second");
+			clickIntervalLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			clickIntervalLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			clickIntervalPanel.add(clickIntervalLabel);
+			
+			clickIntervalTextField = new JIntegerField(gui.getSettingsClickInterval());
+			clickIntervalTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
+			clickIntervalTextField.setFocusable(true);
+			clickIntervalTextField.setMinimum(1);
+			clickIntervalTextField.setMaximum(60);
+			clickIntervalTextField.setMaximumSize(new Dimension(116, 20));
+			clickIntervalLabel.setLabelFor(clickIntervalTextField);
+			clickIntervalPanel.add(clickIntervalTextField);
+		}
 		
 		JPanel editorPanel = new JPanel();
 		editorPanel.setAlignmentY(Component.TOP_ALIGNMENT);
@@ -304,18 +310,19 @@ public class BobRustSettings {
 		dialog.setVisible(true);
 		
 		gui.setSettingsAlpha(alphaCombobox.getSelectedIndex());
+		
 		try {
-			gui.setSettingsMaxShapes(Integer.parseInt(maxShapesTextField.getText()));
+			gui.setSettingsMaxShapes(maxShapesTextField.getNumberValue());
 		} catch(NumberFormatException e) {
-			maxShapesTextField.setText(Integer.toString(gui.getSettingsMaxShapes()));
 			LogUtils.warn("Invalid max shapes count '%s'", maxShapesTextField.getText());
+			maxShapesTextField.setText(Integer.toString(gui.getSettingsMaxShapes()));
 		}
 		
 		try {
-			gui.setSettingsCallbackInterval(Integer.parseInt(callbackIntervalTextField.getText()));
+			gui.setSettingsCallbackInterval(callbackIntervalTextField.getNumberValue());
 		} catch(NumberFormatException e) {
-			maxShapesTextField.setText(Integer.toString(gui.getSettingsCallbackInterval()));
 			LogUtils.warn("Invalid callback interval '%s'", callbackIntervalTextField.getText());
+			maxShapesTextField.setText(Integer.toString(gui.getSettingsCallbackInterval()));
 		}
 		
 		gui.setSettingsSign(signPicker.getSelectedSign());

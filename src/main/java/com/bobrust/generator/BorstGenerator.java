@@ -1,6 +1,5 @@
 package com.bobrust.generator;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -11,6 +10,7 @@ public class BorstGenerator {
 	private final BorstSettings settings;
 	private volatile Thread thread;
 	private volatile boolean isPaused;
+	private volatile int index;
 	
 	private BorstGenerator(BorstSettings settings, Consumer<BorstData> callback) {
 		this.callback = Objects.requireNonNull(callback);
@@ -38,33 +38,38 @@ public class BorstGenerator {
 			}
 		}
 		
+		if(settings.DirectImage == null) {
+			LogUtils.error("Failed to load borst image");
+			return false;
+		}
+		
+		BorstImage image = new BorstImage(settings.DirectImage);
 		int length = settings.MaxShapes;
 		int interval = settings.CallbackInterval;
 		int background = settings.Background;
-		int alpha = BorstUtils.ALPHAS[settings.Alpha];
-		BorstImage image;
-		if(settings.DirectImage != null) {
-			image = new BorstImage(settings.DirectImage);
-		} else {
-			try {
-				image = BorstImage.loadBorstImage(settings.ImagePath, settings.Width, settings.Height);
-			} catch(IOException e) {
-				LogUtils.error("Failed to load borst image '%s'", settings.ImagePath);
-				e.printStackTrace();
-				return false;
-			}
+		int alpha;
+		
+		try {
+			alpha = BorstUtils.ALPHAS[settings.Alpha];
+		} catch(Exception e) {
+			LogUtils.error("Failed to set alpha value. '%s' is not a valid alpha index.", settings.Alpha);
+			return false;
 		}
 		
 		isPaused = false;
 		
+		@SuppressWarnings("unused")
 		Thread thread = new Thread(() -> {
+			this.index = 0;
+			
 			Model model = new Model(image, background, alpha);
 			BorstData data = new BorstData(model);
 			
 			try {
+				long begin = System.nanoTime();
 				for(int i = 0; i <= length; i++) {
-					@SuppressWarnings("unused")
-					int n = model.Step();
+					int n = model.processStep();
+					long end = System.nanoTime();
 					
 					if(isPaused) {
 						try {
@@ -84,13 +89,19 @@ public class BorstGenerator {
 						return;
 					}
 					
+					this.index = i;
 					if((i == length) || (i % interval) == 0) {
 						data.index = i;
 						callback.accept(data);
+						
+						double time = (end - begin) / 1000000000.0;
+						double sps = i / time;
+						//LogUtils.info("%5d: t=%.3f s, score=%.6f, n=%d, s/s=%.2f", i, time, model.score, n, sps);
 					}
 				}
 			} finally {
 				data.index = length;
+				data.done = true;
 				isPaused = false;
 				callback.accept(data);
 			}
@@ -140,9 +151,14 @@ public class BorstGenerator {
 		isPaused = true;
 	}
 	
+	public synchronized int getIndex() {
+		return this.index;
+	}
+	
 	public class BorstData {
 		private final Model model;
 		private int index;
+		private boolean done;
 		
 		private BorstData(Model model) {
 			this.model = model;
@@ -162,6 +178,10 @@ public class BorstGenerator {
 		
 		public int getIndex() {
 			return index;
+		}
+		
+		public boolean isDone() {
+			return done;
 		}
 	}
 	
