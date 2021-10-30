@@ -11,6 +11,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import com.bobrust.gui.comp.JStyledToggleButton;
+
 public class BobRustSignPicker {
 	private final JDialog dialog;
 	private Sign selectedSign;
@@ -60,7 +62,8 @@ public class BobRustSignPicker {
 			g.drawImage(signImage, 0, 0, imageSize.width, imageSize.height, null);
 			g.dispose();
 			
-			JToggleButton button = new JToggleButton(sign.name.replace("sign.", ""));
+			JStyledToggleButton button = new JStyledToggleButton(sign.name.replace("sign.", ""));
+			button.setHoverColor(new Color(240, 240, 240));
 			button.setIcon(new ImageIcon(scaledImage));
 			button.setVerticalTextPosition(SwingConstants.TOP);
 			button.setHorizontalTextPosition(SwingConstants.CENTER);

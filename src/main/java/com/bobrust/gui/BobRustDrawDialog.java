@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.HyperlinkEvent;
 
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.generator.sorter.BorstSorter;
@@ -55,25 +56,6 @@ public class BobRustDrawDialog {
 		
 		JLabel lblShapeCount = new JLabel("Shape Count");
 		rootPanel.add(lblShapeCount);
-		
-//		JButton btnNewButton = new JButton("New button");
-//		btnNewButton.addActionListener((event) -> {
-//			BorstData data = overlay.getBorstData();
-//			
-//			Model model = data.getModel();
-//			BlobList list = new BlobList();
-//			for(int i = 0, len = model.colors.size(); i < len; i++) {
-//				Circle circle = model.shapes.get(i);
-//				BorstColor color = model.colors.get(i);
-//				list.add(Blob.get(circle.x, circle.y, circle.r, color.rgb));
-//			}
-//			
-//			String str = generate_svg(gui.borstSettings, list);
-//			StringSelection selection = new StringSelection(str);
-//			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-//			clipboard.setContents(selection, selection);
-//		});
-//		dialog.getContentPane().add(btnNewButton);
 		
 		panel = new JPanel();
 		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -137,7 +119,8 @@ public class BobRustDrawDialog {
 		clickInterval.setMaximum(60);
 		clickInterval.setAlignmentX(0.0f);
 		clickInterval.addActionListener((event) -> {
-			gui.setClickInterval(clickInterval.getNumberValue());
+			gui.setSettingsClickInterval(clickInterval.getNumberValue());
+			overlay.setEstimatedGenerationLabel(maxShapesTextField.getNumberValue(), gui.getSettingsMaxShapes());
 			overlay.repaint();
 		});
 		panel_1.add(clickInterval);
@@ -163,8 +146,12 @@ public class BobRustDrawDialog {
 		btnSelectColorPalette = new JButton("Select Color Palette");
 		btnSelectColorPalette.setFocusable(false);
 		btnSelectColorPalette.addActionListener((event) -> {
+			btnStartDrawing.setEnabled(false);
+			
 			if(findColorPalette()) {
 				btnStartDrawing.setEnabled(true);
+			} else {
+				showPaletteWarning();
 			}
 		});
 		rootPanel.add(btnSelectColorPalette);
@@ -180,7 +167,8 @@ public class BobRustDrawDialog {
 					Point p = overlay.dialog.getLocation();
 					dialog.setLocation(p.x, p.y);
 					dialog.setSize(MINIMIZED);
-
+					overlay.setHideRegions(true);
+					
 					int count = maxShapesTextField.getNumberValue();
 					BlobList list = BorstSorter.sort(BobRustUtil.convertToList(overlay.getBorstData().getModel(), count));
 					if(!rustPainter.startDrawing(list)) {
@@ -203,15 +191,32 @@ public class BobRustDrawDialog {
 		rootPanel.add(btnStartDrawing);
 	}
 	
+	private void showPaletteWarning() {
+		JEditorPane pane = new JEditorPane("text/html", "");
+		pane.setEditable(false);
+		pane.setOpaque(false);
+		pane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+		pane.setText(
+			"""
+			Could not find the color palette.<br>
+			If you think this is a bug please create a new issue on the github.<br>
+			<a href="#blank">https://github.com/Bob-Rust/Bob-Rust-Java/issues/new</a>
+			"""
+		);
+		pane.addHyperlinkListener((e) -> {
+			if(e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+				gui.openIssueUrl();
+			}
+		});
+		JOptionPane.showConfirmDialog(dialog, pane, "Could not find the palette", JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
+	}
+	
 	private boolean findColorPalette() {
 		Rectangle screen = overlay.dialog.getBounds();
 		
-		// Check for bright red on the edge of the screen
+		// Check for bright red on the edge of the screen.
 		try {
 			BufferedImage screenshot = new Robot().createScreenCapture(screen);
-			
-			// x: screen.width - 43
-			// height: 60
 			
 			// ef4431
 			int x = screen.width - 43;
@@ -220,14 +225,14 @@ public class BobRustDrawDialog {
 			for(int i = 0, lastNonRed = 0; i < screen.height; i++) {
 				int red = (screenshot.getRGB(x, i) >> 16) & 0xff;
 				
-				// above 220
+				// above 220.
 
 				if(red < 220) {
 					lastNonRed = i;
 				}
 				
 				if(i - lastNonRed > 40) {
-					// We found the circle probably
+					// We found the circle probably.
 					red_middle = new Point(x, i - 10);
 					break;
 				}
@@ -235,16 +240,13 @@ public class BobRustDrawDialog {
 			
 			if(red_middle != null) {
 				// 150x264
-				LogUtils.info("Found the color palette (%d, %d)", red_middle.x, red_middle.y);
 				overlay.colorRegion.setLocation(screen.width - 150, red_middle.y - 163 + 132 + 100);
 				
 				if(rustPalette.analyse(dialog, screenshot, new Point(screen.width - 150, red_middle.y - 163))) {
-					// Found it
-					System.out.println(overlay.colorRegion);
+					// Found the palette.
+					LogUtils.info("Found the color palette (%d, %d)", red_middle.x, red_middle.y);
 					overlay.repaint();
 					return true;
-				} else {
-					// Didn't find it
 				}
 			}
 		} catch(Exception e) {
@@ -255,34 +257,8 @@ public class BobRustDrawDialog {
 		return false;
 	}
 	
-//	private String generate_svg(BorstSettings settings, BlobList list) {
-//		StringBuilder sb = new StringBuilder();
-//		int width = settings.DirectImage.getWidth();
-//		int height = settings.DirectImage.getHeight();
-//		String bg = "#%06x".formatted(settings.Background & 0xffffff);
-//		
-//		sb.append(String.format(
-//			("<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" width=\"%d\" height=\"%d\">\n"
-//			+ "<rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"%s\"/>\n"
-//			+ "<g transform=\"scale(1) translate(0.5 0.5)\">\n"),
-//			width, height, width, height, bg
-//		));
-//		
-//		double alpha = BorstUtils.ALPHAS[settings.Alpha] / 255.0;
-//		for(Blob blob : list.list()) {
-//			String color = "#%06x".formatted(blob.color & 0xffffff);
-//			sb.append(String.format(
-//				Locale.US, "<ellipse fill=\"%s\" fill-opacity=\"%.4f\" cx=\"%d\" cy=\"%d\" rx=\"%d\" ry=\"%d\"/>\n",
-//				color, alpha, blob.x, blob.y, blob.size, blob.size
-//			));
-//		}
-//		
-//		sb.append("</g>\n</svg>\n");
-//		return sb.toString();
-//	}
-	
 	public void openDialog(Point point) {
-		// Force the user to reset the palette
+		// Force the user to reset the palette.
 		btnStartDrawing.setEnabled(false);
 		rustPalette.reset();
 		
@@ -297,11 +273,12 @@ public class BobRustDrawDialog {
 		dialog.setLocation(point);
 		dialog.setSize(REGULAR);
 		dialog.setVisible(true);
+		rustPalette.reset();
 		
 		try {
-			gui.setClickInterval(Integer.parseInt(clickInterval.getText()));
+			gui.setSettingsClickInterval(Integer.parseInt(clickInterval.getText()));
 		} catch(NumberFormatException e) {
-			LogUtils.warn("Invalid clickInterval '%s'", clickInterval.getText());
+			LogUtils.warn("Invalid click interval '%s'", clickInterval.getText());
 			clickInterval.setText(Integer.toString(gui.getSettingsClickInterval()));
 		}
 	}

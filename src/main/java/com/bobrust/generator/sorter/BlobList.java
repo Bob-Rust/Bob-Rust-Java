@@ -28,19 +28,4 @@ public class BlobList {
 	public List<Blob> getList() {
 		return list;
 	}
-	
-//	public static BlobList populate(int length) {
-//		Random random = new Random(0);
-//		BlobList list = new BlobList();
-//		for(int i = 0; i < length; i++) {
-//			list.add(Blob.get(
-//				random.nextInt(512),
-//				random.nextInt(512),
-//				BorstUtils.SIZES[random.nextInt(BorstUtils.SIZES.length)],
-//				BorstUtils.COLORS[random.nextInt(BorstUtils.COLORS.length)].getRgba()
-//			));
-//		}
-//		
-//		return list;
-//	}
 }

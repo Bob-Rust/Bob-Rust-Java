@@ -29,13 +29,6 @@ class IntList {
 		}
 	}
 	
-//	@Override
-//	public IntList clone() {
-//		IntList copy = new IntList();
-//		copy.addAll(this);
-//		return copy;
-//	}
-	
 	private int[] grow(int length) {
 		int old_length = array.length;
 		return array = Arrays.copyOf(array, Math.max(length - old_length, old_length >> 1) + old_length);
@@ -45,12 +38,6 @@ class IntList {
 		if(size == array.length) array = grow(size + 1);
 		array[size++] = value;
 	}
-	
-//	public void addAll(IntList list) {
-//		if(size + list.size > array.length) array = grow(size + list.size);
-//		System.arraycopy(list.array, 0, array, size, list.size);
-//		size = size + list.size;
-//	}
 	
 	public void remove(int index) {
 		final int[] arr = array;

@@ -98,12 +98,11 @@ public class BobRustEditor {
 		throw new UnsupportedOperationException();
 	}
 	
-	public boolean openIssueUrl() {
-		String issueUrl = "https://github.com/Bob-Rust/Bob-Rust-Java/issues/new";
+	private boolean openUrl(String url) {
 		Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
 		if(desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
 			try {
-				desktop.browse(new URI(issueUrl));
+				desktop.browse(new URI(url));
 				return true;
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -111,6 +110,14 @@ public class BobRustEditor {
 		}
 		
 		return false;
+	}
+	
+	public boolean openIssueUrl() {
+		return openUrl("https://github.com/Bob-Rust/Bob-Rust-Java/issues/new");
+	}
+	
+	public boolean openDonationUrl() {
+		return openUrl("https://ko-fi.com/hard_coded");
 	}
 	
 	public void onBorstCallback(BorstData data) {
@@ -160,10 +167,10 @@ public class BobRustEditor {
 		setSettingsBackground(settingsBackground == null ? null:new Color(settingsBackground));
 		
 		Integer clickInterval = getSettingInteger("settings.clickinterval");
-		setClickInterval(clickInterval == null ? 30:clickInterval);
+		setSettingsClickInterval(clickInterval == null ? 30:clickInterval);
 		
 		Integer autosaveInterval = getSettingInteger("settings.autosaveinterval");
-		setAutosaveInterval(autosaveInterval == null ? 1000:autosaveInterval);
+		setSettingsAutosaveInterval(autosaveInterval == null ? 1000:autosaveInterval);
 		
 		allowSaving = true;
 		saveSettings();
@@ -202,7 +209,7 @@ public class BobRustEditor {
 	}
 	
 	protected void setToolbarColor(Color color) {
-		toolbarColor = color == null ? new Color(0x3e322c):color;
+		toolbarColor = color == null ? new Color(0x4f4033):color;
 		setProperty("editor.toolbarcolor", toolbarColor.getRGB());
 	}
 	
@@ -246,12 +253,12 @@ public class BobRustEditor {
 		setProperty("settings.background", color == null ? null:color.getRGB());
 	}
 	
-	protected void setClickInterval(int interval) {
+	protected void setSettingsClickInterval(int interval) {
 		clickInterval = interval;
 		setProperty("settings.clickinterval", clickInterval);
 	}
 	
-	protected void setAutosaveInterval(int interval) {
+	protected void setSettingsAutosaveInterval(int interval) {
 		autosaveInterval = interval;
 		setProperty("settings.autosaveinterval", autosaveInterval);
 	}

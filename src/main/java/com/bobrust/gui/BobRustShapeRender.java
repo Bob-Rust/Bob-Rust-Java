@@ -52,13 +52,7 @@ public class BobRustShapeRender {
 	}
 	
 	public synchronized BufferedImage getImage(Model model, int shapes) {
-		int cacheIndex = (shapes - 1) / cacheInterval;
-		
-		for(int i = 0; i < 1000; i++) {
-			if(list.size() > 1) {
-//				list.remove(1);
-			}
-		}
+		int cacheIndex = shapes / cacheInterval;
 		
 		// The pixel buffer of the closest image.
 		int[] pixelBuffer;
@@ -86,7 +80,6 @@ public class BobRustShapeRender {
 			Circle circle = model.shapes.get(i);
 			BorstColor color = model.colors.get(i);
 			
-			// TODO: This could be cached.
 			g.setColor(new Color(color.rgb | (model.alpha << 24), true));
 			int cd = (circle.r - 1) * 2 + 1;
 			g.fillOval(circle.x - cd / 2, circle.y - cd / 2, cd, cd);
@@ -96,7 +89,6 @@ public class BobRustShapeRender {
 				list.add(canvasPixels.clone());
 			}
 		}
-		
 		g.dispose();
 		
 		return canvas;

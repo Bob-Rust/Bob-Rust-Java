@@ -17,9 +17,10 @@ public class BobRustSettings {
 	private final JDialog dialog;
 	
 	private final JComboBox<Integer> alphaCombobox;
-	private final JIntegerField maxShapesTextField;
-	private final JIntegerField callbackIntervalTextField;
-	private final JIntegerField clickIntervalTextField;
+	private final JIntegerField maxShapesField;
+	private final JIntegerField callbackIntervalField;
+	private final JIntegerField clickIntervalField;
+	private final JIntegerField autosaveIntervalField;
 	
 	public BobRustSettings(BobRustEditor gui, JDialog parent) {
 		this.gui = gui;
@@ -131,12 +132,12 @@ public class BobRustSettings {
 		shapesLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		shapesPanel.add(shapesLabel);
 		
-		maxShapesTextField = new JIntegerField(gui.getSettingsMaxShapes());
-		maxShapesTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
-		maxShapesTextField.setFocusable(true);
-		maxShapesTextField.setMaximumSize(new Dimension(116, 20));
-		shapesLabel.setLabelFor(maxShapesTextField);
-		shapesPanel.add(maxShapesTextField);
+		maxShapesField = new JIntegerField(gui.getSettingsMaxShapes());
+		maxShapesField.setAlignmentX(Component.LEFT_ALIGNMENT);
+		maxShapesField.setFocusable(true);
+		maxShapesField.setMaximumSize(new Dimension(116, 20));
+		shapesLabel.setLabelFor(maxShapesField);
+		shapesPanel.add(maxShapesField);
 		
 		JPanel callbackPanel = new JPanel();
 		callbackPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -153,12 +154,12 @@ public class BobRustSettings {
 		callbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		callbackPanel.add(callbackLabel);
 		
-		callbackIntervalTextField = new JIntegerField(gui.getSettingsCallbackInterval());
-		callbackIntervalTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
-		callbackIntervalTextField.setFocusable(true);
-		callbackIntervalTextField.setMaximumSize(new Dimension(116, 20));
-		callbackLabel.setLabelFor(callbackIntervalTextField);
-		callbackPanel.add(callbackIntervalTextField);
+		callbackIntervalField = new JIntegerField(gui.getSettingsCallbackInterval());
+		callbackIntervalField.setAlignmentX(Component.LEFT_ALIGNMENT);
+		callbackIntervalField.setFocusable(true);
+		callbackIntervalField.setMaximumSize(new Dimension(116, 20));
+		callbackLabel.setLabelFor(callbackIntervalField);
+		callbackPanel.add(callbackIntervalField);
 		
 		{
 			JPanel clickIntervalPanel = new JPanel();
@@ -176,14 +177,40 @@ public class BobRustSettings {
 			clickIntervalLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			clickIntervalPanel.add(clickIntervalLabel);
 			
-			clickIntervalTextField = new JIntegerField(gui.getSettingsClickInterval());
-			clickIntervalTextField.setAlignmentX(Component.LEFT_ALIGNMENT);
-			clickIntervalTextField.setFocusable(true);
-			clickIntervalTextField.setMinimum(1);
-			clickIntervalTextField.setMaximum(60);
-			clickIntervalTextField.setMaximumSize(new Dimension(116, 20));
-			clickIntervalLabel.setLabelFor(clickIntervalTextField);
-			clickIntervalPanel.add(clickIntervalTextField);
+			clickIntervalField = new JIntegerField(gui.getSettingsClickInterval());
+			clickIntervalField.setAlignmentX(Component.LEFT_ALIGNMENT);
+			clickIntervalField.setFocusable(true);
+			clickIntervalField.setMinimum(1);
+			clickIntervalField.setMaximum(60);
+			clickIntervalField.setMaximumSize(new Dimension(116, 20));
+			clickIntervalLabel.setLabelFor(clickIntervalField);
+			clickIntervalPanel.add(clickIntervalField);
+		}
+		
+		{
+			JPanel autosaveIntervalPanel = new JPanel();
+			autosaveIntervalPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			autosaveIntervalPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+			autosaveIntervalPanel.setPreferredSize(optionSize);
+			autosaveIntervalPanel.setMinimumSize(optionSize);
+			autosaveIntervalPanel.setMaximumSize(optionSize);
+			panel.add(autosaveIntervalPanel);
+			autosaveIntervalPanel.setLayout(new BoxLayout(autosaveIntervalPanel, BoxLayout.Y_AXIS));
+			
+			JLabel autosaveIntervalLabel = new JLabel("Autosave interval");
+			autosaveIntervalLabel.setToolTipText("How many presses done between saves");
+			autosaveIntervalLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			autosaveIntervalLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			autosaveIntervalPanel.add(autosaveIntervalLabel);
+			
+			autosaveIntervalField = new JIntegerField(gui.getSettingsAutosaveInterval());
+			autosaveIntervalField.setAlignmentX(Component.LEFT_ALIGNMENT);
+			autosaveIntervalField.setFocusable(true);
+			autosaveIntervalField.setMinimum(1);
+			autosaveIntervalField.setMaximum(4000);
+			autosaveIntervalField.setMaximumSize(new Dimension(116, 20));
+			autosaveIntervalLabel.setLabelFor(autosaveIntervalField);
+			autosaveIntervalPanel.add(autosaveIntervalField);
 		}
 		
 		JPanel editorPanel = new JPanel();
@@ -212,7 +239,7 @@ public class BobRustSettings {
 			btnBorderColor.setMaximumSize(buttonSize);
 			btnBorderColor.setFocusable(false);
 			btnBorderColor.addActionListener((event) -> {
-				Color color = JColorChooser.showDialog(dialog, "Color picker", gui.getBorderColor());
+				Color color = JColorChooser.showDialog(dialog, "Color picker", gui.getBorderColor(), false);
 				if(color != null) {
 					gui.setBorderColor(color);
 				}
@@ -239,7 +266,7 @@ public class BobRustSettings {
 			btnToolbarColor.setFocusable(false);
 			lblToolbarColor.setLabelFor(btnToolbarColor);
 			btnToolbarColor.addActionListener((event) -> {
-				Color color = JColorChooser.showDialog(dialog, "Color picker", gui.getToolbarColor());
+				Color color = JColorChooser.showDialog(dialog, "Color picker", gui.getToolbarColor(), false);
 				if(color != null) {
 					gui.setToolbarColor(color);
 				}
@@ -265,7 +292,7 @@ public class BobRustSettings {
 			btnLabelColor.setMaximumSize(buttonSize);
 			btnLabelColor.setFocusable(false);
 			btnLabelColor.addActionListener((event) -> {
-				Color color = JColorChooser.showDialog(dialog, "Color picker", gui.getLabelColor());
+				Color color = JColorChooser.showDialog(dialog, "Color picker", gui.getLabelColor(), false);
 				if(color != null) {
 					gui.setLabelColor(color);
 				}
@@ -312,17 +339,31 @@ public class BobRustSettings {
 		gui.setSettingsAlpha(alphaCombobox.getSelectedIndex());
 		
 		try {
-			gui.setSettingsMaxShapes(maxShapesTextField.getNumberValue());
+			gui.setSettingsMaxShapes(maxShapesField.getNumberValue());
 		} catch(NumberFormatException e) {
-			LogUtils.warn("Invalid max shapes count '%s'", maxShapesTextField.getText());
-			maxShapesTextField.setText(Integer.toString(gui.getSettingsMaxShapes()));
+			LogUtils.warn("Invalid max shapes count '%s'", maxShapesField.getText());
+			maxShapesField.setText(Integer.toString(gui.getSettingsMaxShapes()));
 		}
 		
 		try {
-			gui.setSettingsCallbackInterval(callbackIntervalTextField.getNumberValue());
+			gui.setSettingsCallbackInterval(callbackIntervalField.getNumberValue());
 		} catch(NumberFormatException e) {
-			LogUtils.warn("Invalid callback interval '%s'", callbackIntervalTextField.getText());
-			maxShapesTextField.setText(Integer.toString(gui.getSettingsCallbackInterval()));
+			LogUtils.warn("Invalid callback interval '%s'", callbackIntervalField.getText());
+			callbackIntervalField.setText(Integer.toString(gui.getSettingsCallbackInterval()));
+		}
+		
+		try {
+			gui.setSettingsClickInterval(clickIntervalField.getNumberValue());
+		} catch(NumberFormatException e) {
+			LogUtils.warn("Invalid click interval '%s'", clickIntervalField.getText());
+			clickIntervalField.setText(Integer.toString(gui.getSettingsClickInterval()));
+		}
+		
+		try {
+			gui.setSettingsAutosaveInterval(autosaveIntervalField.getNumberValue());
+		} catch(NumberFormatException e) {
+			LogUtils.warn("Invalid autosave interval '%s'", autosaveIntervalField.getText());
+			autosaveIntervalField.setText(Integer.toString(gui.getSettingsAutosaveInterval()));
 		}
 		
 		gui.setSettingsSign(signPicker.getSelectedSign());

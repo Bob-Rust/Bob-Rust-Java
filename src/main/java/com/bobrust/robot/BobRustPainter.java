@@ -101,6 +101,11 @@ public class BobRustPainter {
 			}
 		}
 		
+		// Make sure that we save the painting.
+		{
+			clickPoint(robot, palette.getSaveButton(), 4);
+		}
+		
 		return true;
 	}
 	
