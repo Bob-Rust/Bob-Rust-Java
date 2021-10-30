@@ -14,5 +14,8 @@ Sekwah41
 # Usage
 Work in progress...
 
+# Preview
+![Example](.github/assets/screenshots/example_1.jpg)
+
 # Issue
 If you have any problem with the program please create a new issue and tell us what went wrong.
