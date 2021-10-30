@@ -3,9 +3,11 @@ package com.bobrust.gui;
 import java.awt.*;
 import java.awt.Dialog.ModalityType;
 import java.awt.event.*;
+import java.awt.image.BaseMultiResolutionImage;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -279,6 +281,18 @@ public class BobRustOverlay extends JPanel {
 				System.exit(0);
 			}
 		});
+		
+		try {
+			java.util.List<Image> icons = new ArrayList<>();
+			for(int i = 0; i < 4; i++) {
+				InputStream stream = BobRustOverlay.class.getResourceAsStream("/icons/%s.png".formatted(16 << i));
+				icons.add(ImageIO.read(stream));
+				stream.close();
+			}
+			dialog.setIconImage(new BaseMultiResolutionImage(icons.toArray(Image[]::new)));
+		} catch(IOException e) {
+			LogUtils.error("Failed to load program icons. %s", e);
+		}
 		
 		settingsGui = new BobRustSettings(gui, dialog);
 		monitorPicker = new BobRustMonitorPicker(dialog);
@@ -647,11 +661,7 @@ public class BobRustOverlay extends JPanel {
 		generationInfo.setLocation((topBarPanel.getWidth() - generationInfo.getWidth()) / 2, generationInfo.getY());
 		
 		BorstData lastData = this.lastData;
-		if(lastData == null) {
-			setEstimatedGenerationLabel(0, gui.getSettingsMaxShapes());
-		} else {
-			setEstimatedGenerationLabel(lastData.getIndex(), gui.getSettingsMaxShapes());
-		}
+		setEstimatedGenerationLabel(lastData != null ? lastData.getIndex():0, gui.getSettingsMaxShapes());
 		
 		btnPauseGenerate.setText(gui.borstGenerator.isPaused() ? "Resume Generate":"Pause Generate");
 	}
@@ -681,7 +691,7 @@ public class BobRustOverlay extends JPanel {
 	private void updateButtons() {
 		boolean defaultAction = action == OverlayType.NONE;
 		
-		// You should only be able to pick monitor the screen is enabled
+		// You should only be able to pick monitor the screen is enabled.
 		btnSelectMonitor.setEnabled(defaultAction || gui.borstGenerator.isRunning() && gui.borstGenerator.isPaused());
 		regionsPanelTest.setVisible(isFullscreen);
 		painterPanel.setVisible(isFullscreen);
@@ -764,7 +774,7 @@ public class BobRustOverlay extends JPanel {
 			g.setColor(new Color(0x30000000, true));
 			g.fillRect(0, 0, getWidth() - 150, getHeight());
 			
-			// Draw region outline
+			// Draw region outline.
 			{
 				Stroke old_stroke = g.getStroke();
 				g.setStroke(new BasicStroke(5.0f));
@@ -792,7 +802,7 @@ public class BobRustOverlay extends JPanel {
 				g.setComposite(old_composite);
 			}
 			
-			// Draw model image
+			// Draw model image.
 			{
 				BufferedImage image = modelImage;
 				if(image != null) {
@@ -802,7 +812,7 @@ public class BobRustOverlay extends JPanel {
 				}
 			}
 			
-			// Draw Custom Shapes
+			// Draw Custom Shapes.
 			if(doRenderShapes) {
 				BorstData data = lastData;
 				if(data != null) {
@@ -816,6 +826,7 @@ public class BobRustOverlay extends JPanel {
 				}
 			}
 			
+			// TODO: Find a better way to draw these than crashing the application. xd
 			try {
 				BobRustPalette palette = drawDialog.getPalette();
 				Map<BorstColor, Point> map = palette.getColorMap();

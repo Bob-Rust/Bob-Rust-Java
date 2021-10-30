@@ -28,8 +28,8 @@ public class BobRustDrawDialog {
 	private final JDialog dialog;
 	
 	private final JPanel panel;
-	private final JIntegerField maxShapesTextField;
-	private final JIntegerField clickInterval;
+	private final JIntegerField maxShapesField;
+	private final JIntegerField clickIntervalField;
 	private final JSlider shapesSlider;
 	private final JLabel lblMaximumShape;
 	private final JButton btnCalculateExactTime;
@@ -47,7 +47,6 @@ public class BobRustDrawDialog {
 		dialog.setSize(REGULAR);
 		dialog.getContentPane().setLayout(new BorderLayout(0, 0));
 		
-
 		JPanel rootPanel = new JPanel();
 		rootPanel.setBorder(new EmptyBorder(3, 3, 3, 3));
 		rootPanel.setAlignmentY(Component.TOP_ALIGNMENT);
@@ -64,20 +63,20 @@ public class BobRustDrawDialog {
 		
 		Dimension buttonSize = new Dimension(60, 20);
 		shapesSlider = new JSlider();
-		maxShapesTextField = new JIntegerField(0);
-		maxShapesTextField.setPreferredSize(buttonSize);
-		maxShapesTextField.setMaximumSize(buttonSize);
-		maxShapesTextField.setMinimumSize(buttonSize);
-		maxShapesTextField.setFocusable(true);
-		maxShapesTextField.setAlignmentX(0.0f);
-		maxShapesTextField.addActionListener((event) -> {
-			int value = maxShapesTextField.getNumberValue();
+		maxShapesField = new JIntegerField(0);
+		maxShapesField.setPreferredSize(buttonSize);
+		maxShapesField.setMaximumSize(buttonSize);
+		maxShapesField.setMinimumSize(buttonSize);
+		maxShapesField.setFocusable(true);
+		maxShapesField.setAlignmentX(0.0f);
+		maxShapesField.addActionListener((event) -> {
+			int value = maxShapesField.getNumberValue();
 			shapesSlider.setValue(value);
 			overlay.setEstimatedGenerationLabel(value, gui.getSettingsMaxShapes());
 			overlay.renderShapes(value);
 			overlay.repaint();
 		});
-		panel.add(maxShapesTextField);
+		panel.add(maxShapesField);
 		
 		JLabel lblNewLabel = new JLabel("1");
 		lblNewLabel.setBorder(new EmptyBorder(0, 10, 0, 5));
@@ -89,7 +88,7 @@ public class BobRustDrawDialog {
 		shapesSlider.setAlignmentX(0.0f);
 		shapesSlider.addChangeListener((event) -> {
 			int value = shapesSlider.getValue();
-			maxShapesTextField.setText(Integer.toString(value));
+			maxShapesField.setText(Integer.toString(value));
 			overlay.setEstimatedGenerationLabel(value, gui.getSettingsMaxShapes());
 			overlay.renderShapes(value);
 			overlay.repaint();
@@ -110,25 +109,25 @@ public class BobRustDrawDialog {
 		panel_1.setLayout(new BoxLayout(panel_1, BoxLayout.X_AXIS));
 		
 		Dimension buttonSize2 = new Dimension(60, 20);
-		clickInterval = new JIntegerField(gui.getSettingsClickInterval());
-		clickInterval.setPreferredSize(buttonSize2);
-		clickInterval.setMaximumSize(buttonSize2);
-		clickInterval.setMinimumSize(buttonSize2);
-		clickInterval.setFocusable(true);
-		clickInterval.setMinimum(1);
-		clickInterval.setMaximum(60);
-		clickInterval.setAlignmentX(0.0f);
-		clickInterval.addActionListener((event) -> {
-			gui.setSettingsClickInterval(clickInterval.getNumberValue());
-			overlay.setEstimatedGenerationLabel(maxShapesTextField.getNumberValue(), gui.getSettingsMaxShapes());
+		clickIntervalField = new JIntegerField(gui.getSettingsClickInterval());
+		clickIntervalField.setPreferredSize(buttonSize2);
+		clickIntervalField.setMaximumSize(buttonSize2);
+		clickIntervalField.setMinimumSize(buttonSize2);
+		clickIntervalField.setFocusable(true);
+		clickIntervalField.setMinimum(1);
+		clickIntervalField.setMaximum(60);
+		clickIntervalField.setAlignmentX(0.0f);
+		clickIntervalField.addActionListener((event) -> {
+			gui.setSettingsClickInterval(clickIntervalField.getNumberValue());
+			overlay.setEstimatedGenerationLabel(maxShapesField.getNumberValue(), gui.getSettingsMaxShapes());
 			overlay.repaint();
 		});
-		panel_1.add(clickInterval);
+		panel_1.add(clickIntervalField);
 		
 		btnCalculateExactTime = new JButton("Calculate Exact Time");
 		btnCalculateExactTime.setFocusable(false);
 		btnCalculateExactTime.addActionListener((event) -> {
-			int count = maxShapesTextField.getNumberValue();
+			int count = maxShapesField.getNumberValue();
 			
 			BlobList list = BobRustUtil.convertToList(overlay.getBorstData().getModel(), count);
 			list = BorstSorter.sort(list);
@@ -136,7 +135,7 @@ public class BobRustDrawDialog {
 			
 			int totalClicks = after + count;
 			
-			int interval = (int)clickInterval.getNumberValue();
+			int interval = (int)clickIntervalField.getNumberValue();
 			overlay.setExactGenerationLabel((long)(totalClicks * (1000.0 / (double)interval)));
 			overlay.repaint();
 		});
@@ -169,12 +168,11 @@ public class BobRustDrawDialog {
 					dialog.setSize(MINIMIZED);
 					overlay.setHideRegions(true);
 					
-					int count = maxShapesTextField.getNumberValue();
+					int count = maxShapesField.getNumberValue();
 					BlobList list = BorstSorter.sort(BobRustUtil.convertToList(overlay.getBorstData().getModel(), count));
 					if(!rustPainter.startDrawing(list)) {
 						LogUtils.warn("The user stoped the drawing process early");
 					}
-					
 				} catch(IllegalStateException e) {
 					LogUtils.warn("The user stoped the drawing process early");
 				} catch(Exception e) {
@@ -199,7 +197,7 @@ public class BobRustDrawDialog {
 		pane.setText(
 			"""
 			Could not find the color palette.<br>
-			If you think this is a bug please create a new issue on the github.<br>
+			If you think this is a bug please take a screenshot and create a new issue on the github.<br>
 			<a href="#blank">https://github.com/Bob-Rust/Bob-Rust-Java/issues/new</a>
 			"""
 		);
@@ -211,21 +209,18 @@ public class BobRustDrawDialog {
 		JOptionPane.showConfirmDialog(dialog, pane, "Could not find the palette", JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
 	}
 	
+	// TODO: Refine this method to check for the color palette on the screen.
 	private boolean findColorPalette() {
 		Rectangle screen = overlay.dialog.getBounds();
 		
 		// Check for bright red on the edge of the screen.
 		try {
 			BufferedImage screenshot = new Robot().createScreenCapture(screen);
-			
-			// ef4431
 			int x = screen.width - 43;
 			
 			Point red_middle = null;
 			for(int i = 0, lastNonRed = 0; i < screen.height; i++) {
 				int red = (screenshot.getRGB(x, i) >> 16) & 0xff;
-				
-				// above 220.
 
 				if(red < 220) {
 					lastNonRed = i;
@@ -268,7 +263,7 @@ public class BobRustDrawDialog {
 		int value = overlay.getBorstData().getIndex();
 		shapesSlider.setMaximum(value);
 		shapesSlider.setValue(value);
-		maxShapesTextField.setText(Integer.toString(value));
+		maxShapesField.setText(Integer.toString(value));
 		lblMaximumShape.setText(Integer.toString(value));
 		dialog.setLocation(point);
 		dialog.setSize(REGULAR);
@@ -276,10 +271,10 @@ public class BobRustDrawDialog {
 		rustPalette.reset();
 		
 		try {
-			gui.setSettingsClickInterval(Integer.parseInt(clickInterval.getText()));
+			gui.setSettingsClickInterval(Integer.parseInt(clickIntervalField.getText()));
 		} catch(NumberFormatException e) {
-			LogUtils.warn("Invalid click interval '%s'", clickInterval.getText());
-			clickInterval.setText(Integer.toString(gui.getSettingsClickInterval()));
+			LogUtils.warn("Invalid click interval '%s'", clickIntervalField.getText());
+			clickIntervalField.setText(Integer.toString(gui.getSettingsClickInterval()));
 		}
 	}
 	

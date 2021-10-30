@@ -57,7 +57,7 @@ public class BobRustPalette {
 		
 		int dialogResult = JOptionPane.showConfirmDialog(dialog, new JLabel(new ImageIcon(image)), "Is this the color palette?", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if(dialogResult == JOptionPane.YES_OPTION) {
-			// We got the color palette
+			// We got the color palette.
 			return true;
 		} else {
 			return false;

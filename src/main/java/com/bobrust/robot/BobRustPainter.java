@@ -31,7 +31,6 @@ public class BobRustPainter {
 	public boolean startDrawing(BlobList list) throws Exception {
 		Robot robot = new Robot();
 		
-		// overlay.setRemainingTime(0, 0, 0);
 		Rectangle canvas = overlay.getCanvasArea();
 		Rectangle screen = overlay.getScreenLocation();
 		Sign signType = gui.getSettingsSign();
@@ -48,7 +47,7 @@ public class BobRustPainter {
 		List<Blob> blobList = list.getList();
 		int count = blobList.size();
 		
-		// Calculate the total amount of presses needed
+		// Calculate the total amount of presses needed.
 		int score = BobRustUtil.getScore(list) + count;
 		
 		{
@@ -58,7 +57,7 @@ public class BobRustPainter {
 			// Make sure that we have selected the correct alpha.
 			clickPoint(robot, palette.getAlphaButton(alphaSetting), 4);
 			
-			// Make sure that we have selected the correct shape
+			// Make sure that we have selected the correct shape.
 			clickPoint(robot, palette.getShapeButton(shapeSetting), 4);
 		}
 		

@@ -49,7 +49,7 @@ public class BobRustMonitorPicker {
 			}
 		}
 		
-		// Returns the default configuration
+		// Returns the default configuration.
 		return graphicsEnvironment.getDefaultScreenDevice().getDefaultConfiguration();
 	}
 	
@@ -70,7 +70,7 @@ public class BobRustMonitorPicker {
 		thread.start();
 		
 		try {
-			// Make it possible to select another monitor
+			// Make it possible to select another monitor.
 			GraphicsConfiguration gc = getGraphicsConfiguration(dialog.getLocation());
 			dialog.setBounds(gc.getBounds());
 			dialog.setVisible(true);
@@ -84,7 +84,7 @@ public class BobRustMonitorPicker {
 	
 	public GraphicsConfiguration getMonitor() {
 		if(config == null) {
-			// If the config is null we use the default configuration
+			// If the config is null we use the default configuration.
 			config = getGraphicsConfiguration(null);
 		}
 		

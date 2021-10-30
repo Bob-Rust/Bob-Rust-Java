@@ -57,7 +57,7 @@ public class BobRustShapeRender {
 		// The pixel buffer of the closest image.
 		int[] pixelBuffer;
 		int startIndex;
-		// If we do not have cached values up to this point
+		// If we do not have cached values up to this point.
 		if(list.size() > cacheIndex) {
 			startIndex = cacheIndex * cacheInterval;
 			pixelBuffer = list.get(cacheIndex);
@@ -84,7 +84,7 @@ public class BobRustShapeRender {
 			int cd = (circle.r - 1) * 2 + 1;
 			g.fillOval(circle.x - cd / 2, circle.y - cd / 2, cd, cd);
 			
-			// Cache every 'cacheInterval' shapes
+			// Cache every 'cacheInterval' shapes.
 			if((i % cacheInterval) == 499) {
 				list.add(canvasPixels.clone());
 			}
