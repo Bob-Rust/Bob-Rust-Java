@@ -13,7 +13,6 @@ import com.bobrust.generator.BorstColor;
 import com.bobrust.generator.Circle;
 import com.bobrust.generator.Model;
 
-// TODO: Sometimes generates the wrong cache.. Try fix this!
 public class BobRustShapeRender {
 	/**
 	 * Each element in this list is 'cacheInterval' shapes apart

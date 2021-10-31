@@ -24,12 +24,11 @@ public class BobRustPalette {
 		colorMap = new HashMap<>();
 	}
 	
-	public synchronized boolean analyse(JDialog dialog, BufferedImage bi, Point panel_offset) {
-		panel_offset = new Point(panel_offset.x, panel_offset.y - 152);
-		this.panel_offset = panel_offset;
+	public synchronized boolean analyse(JDialog dialog, BufferedImage bi, Point screenLocation, Point screenOffset) {
+		this.panel_offset = new Point(screenOffset.x, screenOffset.y - 152);
 		this.colorMap.clear();
 		
-		Rectangle rect = new Rectangle(panel_offset.x, panel_offset.y, 150, 525);
+		Rectangle rect = new Rectangle(panel_offset.x - screenLocation.x, panel_offset.y - screenLocation.y, 150, 525);
 		BufferedImage image;
 		try {
 			image = bi.getSubimage(rect.x, rect.y, rect.width, rect.height);

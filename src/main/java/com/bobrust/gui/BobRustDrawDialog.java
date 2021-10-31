@@ -237,7 +237,7 @@ public class BobRustDrawDialog {
 				// 150x264
 				overlay.colorRegion.setLocation(screen.width - 150, red_middle.y - 163 + 132 + 100);
 				
-				if(rustPalette.analyse(dialog, screenshot, new Point(screen.width - 150, red_middle.y - 163))) {
+				if(rustPalette.analyse(dialog, screenshot, screen.getLocation(), new Point(screen.x + screen.width - 150, screen.y + red_middle.y - 163))) {
 					// Found the palette.
 					LogUtils.info("Found the color palette (%d, %d)", red_middle.x, red_middle.y);
 					overlay.repaint();

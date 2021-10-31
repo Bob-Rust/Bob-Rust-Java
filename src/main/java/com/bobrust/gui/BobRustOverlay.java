@@ -690,13 +690,14 @@ public class BobRustOverlay extends JPanel {
 	
 	private void updateButtons() {
 		boolean defaultAction = action == OverlayType.NONE;
+		boolean isPaused = gui.borstGenerator.isRunning() && gui.borstGenerator.isPaused();
 		
 		// You should only be able to pick monitor the screen is enabled.
-		btnSelectMonitor.setEnabled(defaultAction || gui.borstGenerator.isRunning() && gui.borstGenerator.isPaused());
+		btnSelectMonitor.setEnabled(defaultAction || isPaused);
 		regionsPanelTest.setVisible(isFullscreen);
 		painterPanel.setVisible(isFullscreen);
 		
-		btnHideRegions.setEnabled(defaultAction || gui.borstGenerator.isPaused() && gui.borstGenerator.isRunning());
+		btnHideRegions.setEnabled(defaultAction || isPaused);
 		boolean defaultRegion = !btnHideRegions.isSelected() && defaultAction;
 		btnSelectCanvasRegion.setEnabled(defaultRegion || action == OverlayType.SELECT_CANVAS_REGION);
 		btnSelectImageRegion.setEnabled(defaultRegion && image != null || action == OverlayType.SELECT_IMAGE_REGION);
@@ -705,8 +706,8 @@ public class BobRustOverlay extends JPanel {
 		btnOpenImage.setEnabled(defaultAction);
 		btnStartGenerate.setEnabled(isFullscreen && defaultAction && image != null && !gui.borstGenerator.isRunning());
 		btnPauseGenerate.setEnabled(isFullscreen && gui.borstGenerator.isRunning());
-		btnResetGenerate.setEnabled(gui.borstGenerator.isPaused() && gui.borstGenerator.isRunning());
-		btnDrawImage.setEnabled(gui.borstGenerator.isPaused() && gui.borstGenerator.isRunning());
+		btnResetGenerate.setEnabled(isPaused);
+		btnDrawImage.setEnabled(isPaused);
 	}
 	
 	private void changeFullscreen(ActionEvent event) {
@@ -749,7 +750,7 @@ public class BobRustOverlay extends JPanel {
 		repaint();
 		
 		if(data.isDone()) {
-			setPauseGeneration(false);
+			btnPauseGenerate.setText("Pause Generate");
 		}
 	}
 	
