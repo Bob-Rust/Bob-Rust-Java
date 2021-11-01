@@ -27,6 +27,8 @@ public class JStyledButton extends JButton {
 	public JStyledButton(String text) {
 		super(text);
 		setContentAreaFilled(false);
+		setFocusable(false);
+		setOpaque(false);
 		
 		addMouseListener(new MouseAdapter() {
 			@Override

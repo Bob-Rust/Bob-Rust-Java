@@ -11,6 +11,8 @@ import javax.swing.event.HyperlinkEvent;
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.generator.sorter.BorstSorter;
 import com.bobrust.gui.comp.JIntegerField;
+import com.bobrust.lang.RustUI;
+import com.bobrust.lang.RustUI.Type;
 import com.bobrust.logging.LogUtils;
 import com.bobrust.robot.BobRustPainter;
 import com.bobrust.robot.BobRustPalette;
@@ -54,7 +56,7 @@ public class BobRustDrawDialog {
 		dialog.getContentPane().add(rootPanel);
 		rootPanel.setLayout(new BoxLayout(rootPanel, BoxLayout.Y_AXIS));
 		
-		JLabel lblShapeCount = new JLabel("Shape Count");
+		JLabel lblShapeCount = new JLabel(RustUI.getString(Type.ACTION_SHAPECOUNT_LABEL));
 		rootPanel.add(lblShapeCount);
 		
 		panel = new JPanel();
@@ -74,14 +76,14 @@ public class BobRustDrawDialog {
 			int value = maxShapesField.getNumberValue();
 			shapesSlider.setValue(value);
 			overlay.setEstimatedGenerationLabel(value, gui.getSettingsMaxShapes());
-			overlay.renderShapes(value);
+			overlay.setRenderPreviewShapes(value);
 			overlay.repaint();
 		});
 		panel.add(maxShapesField);
 		
-		JLabel lblNewLabel = new JLabel("1");
-		lblNewLabel.setBorder(new EmptyBorder(0, 10, 0, 5));
-		panel.add(lblNewLabel);
+		JLabel lblMinimumShape = new JLabel("1");
+		lblMinimumShape.setBorder(new EmptyBorder(0, 10, 0, 5));
+		panel.add(lblMinimumShape);
 		
 		shapesSlider.setOpaque(false);
 		shapesSlider.setMinimum(1);
@@ -91,7 +93,7 @@ public class BobRustDrawDialog {
 			int value = shapesSlider.getValue();
 			maxShapesField.setText(Integer.toString(value));
 			overlay.setEstimatedGenerationLabel(value, gui.getSettingsMaxShapes());
-			overlay.renderShapes(value);
+			overlay.setRenderPreviewShapes(value);
 			overlay.repaint();
 		});
 		panel.add(shapesSlider);
@@ -100,8 +102,8 @@ public class BobRustDrawDialog {
 		lblMaximumShape.setBorder(new EmptyBorder(0, 5, 0, 10));
 		panel.add(lblMaximumShape);
 		
-		JLabel lblClickInterval = new JLabel("Clicks per second");
-		lblClickInterval.setToolTipText("The amount of clicks each second");
+		JLabel lblClickInterval = new JLabel(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_LABEL));
+		lblClickInterval.setToolTipText(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_TOOLTIP));
 		rootPanel.add(lblClickInterval);
 		
 		JPanel panel_1 = new JPanel();
@@ -125,7 +127,7 @@ public class BobRustDrawDialog {
 		});
 		panel_1.add(clickIntervalField);
 		
-		btnCalculateExactTime = new JButton("Calculate Exact Time");
+		btnCalculateExactTime = new JButton(RustUI.getString(Type.ACTION_CALCULATEEXACTTIME_BUTTON));
 		btnCalculateExactTime.setFocusable(false);
 		btnCalculateExactTime.addActionListener((event) -> {
 			int count = maxShapesField.getNumberValue();
@@ -142,8 +144,8 @@ public class BobRustDrawDialog {
 		});
 		rootPanel.add(btnCalculateExactTime);
 		
-		btnStartDrawing = new JButton("Start Drawing");
-		btnSelectColorPalette = new JButton("Select Color Palette");
+		btnStartDrawing = new JButton(RustUI.getString(Type.ACTION_STARTDRAWING_BUTTON));
+		btnSelectColorPalette = new JButton(RustUI.getString(Type.ACTION_SELECTCOLORPALETTE_BUTTON));
 		btnSelectColorPalette.setFocusable(false);
 		btnSelectColorPalette.addActionListener((event) -> {
 			btnStartDrawing.setEnabled(false);
@@ -205,7 +207,7 @@ public class BobRustDrawDialog {
 				UrlUtils.openIssueUrl();
 			}
 		});
-		JOptionPane.showConfirmDialog(dialog, pane, "Could not find the palette", JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
+		JOptionPane.showConfirmDialog(dialog, pane, RustUI.getString(Type.ACTION_PALETTEWARNINGDIALOG_TITLE), JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
 	}
 	
 	private boolean findColorPalette() {

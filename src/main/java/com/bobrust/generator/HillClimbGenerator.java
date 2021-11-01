@@ -5,24 +5,18 @@ import java.util.List;
 
 class HillClimbGenerator {
 	private static State getBestRandomState(Worker worker, int count) {
-		State[] ch = new State[count];
-		
-		List<Integer> indexList = new ArrayList<>(count);
-		for(int i = 0; i < count; i++) indexList.add(i);
-		indexList.parallelStream().forEach((i) -> {
-			State state = new State(worker);
-			state.getEnergy();
-			ch[i] = state;
-		});
+		List<State> stateList = new ArrayList<>(count);
+		for(int i = 0; i < count; i++) stateList.add(new State(worker));
+		stateList.parallelStream().forEach(State::getEnergy);
 		
 		float bestEnergy = 0;
 		State bestState = null;
 		
-		for(int i = 0; i < count; i++) {
-			State state = ch[i];
+		for(int i = 0, len = stateList.size(); i < len; i++) {
+			State state = stateList.get(i);
 			float energy = state.getEnergy();
 			
-			if(i == 0 || energy < bestEnergy) {
+			if(bestState == null || energy < bestEnergy) {
 				bestEnergy = energy;
 				bestState = state;
 			}

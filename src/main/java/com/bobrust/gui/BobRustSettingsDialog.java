@@ -7,6 +7,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import com.bobrust.gui.comp.JIntegerField;
+import com.bobrust.lang.RustUI;
+import com.bobrust.lang.RustUI.Type;
 import com.bobrust.logging.LogUtils;
 import javax.swing.border.TitledBorder;
 
@@ -48,11 +50,11 @@ public class BobRustSettingsDialog {
 		panel.add(backgroundPanel);
 		backgroundPanel.setLayout(new BoxLayout(backgroundPanel, BoxLayout.Y_AXIS));
 		
-		JLabel lblBackgroundColor = new JLabel("Background Color");
-		lblBackgroundColor.setToolTipText("The background color of the canvas");
+		JLabel lblBackgroundColor = new JLabel(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_LABEL));
+		lblBackgroundColor.setToolTipText(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_TOOLTIP));
 		backgroundPanel.add(lblBackgroundColor);
 		
-		JButton btnBackgroundColor = new JButton("Background Color");
+		JButton btnBackgroundColor = new JButton(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_BUTTON));
 		btnBackgroundColor.setPreferredSize(buttonSize);
 		btnBackgroundColor.setMinimumSize(buttonSize);
 		btnBackgroundColor.setMaximumSize(buttonSize);
@@ -74,13 +76,13 @@ public class BobRustSettingsDialog {
 		panel.add(signPanel);
 		signPanel.setLayout(new BoxLayout(signPanel, BoxLayout.Y_AXIS));
 		
-		JLabel signLabel = new JLabel("Sign Type");
-		signLabel.setToolTipText("The type of sign to use when drawing");
+		JLabel signLabel = new JLabel(RustUI.getString(Type.SETTINGS_SIGNTYPE_LABEL));
+		signLabel.setToolTipText(RustUI.getString(Type.SETTINGS_SIGNTYPE_TOOLTIP));
 		signLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 		signLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		signPanel.add(signLabel);
 		
-		final JButton btnSign = new JButton("Select Sign Type");
+		final JButton btnSign = new JButton(RustUI.getString(Type.SETTINGS_SIGNTYPE_BUTTON));
 		btnSign.setPreferredSize(buttonSize);
 		btnSign.setMinimumSize(buttonSize);
 		btnSign.setMaximumSize(buttonSize);
@@ -102,8 +104,8 @@ public class BobRustSettingsDialog {
 		panel.add(alphaPanel);
 		alphaPanel.setLayout(new BoxLayout(alphaPanel, BoxLayout.Y_AXIS));
 		
-		JLabel alphaLabel = new JLabel("Alpha index");
-		alphaLabel.setToolTipText("The alpha value used to draw the image");
+		JLabel alphaLabel = new JLabel(RustUI.getString(Type.SETTINGS_ALPHAINDEX_LABEL));
+		alphaLabel.setToolTipText(RustUI.getString(Type.SETTINGS_ALPHAINDEX_TOOLTIP));
 		alphaLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 		alphaLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		alphaPanel.add(alphaLabel);
@@ -126,8 +128,8 @@ public class BobRustSettingsDialog {
 		panel.add(shapesPanel);
 		shapesPanel.setLayout(new BoxLayout(shapesPanel, BoxLayout.Y_AXIS));
 		
-		JLabel shapesLabel = new JLabel("Max Shapes");
-		shapesLabel.setToolTipText("The max amount of shapes used when drawing the image");
+		JLabel shapesLabel = new JLabel(RustUI.getString(Type.SETTINGS_MAXSHAPES_LABEL));
+		shapesLabel.setToolTipText(RustUI.getString(Type.SETTINGS_MAXSHAPES_TOOLTIP));
 		shapesLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 		shapesLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		shapesPanel.add(shapesLabel);
@@ -148,8 +150,8 @@ public class BobRustSettingsDialog {
 		panel.add(callbackPanel);
 		callbackPanel.setLayout(new BoxLayout(callbackPanel, BoxLayout.Y_AXIS));
 		
-		JLabel callbackLabel = new JLabel("Callback Interval");
-		callbackLabel.setToolTipText("The max amount of shapes generated before updating the screen");
+		JLabel callbackLabel = new JLabel(RustUI.getString(Type.SETTINGS_CALLBACKINTERVAL_LABEL));
+		callbackLabel.setToolTipText(RustUI.getString(Type.SETTINGS_CALLBACKINTERVAL_TOOLTIP));
 		callbackLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 		callbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		callbackPanel.add(callbackLabel);
@@ -171,8 +173,8 @@ public class BobRustSettingsDialog {
 			panel.add(clickIntervalPanel);
 			clickIntervalPanel.setLayout(new BoxLayout(clickIntervalPanel, BoxLayout.Y_AXIS));
 			
-			JLabel clickIntervalLabel = new JLabel("Clicks per second");
-			clickIntervalLabel.setToolTipText("The amount of clicks per second");
+			JLabel clickIntervalLabel = new JLabel(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_LABEL));
+			clickIntervalLabel.setToolTipText(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_TOOLTIP));
 			clickIntervalLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 			clickIntervalLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			clickIntervalPanel.add(clickIntervalLabel);
@@ -197,8 +199,8 @@ public class BobRustSettingsDialog {
 			panel.add(autosaveIntervalPanel);
 			autosaveIntervalPanel.setLayout(new BoxLayout(autosaveIntervalPanel, BoxLayout.Y_AXIS));
 			
-			JLabel autosaveIntervalLabel = new JLabel("Autosave interval");
-			autosaveIntervalLabel.setToolTipText("How many presses done between saves");
+			JLabel autosaveIntervalLabel = new JLabel(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_LABEL));
+			autosaveIntervalLabel.setToolTipText(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_TOOLTIP));
 			autosaveIntervalLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 			autosaveIntervalLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			autosaveIntervalPanel.add(autosaveIntervalLabel);
@@ -229,17 +231,17 @@ public class BobRustSettingsDialog {
 			editorPanel.add(borderPanel);
 			borderPanel.setLayout(new BoxLayout(borderPanel, BoxLayout.Y_AXIS));
 			
-			JLabel lblBorderColor = new JLabel("Border Color");
-			lblBorderColor.setToolTipText("The border color of the editor");
+			JLabel lblBorderColor = new JLabel(RustUI.getString(Type.EDITOR_BORDERCOLOR_LABEL));
+			lblBorderColor.setToolTipText(RustUI.getString(Type.EDITOR_BORDERCOLOR_TOOLTIP));
 			borderPanel.add(lblBorderColor);
 			
-			JButton btnBorderColor = new JButton("Border Color");
+			JButton btnBorderColor = new JButton(RustUI.getString(Type.EDITOR_BORDERCOLOR_BUTTON));
 			btnBorderColor.setPreferredSize(buttonSize);
 			btnBorderColor.setMinimumSize(buttonSize);
 			btnBorderColor.setMaximumSize(buttonSize);
 			btnBorderColor.setFocusable(false);
 			btnBorderColor.addActionListener((event) -> {
-				Color color = JColorChooser.showDialog(dialog, "Color picker", gui.getBorderColor(), false);
+				Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.getBorderColor(), false);
 				if(color != null) {
 					gui.setBorderColor(color);
 				}
@@ -255,18 +257,18 @@ public class BobRustSettingsDialog {
 			editorPanel.add(toolbarPanel);
 			toolbarPanel.setLayout(new BoxLayout(toolbarPanel, BoxLayout.Y_AXIS));
 			
-			JLabel lblToolbarColor = new JLabel("Toolbar Color");
-			lblToolbarColor.setToolTipText("The toolbar color of the editor");
+			JLabel lblToolbarColor = new JLabel(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_LABEL));
+			lblToolbarColor.setToolTipText(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_TOOLTIP));
 			toolbarPanel.add(lblToolbarColor);
 			
-			JButton btnToolbarColor = new JButton("Toolbar Color");
+			JButton btnToolbarColor = new JButton(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_BUTTON));
 			btnToolbarColor.setPreferredSize(buttonSize);
 			btnToolbarColor.setMinimumSize(buttonSize);
 			btnToolbarColor.setMaximumSize(buttonSize);
 			btnToolbarColor.setFocusable(false);
 			lblToolbarColor.setLabelFor(btnToolbarColor);
 			btnToolbarColor.addActionListener((event) -> {
-				Color color = JColorChooser.showDialog(dialog, "Color picker", gui.getToolbarColor(), false);
+				Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.getToolbarColor(), false);
 				if(color != null) {
 					gui.setToolbarColor(color);
 				}
@@ -282,17 +284,17 @@ public class BobRustSettingsDialog {
 			editorPanel.add(labelPanel);
 			labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.Y_AXIS));
 			
-			JLabel lblLabelColor = new JLabel("Label Color");
-			lblLabelColor.setToolTipText("The label color of the editor");
+			JLabel lblLabelColor = new JLabel(RustUI.getString(Type.EDITOR_LABELCOLOR_LABEL));
+			lblLabelColor.setToolTipText(RustUI.getString(Type.EDITOR_LABELCOLOR_TOOLTIP));
 			labelPanel.add(lblLabelColor);
 			
-			JButton btnLabelColor = new JButton("Label Color");
+			JButton btnLabelColor = new JButton(RustUI.getString(Type.EDITOR_LABELCOLOR_BUTTON));
 			btnLabelColor.setPreferredSize(buttonSize);
 			btnLabelColor.setMinimumSize(buttonSize);
 			btnLabelColor.setMaximumSize(buttonSize);
 			btnLabelColor.setFocusable(false);
 			btnLabelColor.addActionListener((event) -> {
-				Color color = JColorChooser.showDialog(dialog, "Color picker", gui.getLabelColor(), false);
+				Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.getLabelColor(), false);
 				if(color != null) {
 					gui.setLabelColor(color);
 				}
@@ -308,17 +310,21 @@ public class BobRustSettingsDialog {
 			editorPanel.add(resetPanel);
 			resetPanel.setLayout(new BoxLayout(resetPanel, BoxLayout.Y_AXIS));
 			
-			JLabel lblResetEditor = new JLabel("Reset Editor");
-			lblResetEditor.setToolTipText("Reset the editor colors");
+			JLabel lblResetEditor = new JLabel(RustUI.getString(Type.EDITOR_RESETEDITOR_LABEL));
+			lblResetEditor.setToolTipText(RustUI.getString(Type.EDITOR_RESETEDITOR_TOOLTIP));
 			resetPanel.add(lblResetEditor);
 			
-			JButton btnResetEditor = new JButton("Reset Editor");
+			JButton btnResetEditor = new JButton(RustUI.getString(Type.EDITOR_RESETEDITOR_BUTTON));
 			btnResetEditor.setPreferredSize(buttonSize);
 			btnResetEditor.setMinimumSize(buttonSize);
 			btnResetEditor.setMaximumSize(buttonSize);
 			btnResetEditor.setFocusable(false);
 			btnResetEditor.addActionListener((event) -> {
-				int dialogResult = JOptionPane.showConfirmDialog(dialog, "Are you sure you want to reset the editor?", "Warning", JOptionPane.YES_NO_OPTION);
+				int dialogResult = JOptionPane.showConfirmDialog(dialog,
+					RustUI.getString(Type.EDITOR_RESETEDITORDIALOG_MESSAGE),
+					RustUI.getString(Type.EDITOR_RESETEDITORDIALOG_TITLE),
+					JOptionPane.YES_NO_OPTION
+				);
 				if(dialogResult == JOptionPane.YES_OPTION){
 					gui.setBorderColor(null);
 					gui.setToolbarColor(null);

@@ -10,6 +10,9 @@ import javax.imageio.ImageIO;
 import com.bobrust.gui.BobRustOverlay;
 
 public class RustConstants {
+	// Used by JRandomPanel.
+	public static final boolean ENABLE_RANDOM_BACKGROUND = false;
+	
 	// TODO: Approximate these.
 	public static final Color CANVAS_AVERAGE = new Color(0x8f887c);
 	public static final Color WOODEN_AVERAGE = new Color(0x6d5033);

@@ -5,8 +5,11 @@ import java.util.List;
 import com.bobrust.generator.BorstColor;
 import com.bobrust.generator.Circle;
 import com.bobrust.generator.Model;
+import com.bobrust.generator.BorstGenerator.BorstData;
 import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
+import com.bobrust.generator.sorter.BorstSorter;
+import com.bobrust.logging.LogUtils;
 
 public class RustUtil {
 	public static BlobList convertToList(Model model, int count) {
@@ -40,5 +43,18 @@ public class RustUtil {
 		}
 		
 		return changes;
+	}
+	
+	public static void dumpInfo(BorstData data) {
+		Model model = data.getModel();
+		
+		BlobList list = new BlobList();
+		for(int i = 0, len = model.colors.size(); i < len; i++) {
+			Circle circle = model.shapes.get(i);
+			BorstColor color = model.colors.get(i);
+			list.add(Blob.get(circle.x, circle.y, circle.r, color.rgb));
+		}
+		
+		LogUtils.info("Size change: %d / %d", getScore(list), getScore(BorstSorter.sort(list)));
 	}
 }

@@ -20,8 +20,8 @@ class State {
 	
 	public float getEnergy() {
 		if(score < 0) {
-			Scanline[] list = shape.Rasterize();
-			score = worker.Energy(list);
+			// This is not thread safe!
+			score = worker.Energy(shape.Rasterize());
 		}
 
 		return score;

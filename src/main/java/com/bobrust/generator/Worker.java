@@ -32,7 +32,7 @@ class Worker {
 	public float Energy(Scanline[] lines) {
 		this.counter++;
 		
-		// Because this is called in parallel we could mess up the buffer? by writing to it twize?
+		// Because this is called in parallel we could mess up the buffer? by writing to it twice?
 		BorstColor color = BorstCore.computeColor(target, current, lines, alpha);
 
 		// Set the buffers region on the lines to the current image
