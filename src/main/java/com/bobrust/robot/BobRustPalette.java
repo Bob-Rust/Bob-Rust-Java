@@ -24,6 +24,43 @@ public class BobRustPalette {
 		colorMap = new HashMap<>();
 	}
 	
+	/**
+	 * Find the palette in the provided screenshot.
+	 * 
+	 * TODO: Make this method more general and work for more inputs.
+	 *       Where the color palette might not even be to the right of the screen.
+	 */
+	public Point findPalette(BufferedImage screenshot) {
+		int screen_width = screenshot.getWidth();
+		int screen_height = screenshot.getHeight();
+		
+		int x = screen_width - 43;
+		
+		Point red_middle = null;
+		for(int i = 0, lastNonRed = 0; i < screen_height; i++) {
+			int red = (screenshot.getRGB(x, i) >> 16) & 0xff;
+
+			if(red < 220) {
+				lastNonRed = i;
+			}
+			
+			if(i - lastNonRed > 40) {
+				// We found the circle probably.
+				red_middle = new Point(x, i - 10);
+				break;
+			}
+		}
+		
+		if(red_middle != null) {
+			// 150x264
+			int point_x = screen_width - 150;
+			int point_y = red_middle.y - 163;
+			return new Point(point_x, point_y);
+		}
+		
+		return null;
+	}
+	
 	public synchronized boolean analyse(JDialog dialog, BufferedImage bi, Point screenLocation, Point screenOffset) {
 		this.panel_offset = new Point(screenOffset.x, screenOffset.y - 152);
 		this.colorMap.clear();

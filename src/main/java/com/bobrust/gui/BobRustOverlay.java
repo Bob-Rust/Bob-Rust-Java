@@ -25,6 +25,7 @@ import com.bobrust.gui.comp.JStyledToggleButton;
 import com.bobrust.lang.RustTranslator;
 import com.bobrust.logging.LogUtils;
 import com.bobrust.robot.BobRustPalette;
+import com.bobrust.util.UrlUtils;
 
 /**
  * Overlay window that will cover the entire screen
@@ -50,7 +51,7 @@ public class BobRustOverlay extends JPanel {
 	private final Point dragEnd = new Point(0, 0);
 	
 	private final BobRustMonitorPicker monitorPicker;
-	private final BobRustSettings settingsGui;
+	private final BobRustSettingsDialog settingsGui;
 	private final BobRustDrawDialog drawDialog;
 	private final BobRustShapeRender shapeRender;
 	
@@ -73,7 +74,7 @@ public class BobRustOverlay extends JPanel {
 	private final JLabel generationLabel;
 	private final JLabel generationInfo;
 	private final JPanel topBarPanel;
-	private final JPanel regionsPanelTest;
+	private final JPanel regionsPanel;
 	private final JPanel painterPanel;
 	
 	private ResizeOption resizeOption = ResizeOption.NONE;
@@ -294,7 +295,7 @@ public class BobRustOverlay extends JPanel {
 			LogUtils.error("Failed to load program icons. %s", e);
 		}
 		
-		settingsGui = new BobRustSettings(gui, dialog);
+		settingsGui = new BobRustSettingsDialog(gui, dialog);
 		monitorPicker = new BobRustMonitorPicker(dialog);
 		drawDialog = new BobRustDrawDialog(gui, this, dialog);
 		shapeRender = new BobRustShapeRender(SHAPE_CACHE_INTERVAL);
@@ -399,227 +400,237 @@ public class BobRustOverlay extends JPanel {
 		});
 		actionPanel.add(btnOptions);
 		
-		regionsPanelTest = new JPanel();
-		regionsPanelTest.setVisible(false);
-		regionsPanelTest.setOpaque(false);
-		regionsPanelTest.setAlignmentX(Component.LEFT_ALIGNMENT);
-		actionPanel.add(regionsPanelTest);
-		regionsPanelTest.setLayout(new BoxLayout(regionsPanelTest, BoxLayout.Y_AXIS));
-		
-		JLabel lblRegions = new JLabel("Regions");
-		lblRegions.setBorder(new EmptyBorder(10, 0, 0, 0));
-		lblRegions.setForeground(Color.BLACK);
-		regionsPanelTest.add(lblRegions);
-		labels.add(lblRegions);
-		
-		btnHideRegions = new JStyledToggleButton("Show Regions");
-		btnHideRegions.setOpaque(false);
-		btnHideRegions.setMaximumSize(new Dimension(120, 24));
-		btnHideRegions.setFocusable(false);
-		btnHideRegions.setSelected(true);
-		btnHideRegions.addActionListener((event) -> setHideRegions(btnHideRegions.isSelected()));
-		regionsPanelTest.add(btnHideRegions);
-		
-		btnSelectCanvasRegion = new JStyledToggleButton("Canvas Region");
-		btnSelectCanvasRegion.setMaximumSize(buttonSize);
-		btnSelectCanvasRegion.setFocusable(false);
-		btnSelectCanvasRegion.setOpaque(false);
-		btnSelectCanvasRegion.setEnabled(false);
-		btnSelectCanvasRegion.addActionListener((event) -> {
-			if(btnSelectCanvasRegion.isSelected()) {
-				startSelectRegion(canvasRegion, OverlayType.SELECT_CANVAS_REGION);
-			} else {
-				endSelectRegion();
-			}
-		});
-		regionsPanelTest.add(btnSelectCanvasRegion);
-		
-		btnSelectImageRegion = new JStyledToggleButton("Image Region");
-		btnSelectImageRegion.setMaximumSize(buttonSize);
-		btnSelectImageRegion.setOpaque(false);
-		btnSelectImageRegion.setFocusable(false);
-		btnSelectImageRegion.setEnabled(false);
-		btnSelectImageRegion.addActionListener((event) -> {
-			if(btnSelectImageRegion.isSelected()) {
-				startSelectRegion(imageRegion, OverlayType.SELECT_IMAGE_REGION);
-			} else {
-				endSelectRegion();
-			}
-		});
-		regionsPanelTest.add(btnSelectImageRegion);
-		
-		JLabel lblActions = new JLabel("Preview Actions");
-		lblActions.setForeground(Color.BLACK);
-		lblActions.setBorder(new EmptyBorder(10, 0, 0, 0));
-		actionPanel.add(lblActions);
-		labels.add(lblActions);
-		
-		btnStartGenerate = new JStyledButton("Start Generate");
-		btnStartGenerate.setMaximumSize(buttonSize);
-		btnStartGenerate.setEnabled(false);
-		btnStartGenerate.setFocusable(false);
-		btnStartGenerate.setOpaque(false);
-		btnStartGenerate.addActionListener((event) -> {
-			if(!gui.borstGenerator.isRunning()) {
-				Rectangle rect = canvasRegion.createIntersection(imageRegion).getBounds();
-				
-				if(!rect.isEmpty()) {
-					Sign signType = gui.getSettingsSign();
-					Color bgColor = gui.getSettingsBackgroundCalculated();
-					
-					BufferedImage clip = new BufferedImage(canvasRegion.width, canvasRegion.height, BufferedImage.TYPE_INT_ARGB);
-					Graphics2D g = clip.createGraphics();
-					g.drawImage(image, imageRegion.x - canvasRegion.x, imageRegion.y - canvasRegion.y, imageRegion.width, imageRegion.height, null);
-					g.dispose();
-					
-					BufferedImage scaled = new BufferedImage(signType.width, signType.height, BufferedImage.TYPE_INT_ARGB);
-					g = scaled.createGraphics();
-					g.setColor(bgColor);
-					g.fillRect(0, 0, scaled.getWidth(), scaled.getHeight());
-					g.drawImage(clip, 0, 0, scaled.getWidth(), scaled.getHeight(), null);
-					g.dispose();
-					
-					BorstSettings settings = gui.borstSettings;
-					settings.Background = bgColor.getRGB();
-					settings.DirectImage = scaled;
-					updateEditor();
-					if(gui.borstGenerator.start()) {
-						shapeRender.createCanvas(scaled.getWidth(), scaled.getHeight(), bgColor.getRGB());
-						
-						action = OverlayType.GENERATE_IMAGE;
-						updateButtons();
-					}
+		{
+			regionsPanel = new JPanel();
+			regionsPanel.setVisible(false);
+			regionsPanel.setOpaque(false);
+			regionsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			actionPanel.add(regionsPanel);
+			regionsPanel.setLayout(new BoxLayout(regionsPanel, BoxLayout.Y_AXIS));
+			
+			JLabel lblRegions = new JLabel("Regions");
+			lblRegions.setBorder(new EmptyBorder(10, 0, 0, 0));
+			lblRegions.setForeground(Color.BLACK);
+			regionsPanel.add(lblRegions);
+			labels.add(lblRegions);
+			
+			btnHideRegions = new JStyledToggleButton("Show Regions");
+			btnHideRegions.setOpaque(false);
+			btnHideRegions.setMaximumSize(new Dimension(120, 24));
+			btnHideRegions.setFocusable(false);
+			btnHideRegions.setSelected(true);
+			btnHideRegions.addActionListener((event) -> setHideRegions(btnHideRegions.isSelected()));
+			regionsPanel.add(btnHideRegions);
+			
+			btnSelectCanvasRegion = new JStyledToggleButton("Canvas Region");
+			btnSelectCanvasRegion.setMaximumSize(buttonSize);
+			btnSelectCanvasRegion.setFocusable(false);
+			btnSelectCanvasRegion.setOpaque(false);
+			btnSelectCanvasRegion.setEnabled(false);
+			btnSelectCanvasRegion.addActionListener((event) -> {
+				if(btnSelectCanvasRegion.isSelected()) {
+					startSelectRegion(canvasRegion, OverlayType.SELECT_CANVAS_REGION);
+				} else {
+					endSelectRegion();
 				}
-				
-				repaint();
-			}
-		});
-		actionPanel.add(btnStartGenerate);
-
-		btnPauseGenerate = new JStyledButton("Pause Generate");
-		btnPauseGenerate.setOpaque(false);
-		btnPauseGenerate.setMaximumSize(buttonSize);
-		btnPauseGenerate.setFocusable(false);
-		btnPauseGenerate.setEnabled(false);
-		btnPauseGenerate.addActionListener((event) -> setPauseGeneration(gui.borstGenerator.isPaused()));
-		actionPanel.add(btnPauseGenerate);
-		
-		btnResetGenerate = new JStyledButton("Reset Generate");
-		btnResetGenerate.setOpaque(false);
-		btnResetGenerate.setMaximumSize(new Dimension(120, 24));
-		btnResetGenerate.setFocusable(false);
-		btnResetGenerate.setEnabled(false);
-		btnResetGenerate.addActionListener((event) -> {
-			if(gui.borstGenerator.isRunning()) {
-				try {
-					gui.borstSettings.DirectImage = null;
-					gui.borstGenerator.stop();
-					modelImage = null;
-				} catch(InterruptedException e) {
-					e.printStackTrace();
+			});
+			regionsPanel.add(btnSelectCanvasRegion);
+			
+			btnSelectImageRegion = new JStyledToggleButton("Image Region");
+			btnSelectImageRegion.setMaximumSize(buttonSize);
+			btnSelectImageRegion.setOpaque(false);
+			btnSelectImageRegion.setFocusable(false);
+			btnSelectImageRegion.setEnabled(false);
+			btnSelectImageRegion.addActionListener((event) -> {
+				if(btnSelectImageRegion.isSelected()) {
+					startSelectRegion(imageRegion, OverlayType.SELECT_IMAGE_REGION);
+				} else {
+					endSelectRegion();
 				}
-				
-				shapeRender.reset();
-				lastData = null;
-				action = OverlayType.NONE;
-				updateButtons();
-				updateEditor();
-				repaint();
-			}
-		});
-		actionPanel.add(btnResetGenerate);
-		
-		JStyledButton btnClose = new JStyledButton("Close");
-		btnClose.setOpaque(false);
-		btnClose.setMaximumSize(buttonSize);
-		btnClose.setFocusable(false);
-		btnClose.addActionListener((event) -> {
-			int dialogResult = JOptionPane.showConfirmDialog(dialog, "Do you want to close the application?", "Warning", JOptionPane.YES_NO_OPTION);
-			if(dialogResult == JOptionPane.YES_OPTION) {
-				System.exit(0);
-			}
-		});
-		actionPanel.add(btnClose);
+			});
+			regionsPanel.add(btnSelectImageRegion);
+		}
 		
 		Dimension textDimension = new Dimension(120, 24);
 		
-		painterPanel = new JPanel();
-		painterPanel.setOpaque(false);
-		painterPanel.setVisible(false);
-		painterPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		actionPanel.add(painterPanel);
-		painterPanel.setLayout(new BoxLayout(painterPanel, BoxLayout.Y_AXIS));
-		
-		JLabel lblPaintImage = new JLabel("Draw");
-		lblPaintImage.setForeground(Color.BLACK);
-		lblPaintImage.setBorder(new EmptyBorder(10, 0, 0, 0));
-		painterPanel.add(lblPaintImage);
-		labels.add(lblPaintImage);
-		
-		btnDrawImage = new JStyledButton("Draw Image");
-		btnDrawImage.setEnabled(false);
-		btnDrawImage.setOpaque(false);
-		btnDrawImage.setMaximumSize(new Dimension(120, 24));
-		btnDrawImage.setFocusable(false);
-		btnDrawImage.addActionListener((event) -> {
-			drawDialog.openDialog(btnDrawImage.getLocationOnScreen());
-			doRenderShapes = false;
-			repaint();
-			updateEditor();
-		});
-		painterPanel.add(btnDrawImage);
-		
-		JPanel panel_1 = new JPanel();
-		panel_1.setOpaque(false);
-		panel_1.setBorder(new EmptyBorder(1, 1, 1, 1));
-		panel_1.setAlignmentX(Component.LEFT_ALIGNMENT);
-		actionPanel.add(panel_1);
-		panel_1.setMaximumSize(textDimension);
-		panel_1.setMinimumSize(textDimension);
-		panel_1.setLayout(new BoxLayout(panel_1, BoxLayout.X_AXIS));
-		
-		JLabel lblHelp = new JLabel("Help");
-		lblHelp.setForeground(Color.BLACK);
-		lblHelp.setBorder(new EmptyBorder(10, 0, 0, 0));
-		panel_1.add(lblHelp);
-		labels.add(lblHelp);
-		
-		JStyledButton btnGithubIssue = new JStyledButton("Report Issue");
-		btnGithubIssue.setOpaque(false);
-		btnGithubIssue.setMaximumSize(new Dimension(120, 24));
-		btnGithubIssue.setFocusable(false);
-		btnGithubIssue.addActionListener((event) -> {
-			gui.openIssueUrl();
-		});
-		actionPanel.add(btnGithubIssue);
-		
-		JStyledButton btnDonate = new JStyledButton("Donate");
-		btnDonate.setOpaque(false);
-		btnDonate.setFocusable(false);
-		btnDonate.setMaximumSize(new Dimension(120, 24));
-		btnDonate.addActionListener((event) -> gui.openDonationUrl());
-		actionPanel.add(btnDonate);
-		
-		JStyledButton btnAbout = new JStyledButton("About");
-		btnAbout.setOpaque(false);
-		btnAbout.setMaximumSize(new Dimension(120, 24));
-		btnAbout.setFocusable(false);
-		btnAbout.addActionListener((event) -> {
-			String message = """
-							 Created by HardCoded & Sekwah41
-							 
-							 HardCoded
-							 - Design
-							 - Sorting algorithm
-							 - Optimized generation
-							 
-							 Sekwah41
-							 - Initial generation
-							 """;
+		{
+			JPanel previewPanel = new JPanel();
+			previewPanel.setOpaque(false);
+			previewPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			actionPanel.add(previewPanel);
+			previewPanel.setLayout(new BoxLayout(previewPanel, BoxLayout.Y_AXIS));
 			
-			JOptionPane.showMessageDialog(dialog, message, "About me", JOptionPane.INFORMATION_MESSAGE);
-		});
-		actionPanel.add(btnAbout);
+			JLabel lblActions = new JLabel("Preview Actions");
+			lblActions.setForeground(Color.BLACK);
+			lblActions.setBorder(new EmptyBorder(10, 0, 0, 0));
+			previewPanel.add(lblActions);
+			labels.add(lblActions);
+			
+			btnStartGenerate = new JStyledButton("Start Generate");
+			btnStartGenerate.setMaximumSize(buttonSize);
+			btnStartGenerate.setEnabled(false);
+			btnStartGenerate.setFocusable(false);
+			btnStartGenerate.setOpaque(false);
+			btnStartGenerate.addActionListener((event) -> {
+				if(!gui.borstGenerator.isRunning()) {
+					Rectangle rect = canvasRegion.createIntersection(imageRegion).getBounds();
+					
+					if(!rect.isEmpty()) {
+						Sign signType = gui.getSettingsSign();
+						Color bgColor = gui.getSettingsBackgroundCalculated();
+						
+						BufferedImage clip = new BufferedImage(canvasRegion.width, canvasRegion.height, BufferedImage.TYPE_INT_ARGB);
+						Graphics2D g = clip.createGraphics();
+						g.drawImage(image, imageRegion.x - canvasRegion.x, imageRegion.y - canvasRegion.y, imageRegion.width, imageRegion.height, null);
+						g.dispose();
+						
+						BufferedImage scaled = new BufferedImage(signType.width, signType.height, BufferedImage.TYPE_INT_ARGB);
+						g = scaled.createGraphics();
+						g.setColor(bgColor);
+						g.fillRect(0, 0, scaled.getWidth(), scaled.getHeight());
+						g.drawImage(clip, 0, 0, scaled.getWidth(), scaled.getHeight(), null);
+						g.dispose();
+						
+						BorstSettings settings = gui.getBorstSettings();
+						settings.Background = bgColor.getRGB();
+						settings.DirectImage = scaled;
+						updateEditor();
+						if(gui.borstGenerator.start()) {
+							shapeRender.createCanvas(scaled.getWidth(), scaled.getHeight(), bgColor.getRGB());
+							
+							action = OverlayType.GENERATE_IMAGE;
+							updateButtons();
+						}
+					}
+					
+					repaint();
+				}
+			});
+			previewPanel.add(btnStartGenerate);
+	
+			btnPauseGenerate = new JStyledButton("Pause Generate");
+			btnPauseGenerate.setOpaque(false);
+			btnPauseGenerate.setMaximumSize(buttonSize);
+			btnPauseGenerate.setFocusable(false);
+			btnPauseGenerate.setEnabled(false);
+			btnPauseGenerate.addActionListener((event) -> setPauseGeneration(gui.borstGenerator.isPaused()));
+			previewPanel.add(btnPauseGenerate);
+			
+			btnResetGenerate = new JStyledButton("Reset Generate");
+			btnResetGenerate.setOpaque(false);
+			btnResetGenerate.setMaximumSize(new Dimension(120, 24));
+			btnResetGenerate.setFocusable(false);
+			btnResetGenerate.setEnabled(false);
+			btnResetGenerate.addActionListener((event) -> {
+				if(gui.borstGenerator.isRunning()) {
+					try {
+						gui.getBorstSettings().DirectImage = null;
+						gui.borstGenerator.stop();
+						modelImage = null;
+					} catch(InterruptedException e) {
+						e.printStackTrace();
+					}
+					
+					shapeRender.reset();
+					lastData = null;
+					action = OverlayType.NONE;
+					updateButtons();
+					updateEditor();
+					repaint();
+				}
+			});
+			previewPanel.add(btnResetGenerate);
+			
+			JStyledButton btnClose = new JStyledButton("Close");
+			btnClose.setOpaque(false);
+			btnClose.setMaximumSize(buttonSize);
+			btnClose.setFocusable(false);
+			btnClose.addActionListener((event) -> {
+				int dialogResult = JOptionPane.showConfirmDialog(dialog, "Do you want to close the application?", "Warning", JOptionPane.YES_NO_OPTION);
+				if(dialogResult == JOptionPane.YES_OPTION) {
+					System.exit(0);
+				}
+			});
+			previewPanel.add(btnClose);
+		}
+		
+		{
+			painterPanel = new JPanel();
+			painterPanel.setOpaque(false);
+			painterPanel.setVisible(false);
+			painterPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			actionPanel.add(painterPanel);
+			painterPanel.setLayout(new BoxLayout(painterPanel, BoxLayout.Y_AXIS));
+			
+			JLabel lblPaintImage = new JLabel("Draw");
+			lblPaintImage.setForeground(Color.BLACK);
+			lblPaintImage.setBorder(new EmptyBorder(10, 0, 0, 0));
+			painterPanel.add(lblPaintImage);
+			labels.add(lblPaintImage);
+			
+			btnDrawImage = new JStyledButton("Draw Image");
+			btnDrawImage.setEnabled(false);
+			btnDrawImage.setOpaque(false);
+			btnDrawImage.setMaximumSize(new Dimension(120, 24));
+			btnDrawImage.setFocusable(false);
+			btnDrawImage.addActionListener((event) -> {
+				drawDialog.openDialog(btnDrawImage.getLocationOnScreen());
+				doRenderShapes = false;
+				repaint();
+				updateEditor();
+			});
+			painterPanel.add(btnDrawImage);
+		}
+		
+		{
+			JPanel helpPanel = new JPanel();
+			helpPanel.setOpaque(false);
+			helpPanel.setBorder(new EmptyBorder(1, 1, 1, 1));
+			helpPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			actionPanel.add(helpPanel);
+			helpPanel.setMaximumSize(textDimension);
+			helpPanel.setMinimumSize(textDimension);
+			helpPanel.setLayout(new BoxLayout(helpPanel, BoxLayout.X_AXIS));
+			
+			JLabel lblHelp = new JLabel("Help");
+			lblHelp.setForeground(Color.BLACK);
+			lblHelp.setBorder(new EmptyBorder(10, 0, 0, 0));
+			helpPanel.add(lblHelp);
+			labels.add(lblHelp);
+			
+			JStyledButton btnGithubIssue = new JStyledButton("Report Issue");
+			btnGithubIssue.setOpaque(false);
+			btnGithubIssue.setMaximumSize(new Dimension(120, 24));
+			btnGithubIssue.setFocusable(false);
+			btnGithubIssue.addActionListener((event) -> UrlUtils.openIssueUrl());
+			actionPanel.add(btnGithubIssue);
+			
+			JStyledButton btnDonate = new JStyledButton("Donate");
+			btnDonate.setOpaque(false);
+			btnDonate.setFocusable(false);
+			btnDonate.setMaximumSize(new Dimension(120, 24));
+			btnDonate.addActionListener((event) -> UrlUtils.openDonationUrl());
+			actionPanel.add(btnDonate);
+			
+			JStyledButton btnAbout = new JStyledButton("About");
+			btnAbout.setOpaque(false);
+			btnAbout.setMaximumSize(new Dimension(120, 24));
+			btnAbout.setFocusable(false);
+			btnAbout.addActionListener((event) -> {
+				String message = "Created by HardCoded & Sekwah41\n" +
+								 "\n" +
+								 "HardCoded\n" +
+								 "- Design\n" +
+								 "- Sorting algorithm\n" +
+								 "- Optimized generation\n" +
+								 "\n" +
+								 "Sekwah41\n" +
+								 "- Initial generation";
+				
+				JOptionPane.showMessageDialog(dialog, message, "About me", JOptionPane.INFORMATION_MESSAGE);
+			});
+			actionPanel.add(btnAbout);
+		}
 		
 		updateEditor();
 	}
@@ -694,7 +705,7 @@ public class BobRustOverlay extends JPanel {
 		
 		// You should only be able to pick monitor the screen is enabled.
 		btnSelectMonitor.setEnabled(defaultAction || isPaused);
-		regionsPanelTest.setVisible(isFullscreen);
+		regionsPanel.setVisible(isFullscreen);
 		painterPanel.setVisible(isFullscreen);
 		
 		btnHideRegions.setEnabled(defaultAction || isPaused);
@@ -771,6 +782,14 @@ public class BobRustOverlay extends JPanel {
 		g.setColor(new Color(0, true));
 		g.fillRect(0, 0, getWidth(), getHeight());
 		
+//		{
+//			g.setColor(gui.getToolbarColor());
+//			Stroke old_stroke = g.getStroke();
+//			g.setStroke(new BasicStroke(6.0f));
+//			g.drawRoundRect(131, 0, getWidth() - 132, getHeight(), 30, 30);
+//			g.setStroke(old_stroke);
+//		}
+		
 		if(!btnHideRegions.isSelected()) {
 			g.setColor(new Color(0x30000000, true));
 			g.fillRect(0, 0, getWidth() - 150, getHeight());
@@ -807,7 +826,7 @@ public class BobRustOverlay extends JPanel {
 			{
 				BufferedImage image = modelImage;
 				if(image != null) {
-					g.setColor(new Color(gui.borstSettings.Background));
+					g.setColor(new Color(gui.getBorstSettings().Background));
 					g.fillRect(canvasRegion.x, canvasRegion.y, canvasRegion.width, canvasRegion.height);
 					g.drawImage(image, canvasRegion.x, canvasRegion.y, canvasRegion.width, canvasRegion.height, null);
 				}
