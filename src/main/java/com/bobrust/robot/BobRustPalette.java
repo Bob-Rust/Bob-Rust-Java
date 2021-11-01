@@ -24,6 +24,43 @@ public class BobRustPalette {
 		colorMap = new HashMap<>();
 	}
 	
+	/**
+	 * Find the palette in the provided screenshot.
+	 * 
+	 * TODO: Make this method more general and work for more inputs.
+	 *       Where the color palette might not even be to the right of the screen.
+	 */
+	public Point findPalette(BufferedImage screenshot) {
+		int screen_width = screenshot.getWidth();
+		int screen_height = screenshot.getHeight();
+		
+		int x = screen_width - 43;
+		
+		Point red_middle = null;
+		for(int i = 0, lastNonRed = 0; i < screen_height; i++) {
+			int red = (screenshot.getRGB(x, i) >> 16) & 0xff;
+
+			if(red < 220) {
+				lastNonRed = i;
+			}
+			
+			if(i - lastNonRed > 40) {
+				// We found the circle probably.
+				red_middle = new Point(x, i - 10);
+				break;
+			}
+		}
+		
+		if(red_middle != null) {
+			// 150x264
+			int point_x = screen_width - 150;
+			int point_y = red_middle.y - 163;
+			return new Point(point_x, point_y);
+		}
+		
+		return null;
+	}
+	
 	public synchronized boolean analyse(JDialog dialog, BufferedImage bi, Point screenLocation, Point screenOffset) {
 		this.panel_offset = new Point(screenOffset.x, screenOffset.y - 152);
 		this.colorMap.clear();
@@ -91,41 +128,53 @@ public class BobRustPalette {
 	public void reset() {
 		colorMap.clear();
 		panel_offset = null;
+		opacityButtons = null;
+		shapeButtons = null;
+		sizeButtons = null;
+		
+		focusPoint = null;
+		saveButton = null;
 	}
 	
 	private Point point(int x, int y) {
 		return new Point(panel_offset.x + x, panel_offset.y + y);
 	}
 	
-	/**
-	 * Returns a spot were the bot can press without changing any state of the game.
-	 */
+	// Returns a spot were the bot can press without changing any state of the game.
+	private Point focusPoint;
 	public Point getFocusPoint() {
-		return point(12, 24);
+		if(focusPoint == null) {
+			focusPoint = point(12, 24);
+		}
+		return focusPoint;
 	}
 	
-	@Deprecated
-	public Point getColorPreview() {
-		// 1704, 1012
-		// -66, 735
-		return point(-66, 735);
-	}
+//	@Deprecated
+//	public Point getColorPreview() {
+//		// 1704, 1012
+//		// -66, 735
+//		return point(-66, 735);
+//	}
 	
-	public Point getClearButton() {
-		return point(55, 24);
-	}
+//	public Point getClearButton() {
+//		return point(55, 24);
+//	}
 	
+	private Point saveButton;
 	public Point getSaveButton() {
-		return point(95, 24);
+		if(saveButton == null) {
+			saveButton = point(95, 24);
+		}
+		return saveButton;
 	}
 	
-	public Point getUpdateButton() {
-		return point(75, 469);
-	}
-	
-	public Point getCancelButton() {
-		return point(75, 505);
-	}
+//	public Point getUpdateButton() {
+//		return point(75, 469);
+//	}
+//	
+//	public Point getCancelButton() {
+//		return point(75, 505);
+//	}
 	
 	public Point getAlphaButton(int index) {
 		Point[] array = getOpacityButtons();
@@ -146,34 +195,46 @@ public class BobRustPalette {
 		return colorMap.get(color);
 	}
 	
+	private Point[] opacityButtons;
 	private Point[] getOpacityButtons() {
-		return new Point[] {
-			point( 22, 138),
-			point( 43, 138),
-			point( 64, 138),
-			point( 85, 138),
-			point(106, 138),
-			point(127, 138),
-		};
+		if(opacityButtons == null) {
+			opacityButtons = new Point[] {
+				point( 22, 138),
+				point( 43, 138),
+				point( 64, 138),
+				point( 85, 138),
+				point(106, 138),
+				point(127, 138),
+			};
+		}
+		return opacityButtons;
 	}
 	
+	private Point[] sizeButtons;
 	private Point[] getSizeButtons() {
-		return new Point[] {
-			point( 25, 62),
-			point( 45, 62),
-			point( 65, 62),
-			point( 85, 62),
-			point(105, 62),
-			point(125, 62),
-		};
+		if(sizeButtons == null) {
+			sizeButtons = new Point[] {
+				point( 25, 62),
+				point( 45, 62),
+				point( 65, 62),
+				point( 85, 62),
+				point(105, 62),
+				point(125, 62),
+			};
+		}
+		return sizeButtons;
 	}
-	
+
+	private Point[] shapeButtons;
 	private Point[] getShapeButtons() {
-		return new Point[] {
-			point( 27, 100), // Soft halo
-			point( 59, 100), // Circle
-			point( 91, 100), // Strong halo
-			point(123, 100), // Square
-		};
+		if(shapeButtons == null) {
+			shapeButtons = new Point[] {
+				point( 27, 100), // Soft halo
+				point( 59, 100), // Circle
+				point( 91, 100), // Strong halo
+				point(123, 100), // Square
+			};
+		}
+		return shapeButtons;
 	}
 }

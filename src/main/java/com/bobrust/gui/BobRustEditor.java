@@ -1,11 +1,7 @@
 package com.bobrust.gui;
 
 import java.awt.Color;
-import java.awt.Desktop;
-import java.io.*;
-import java.net.URI;
-import java.util.Objects;
-import java.util.Properties;
+import java.io.File;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -15,10 +11,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import com.bobrust.generator.BorstGenerator;
 import com.bobrust.generator.BorstGenerator.BorstData;
 import com.bobrust.generator.BorstGenerator.BorstGeneratorBuilder;
-import com.bobrust.generator.BorstSettings;
+import com.bobrust.settings.RustSettingsImpl;
+import com.bobrust.settings.Settings;
 
-public class BobRustEditor {
-	private static final File CONFIG_FILE = new File(System.getProperty("user.home"), "bobrust.properties");
+public class BobRustEditor extends RustSettingsImpl {
 	private BobRustOverlay overlayDialog;
 	
 	private JFileChooser fileChooser;
@@ -26,42 +22,17 @@ public class BobRustEditor {
 	@SuppressWarnings("unused")
 	private FileFilter filterPresets;
 	
-	final BorstSettings borstSettings;
 	final BorstGenerator borstGenerator;
 	
-	
-	// Editor configurations
-	private Color toolbarColor = Color.white;
-	private Color borderColor = Color.lightGray;
-	private Color labelColor = Color.black;
-	private String imagePath = System.getProperty("user.home");
-	private String presetPath = System.getProperty("user.home");
-	
-	// Generator configuration
-	private Color settingsBackground = BobRustConstants.CANVAS_AVERAGE;
-	private Sign settingsSign;
-	private int clickInterval = 30;
-	private int autosaveInterval = 1000;
-	
-	// Properties
-	private final Properties properties;
-	private boolean allowSaving;
-	
 	public BobRustEditor() {
-		this.properties = new Properties();
-		this.borstSettings = new BorstSettings();
 		this.borstGenerator = new BorstGeneratorBuilder()
 			.setCallback(this::onBorstCallback)
-			.setSettings(borstSettings)
+			.setSettings(getBorstSettings())
 			.create();
 		this.loadSettings();
 		SwingUtilities.invokeLater(this::setup);
 	}
 	
-	/**
-	 * This method should be called on the swing thread.
-	 * @wbp.parser.entryPoint
-	 */
 	private void setup() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -71,7 +42,7 @@ public class BobRustEditor {
 		
 		fileChooser = new JFileChooser();
 		fileChooser.setMultiSelectionEnabled(false);
-		fileChooser.setCurrentDirectory(new File(imagePath));
+		fileChooser.setCurrentDirectory(new File(getEditorImageDirectory()));
 		filterImages = new FileNameExtensionFilter("Image Files", ImageIO.getReaderFileSuffixes());
 		filterPresets = new FileNameExtensionFilter("Preset Files", "borst");
 		
@@ -98,217 +69,17 @@ public class BobRustEditor {
 		throw new UnsupportedOperationException();
 	}
 	
-	private boolean openUrl(String url) {
-		Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-		if(desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
-			try {
-				desktop.browse(new URI(url));
-				return true;
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
-		
-		return false;
-	}
-	
-	public boolean openIssueUrl() {
-		return openUrl("https://github.com/Bob-Rust/Bob-Rust-Java/issues/new");
-	}
-	
-	public boolean openDonationUrl() {
-		return openUrl("https://ko-fi.com/hard_coded");
-	}
-	
 	public void onBorstCallback(BorstData data) {
 		overlayDialog.onBorstCallback(data);
 	}
 	
-	private void loadSettings() {
-		if(!CONFIG_FILE.exists()) {
-			try {
-				CONFIG_FILE.createNewFile();
-			} catch(IOException e1) {
-				e1.printStackTrace();
-			}
-		}
-		
-		try(FileInputStream stream = new FileInputStream(CONFIG_FILE)) {
-			properties.load(stream);
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-		
-		Integer borderColor = getSettingInteger("editor.bordercolor");
-		setBorderColor(borderColor == null ? null:new Color(borderColor));
-		
-		Integer toolbarColor = getSettingInteger("editor.toolbarcolor");
-		setToolbarColor(toolbarColor == null ? null:new Color(toolbarColor));
-		
-		Integer labelColor = getSettingInteger("editor.labelcolor");
-		setLabelColor(labelColor == null ? null:new Color(labelColor));
-		
-		setEditorImageDirectory(properties.getProperty("editor.imagepath"));
-		setEditorPresetDirectory(properties.getProperty("editor.presetpath"));
-		
-		Integer settingsAlpha = getSettingInteger("settings.alpha");
-		setSettingsAlpha(settingsAlpha == null ? borstSettings.Alpha:settingsAlpha);
-		
-		Integer settingsMaxShapes = getSettingInteger("settings.maxshapes");
-		setSettingsMaxShapes(settingsMaxShapes == null ? borstSettings.MaxShapes:settingsMaxShapes);
-		
-		Integer settingsCallbackInterval = getSettingInteger("settings.callbackinterval");
-		setSettingsCallbackInterval(settingsCallbackInterval == null ? borstSettings.CallbackInterval:settingsCallbackInterval);
-		
-		String settingsSigntype = properties.getProperty("settings.signtype");
-		setSettingsSign(RustSigns.SIGNS.get(settingsSigntype));
-		
-		Integer settingsBackground = getSettingInteger("settings.background");
-		setSettingsBackground(settingsBackground == null ? null:new Color(settingsBackground));
-		
-		Integer clickInterval = getSettingInteger("settings.clickinterval");
-		setSettingsClickInterval(clickInterval == null ? 30:clickInterval);
-		
-		Integer autosaveInterval = getSettingInteger("settings.autosaveinterval");
-		setSettingsAutosaveInterval(autosaveInterval == null ? 1000:autosaveInterval);
-		
-		allowSaving = true;
-		saveSettings();
-	}
-	
-	private Integer getSettingInteger(String name) {
-		try {
-			return Integer.valueOf(properties.getProperty(name));
-		} catch(NumberFormatException e) {
-			return null;
-		}
-	}
-	
-	private void saveSettings() {
-		if(!allowSaving) return;
-		
-		try(FileOutputStream stream = new FileOutputStream(CONFIG_FILE)) {
-			properties.store(stream, "");
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void setProperty(String key, Object value) {
-		properties.setProperty(key, Objects.toString(value));
-		saveSettings();
+	@Override
+	protected void setProperty(Settings key, Object value) {
+		super.setProperty(key, value);
 		
 		if(overlayDialog != null) {
 			overlayDialog.updateEditor();
 		}
-	}
-	
-	protected void setBorderColor(Color color) {
-		borderColor = color == null ? new Color(0xff3333):color;
-		setProperty("editor.bordercolor", borderColor.getRGB());
-	}
-	
-	protected void setToolbarColor(Color color) {
-		toolbarColor = color == null ? new Color(0x4f4033):color;
-		setProperty("editor.toolbarcolor", toolbarColor.getRGB());
-	}
-	
-	protected void setLabelColor(Color color) {
-		labelColor = color == null ? Color.white:color;
-		setProperty("editor.labelcolor", labelColor.getRGB());
-	}
-	
-	protected void setEditorImageDirectory(String pathname) {
-		imagePath = pathname == null ? System.getProperty("user.home"):pathname;
-		setProperty("editor.imagepath", imagePath);
-	}
-	
-	protected void setEditorPresetDirectory(String pathname) {
-		presetPath = pathname == null ? System.getProperty("user.home"):pathname;
-		setProperty("editor.presetpath", presetPath);
-	}
-	
-	protected void setSettingsAlpha(int alpha) {
-		borstSettings.Alpha = alpha;
-		setProperty("settings.alpha", alpha);
-	}
-	
-	protected void setSettingsMaxShapes(int maxShapes) {
-		borstSettings.MaxShapes = maxShapes;
-		setProperty("settings.maxshapes", maxShapes);
-	}
-	
-	protected void setSettingsCallbackInterval(int callbackInterval) {
-		borstSettings.CallbackInterval = callbackInterval;
-		setProperty("settings.callbackinterval", callbackInterval);
-	}
-	
-	protected void setSettingsSign(Sign sign) {
-		settingsSign = sign == null ? RustSigns.FIRST:sign;
-		setProperty("settings.signtype", settingsSign.name);
-	}
-	
-	protected void setSettingsBackground(Color color) {
-		settingsBackground = color;
-		setProperty("settings.background", color == null ? null:color.getRGB());
-	}
-	
-	protected void setSettingsClickInterval(int interval) {
-		clickInterval = interval;
-		setProperty("settings.clickinterval", clickInterval);
-	}
-	
-	protected void setSettingsAutosaveInterval(int interval) {
-		autosaveInterval = interval;
-		setProperty("settings.autosaveinterval", autosaveInterval);
-	}
-	
-	protected Color getBorderColor() {
-		return Objects.requireNonNull(borderColor);
-	}
-	
-	protected Color getToolbarColor() {
-		return Objects.requireNonNull(toolbarColor);
-	}
-	
-	protected Color getLabelColor() {
-		return Objects.requireNonNull(labelColor);
-	}
-	
-	protected String getEditorImageDirectory() {
-		return Objects.requireNonNull(imagePath);
-	}
-	
-	protected String getEditorPresetDirectory() {
-		return Objects.requireNonNull(presetPath);
-	}
-	
-	public int getSettingsAlpha() {
-		return borstSettings.Alpha;
-	}
-	
-	public int getSettingsMaxShapes() {
-		return borstSettings.MaxShapes;
-	}
-	
-	public int getSettingsCallbackInterval() {
-		return borstSettings.CallbackInterval;
-	}
-	
-	public int getSettingsAutosaveInterval() {
-		return autosaveInterval;
-	}
-	
-	public Color getSettingsBackground() {
-		return settingsBackground;
-	}
-	
-	public Sign getSettingsSign() {
-		return Objects.requireNonNull(settingsSign);
-	}
-	
-	public int getSettingsClickInterval() {
-		return clickInterval;
 	}
 	
 	protected Color getSettingsBackgroundCalculated() {

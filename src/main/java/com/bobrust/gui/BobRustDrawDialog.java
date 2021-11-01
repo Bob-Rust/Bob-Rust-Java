@@ -14,7 +14,8 @@ import com.bobrust.gui.comp.JIntegerField;
 import com.bobrust.logging.LogUtils;
 import com.bobrust.robot.BobRustPainter;
 import com.bobrust.robot.BobRustPalette;
-import com.bobrust.util.BobRustUtil;
+import com.bobrust.util.RustUtil;
+import com.bobrust.util.UrlUtils;
 
 public class BobRustDrawDialog {
 	private static final Dimension REGULAR = new Dimension(320, 240);
@@ -129,9 +130,9 @@ public class BobRustDrawDialog {
 		btnCalculateExactTime.addActionListener((event) -> {
 			int count = maxShapesField.getNumberValue();
 			
-			BlobList list = BobRustUtil.convertToList(overlay.getBorstData().getModel(), count);
+			BlobList list = RustUtil.convertToList(overlay.getBorstData().getModel(), count);
 			list = BorstSorter.sort(list);
-			int after = BobRustUtil.getScore(list);
+			int after = RustUtil.getScore(list);
 			
 			int totalClicks = after + count;
 			
@@ -169,7 +170,7 @@ public class BobRustDrawDialog {
 					overlay.setHideRegions(true);
 					
 					int count = maxShapesField.getNumberValue();
-					BlobList list = BorstSorter.sort(BobRustUtil.convertToList(overlay.getBorstData().getModel(), count));
+					BlobList list = BorstSorter.sort(RustUtil.convertToList(overlay.getBorstData().getModel(), count));
 					if(!rustPainter.startDrawing(list)) {
 						LogUtils.warn("The user stoped the drawing process early");
 					}
@@ -195,51 +196,34 @@ public class BobRustDrawDialog {
 		pane.setOpaque(false);
 		pane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 		pane.setText(
-			"""
-			Could not find the color palette.<br>
-			If you think this is a bug please take a screenshot and create a new issue on the github.<br>
-			<a href="#blank">https://github.com/Bob-Rust/Bob-Rust-Java/issues/new</a>
-			"""
+			"Could not find the color palette.<br>" +
+			"If you think this is a bug please take a screenshot and create a new issue on the github.<br>" +
+			"<a href=\"#blank\">https://github.com/Bob-Rust/Bob-Rust-Java/issues/new</a>"
 		);
 		pane.addHyperlinkListener((e) -> {
 			if(e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
-				gui.openIssueUrl();
+				UrlUtils.openIssueUrl();
 			}
 		});
 		JOptionPane.showConfirmDialog(dialog, pane, "Could not find the palette", JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
 	}
 	
-	// TODO: Refine this method to check for the color palette on the screen.
 	private boolean findColorPalette() {
+		// The bounds of the screen.
 		Rectangle screen = overlay.dialog.getBounds();
 		
 		// Check for bright red on the edge of the screen.
 		try {
 			BufferedImage screenshot = new Robot().createScreenCapture(screen);
-			int x = screen.width - 43;
+			Point paletteLocation = rustPalette.findPalette(screenshot);
 			
-			Point red_middle = null;
-			for(int i = 0, lastNonRed = 0; i < screen.height; i++) {
-				int red = (screenshot.getRGB(x, i) >> 16) & 0xff;
-
-				if(red < 220) {
-					lastNonRed = i;
-				}
+			if(paletteLocation != null) {
+				overlay.colorRegion.setLocation(paletteLocation.x, paletteLocation.y + 132 + 100);
+				Point paletteScreenLocation = new Point(screen.x + paletteLocation.x, screen.y + paletteLocation.y);
 				
-				if(i - lastNonRed > 40) {
-					// We found the circle probably.
-					red_middle = new Point(x, i - 10);
-					break;
-				}
-			}
-			
-			if(red_middle != null) {
-				// 150x264
-				overlay.colorRegion.setLocation(screen.width - 150, red_middle.y - 163 + 132 + 100);
-				
-				if(rustPalette.analyse(dialog, screenshot, screen.getLocation(), new Point(screen.x + screen.width - 150, screen.y + red_middle.y - 163))) {
+				if(rustPalette.analyse(dialog, screenshot, screen.getLocation(), paletteScreenLocation)) {
 					// Found the palette.
-					LogUtils.info("Found the color palette (%d, %d)", red_middle.x, red_middle.y);
+					LogUtils.info("Found the color palette (%d, %d)", paletteScreenLocation.x, paletteScreenLocation.y);
 					overlay.repaint();
 					return true;
 				}

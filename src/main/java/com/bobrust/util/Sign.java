@@ -1,4 +1,4 @@
-package com.bobrust.gui;
+package com.bobrust.util;
 
 import java.awt.Color;
 

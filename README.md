@@ -11,6 +11,10 @@ HardCoded
 Sekwah41
 * Generation
 
+# Can I get banned?
+We have reached out to the Rust team and they told us that our application is ok.
+We are still waiting for a response from the EAC team.
+
 # Usage
 Work in progress...
 

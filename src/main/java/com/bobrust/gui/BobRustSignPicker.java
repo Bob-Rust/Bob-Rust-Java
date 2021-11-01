@@ -12,6 +12,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import com.bobrust.gui.comp.JStyledToggleButton;
+import com.bobrust.util.RustSigns;
+import com.bobrust.util.Sign;
 
 public class BobRustSignPicker {
 	private final JDialog dialog;

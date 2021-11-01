@@ -9,8 +9,8 @@ import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.BobRustOverlay;
-import com.bobrust.gui.Sign;
-import com.bobrust.util.BobRustUtil;
+import com.bobrust.util.RustUtil;
+import com.bobrust.util.Sign;
 
 public class BobRustPainter {
 	// This is the index of the circle shape.
@@ -21,6 +21,7 @@ public class BobRustPainter {
 	private final BobRustEditor gui;
 	private final BobRustOverlay overlay;
 	private final BobRustPalette palette;
+	private volatile int clickIndex;
 	
 	public BobRustPainter(BobRustEditor gui, BobRustOverlay overlay, BobRustPalette palette) {
 		this.gui = gui;
@@ -38,91 +39,162 @@ public class BobRustPainter {
 		int clickInterval = gui.getSettingsClickInterval();
 		int alphaSetting = gui.getSettingsAlpha();
 		int shapeSetting = CIRCLE_SHAPE;
-		int ms_delay = (int)(1000.0 / clickInterval);
-		int ms_auto_delay = (int)(1000.0 / (clickInterval * 3));
+		int delayPerCycle = (int)(1000.0 / clickInterval);
+		double autoDelay = 1000.0 / (clickInterval * 3.0);
 		int autosaveInterval = gui.getSettingsAutosaveInterval();
 		
+		this.clickIndex = 0;
+		
 		// Configure the robot.
-		robot.setAutoDelay(ms_auto_delay);
+		robot.setAutoDelay(0);
 		List<Blob> blobList = list.getList();
 		int count = blobList.size();
 		
 		// Calculate the total amount of presses needed.
-		int score = BobRustUtil.getScore(list) + count;
+		// For each autosave press there is one more click.
+		int score = RustUtil.getScore(list) + count + (count / (autosaveInterval < 1 ? 1:autosaveInterval));
 		
 		{
 			// Make sure that we have selected the game.
-			clickPoint(robot, palette.getFocusPoint(), 4);
+			clickPoint(robot, palette.getFocusPoint(), 4, autoDelay);
 			
 			// Make sure that we have selected the correct alpha.
-			clickPoint(robot, palette.getAlphaButton(alphaSetting), 4);
+			clickPoint(robot, palette.getAlphaButton(alphaSetting), 4, autoDelay);
 			
 			// Make sure that we have selected the correct shape.
-			clickPoint(robot, palette.getShapeButton(shapeSetting), 4);
+			clickPoint(robot, palette.getShapeButton(shapeSetting), 4, autoDelay);
 		}
 		
-		// Last fields.
-		int lastColor = -1;
-		int lastSize = -1;
-		for(int i = 0, l = 1; i < count; i++, l++) {
-			Blob blob = blobList.get(i);
-			
-			// Change the size.
-			if(lastSize != blob.sizeIndex) {
-				clickPoint(robot, palette.getSizeButton(blob.sizeIndex));
-				lastSize = blob.sizeIndex;
-				l++;
+		// We create an update thread because repainting graphics
+		// could be an expensive operation. And because we only need
+		// the current thread to click on the screen we want to minimize
+		// the amount of noise that rendering components could generate.
+		Thread guiUpdateThread = new Thread(() -> {
+			long start = System.nanoTime();
+			int msDelay = delayPerCycle;
+			while(true) {
+				try {
+					Thread.sleep(50);
+				} catch(InterruptedException e) {
+					// Make sure we keep the interupted status.
+					Thread.currentThread().interrupt();
+					break;
+				}
+				
+				if(clickIndex > 0) {
+					long time = System.nanoTime() - start;
+					msDelay = (int)((time / 1000000.0) / (double)clickIndex);
+				}
+				
+				overlay.setRemainingTime(clickIndex, score, msDelay * (score - clickIndex));
+				overlay.repaint();
 			}
-			
-			// Change the color.
-			if(lastColor != blob.colorIndex) {
-				clickPoint(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)));
-				lastColor = blob.colorIndex;
-				l++;
+		}, "Drawing Update Thread");
+		guiUpdateThread.setDaemon(true);
+		guiUpdateThread.start();
+		
+		try {
+			// Last fields.
+			Point lastPoint = new Point(0, 0);
+			int lastColor = -1;
+			int lastSize = -1;
+			for(int i = 0, l = 1; i < count; i++, l++) {
+				Blob blob = blobList.get(i);
+				
+				// Change the size.
+				if(lastSize != blob.sizeIndex) {
+					clickPoint(robot, palette.getSizeButton(blob.sizeIndex), autoDelay);
+					lastSize = blob.sizeIndex;
+					l++;
+				}
+				
+				// Change the color.
+				if(lastColor != blob.colorIndex) {
+					clickPoint(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), autoDelay);
+					lastColor = blob.colorIndex;
+					l++;
+				}
+				
+				double dx = blob.x / (double)signType.width;
+				double dy = blob.y / (double)signType.height;
+				double tx = dx * canvas.width + canvas.x;
+				double ty = dy * canvas.height + canvas.y;
+				int sx = (int)tx + screen.x;
+				int sy = (int)ty + screen.y;
+				
+				lastPoint.setLocation(sx, sy);
+				clickPoint(robot, lastPoint, autoDelay);
+				
+				if((i % autosaveInterval) == 0) {
+					clickPoint(robot, palette.getSaveButton(), autoDelay);
+					l++;
+				}
+				
+				this.clickIndex = l;
 			}
+
+			this.clickIndex = score;
 			
-			double dx = blob.x / (double)signType.width;
-			double dy = blob.y / (double)signType.height;
+			// Make sure that we save the painting.
+			{
+				clickPoint(robot, palette.getSaveButton(), 4, autoDelay);
+			}
+		} finally {
+			// Interupt the update thread and join.
+			guiUpdateThread.interrupt();
+			guiUpdateThread.join();
 			
-			double tx = dx * canvas.width + canvas.x;
-			double ty = dy * canvas.height + canvas.y;
-			
-			int sx = (int)tx + screen.x;
-			int sy = (int)ty + screen.y;
-			
-			clickPoint(robot, new Point(sx, sy));
-			
-			overlay.setRemainingTime(l, score, ms_delay * (count - i));
+			// Make sure we update the remaining time.
+			overlay.setRemainingTime(clickIndex, score, 0);
 			overlay.repaint();
-			
-			if((i % autosaveInterval) == 0) {
-				clickPoint(robot, palette.getSaveButton());
-			}
-		}
-		
-		// Make sure that we save the painting.
-		{
-			clickPoint(robot, palette.getSaveButton(), 4);
 		}
 		
 		return true;
 	}
 	
-	private void clickPoint(Robot robot, Point point) {
+	private void clickPoint(Robot robot, Point point, int times, double delay) {
+		for(int i = 0; i < times; i++) {
+			clickPoint(robot, point, delay);
+		}
+	}
+	
+	private void clickPoint(Robot robot, Point point, double delay) {
+		double time = System.nanoTime() / 1000000.0;
+		
 		robot.mouseMove(point.x, point.y);
+		addTimeDelay(time + delay);
+		
 		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+		addTimeDelay(time + delay * 2.0);
+		
 		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+		addTimeDelay(time + delay * 3.0);
 		
 		double distance = point.distance(MouseInfo.getPointerInfo().getLocation());
 		if(distance > MAXIMUM_DISPLACEMENT) {
 			throw new IllegalStateException("Mouse moved during the operation");
 		}
+		
+		//time = (System.nanoTime() / 1000000.0) - time;
+		//System.out.printf("Time: took %.4f, wanted: %.4f\n", time, delay * 3.0);
 	}
 	
-	private void clickPoint(Robot robot, Point point, int times) {
-		for(int i = 0; i < times; i++) {
-			clickPoint(robot, point);
+	/**
+	 * This method is used to provide a more accurate timing than {@code Robot.setAutoDelay}.
+	 */
+	private void addTimeDelay(double expected) {
+		double time = expected - (System.nanoTime() / 1000000.0);
+		if(time < 0) return;
+		
+		long millis = (long)time;
+		int nanos = (int)((time - millis) * 10000000);
+		if(nanos > 999999) nanos = 999999;
+		if(nanos < 0) nanos = 0;
+		
+		try {
+			Thread.sleep(millis, nanos);
+		} catch(final InterruptedException ignored) {
+			Thread.currentThread().interrupt();
 		}
 	}
-	
 }

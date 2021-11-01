@@ -10,7 +10,7 @@ import com.bobrust.gui.comp.JIntegerField;
 import com.bobrust.logging.LogUtils;
 import javax.swing.border.TitledBorder;
 
-public class BobRustSettings {
+public class BobRustSettingsDialog {
 	private final BobRustEditor gui;
 	private final BobRustSignPicker signPicker;
 	private final BobRustColorPicker colorPicker;
@@ -22,7 +22,7 @@ public class BobRustSettings {
 	private final JIntegerField clickIntervalField;
 	private final JIntegerField autosaveIntervalField;
 	
-	public BobRustSettings(BobRustEditor gui, JDialog parent) {
+	public BobRustSettingsDialog(BobRustEditor gui, JDialog parent) {
 		this.gui = gui;
 		this.dialog = new JDialog(parent, "Settings", ModalityType.APPLICATION_MODAL);
 		this.signPicker = new BobRustSignPicker(gui, dialog);
@@ -333,6 +333,14 @@ public class BobRustSettings {
 	}
 	
 	public void openDialog(Point point) {
+		// Update the fields to correctly show the settings.
+		clickIntervalField.setText(Integer.toString(gui.getSettingsClickInterval()));
+		callbackIntervalField.setText(Integer.toString(gui.getSettingsCallbackInterval()));
+		maxShapesField.setText(Integer.toString(gui.getSettingsMaxShapes()));
+		autosaveIntervalField.setText(Integer.toString(gui.getSettingsAutosaveInterval()));
+		alphaCombobox.setSelectedIndex(gui.getSettingsAlpha());
+		
+		// Show the dialog.
 		dialog.setLocation(point);
 		dialog.setVisible(true);
 		
