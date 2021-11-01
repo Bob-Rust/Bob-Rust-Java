@@ -6,7 +6,7 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'application'
-    id 'edu.sc.seis.launch4j' version '2.5.1'
+    id "org.panteleyev.jpackageplugin" version "1.3.1"
 }
 
 repositories {
@@ -25,9 +25,34 @@ application {
     mainClass = 'com.bobrust.main.Main'
 }
 
-launch4j {
-    headerType="gui"
-    outfile = "BobRust.exe"
-    mainClassName = 'com.bobrust.main.Main'
+task clearDist {
+    doLast {
+        println "Cleaning dist"
+        project.delete(files("${buildDir}/distributions"))
+    }
+}
+
+/**
+ * https://github.com/petr-panteleyev/jpackage-gradle-plugin
+ * This may take a bit
+ */
+tasks.jpackage {
+    dependsOn("clearDist")
+    dependsOn("build")
+
+    appName = "Bob Rust"
+    type = "EXE"
+    input  = "$buildDir/$libsDirName"
+    destination = "$buildDir/$distsDirName"
+    mainClass = "com.bobrust.main.Main"
     icon = "${projectDir}/src/main/resources/icons/icon.ico"
+
+    mainJar = jar.archiveFileName.get()
+
+    windows {
+        winMenu = true
+        winDirChooser = true
+        winUpgradeUuid = "2a3ea308-884a-4d37-81ce-9899b022d9ef"
+        icon = "${projectDir}/src/main/resources/icons/icon.ico"
+    }
 }
