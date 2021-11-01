@@ -128,41 +128,53 @@ public class BobRustPalette {
 	public void reset() {
 		colorMap.clear();
 		panel_offset = null;
+		opacityButtons = null;
+		shapeButtons = null;
+		sizeButtons = null;
+		
+		focusPoint = null;
+		saveButton = null;
 	}
 	
 	private Point point(int x, int y) {
 		return new Point(panel_offset.x + x, panel_offset.y + y);
 	}
 	
-	/**
-	 * Returns a spot were the bot can press without changing any state of the game.
-	 */
+	// Returns a spot were the bot can press without changing any state of the game.
+	private Point focusPoint;
 	public Point getFocusPoint() {
-		return point(12, 24);
+		if(focusPoint == null) {
+			focusPoint = point(12, 24);
+		}
+		return focusPoint;
 	}
 	
-	@Deprecated
-	public Point getColorPreview() {
-		// 1704, 1012
-		// -66, 735
-		return point(-66, 735);
-	}
+//	@Deprecated
+//	public Point getColorPreview() {
+//		// 1704, 1012
+//		// -66, 735
+//		return point(-66, 735);
+//	}
 	
-	public Point getClearButton() {
-		return point(55, 24);
-	}
+//	public Point getClearButton() {
+//		return point(55, 24);
+//	}
 	
+	private Point saveButton;
 	public Point getSaveButton() {
-		return point(95, 24);
+		if(saveButton == null) {
+			saveButton = point(95, 24);
+		}
+		return saveButton;
 	}
 	
-	public Point getUpdateButton() {
-		return point(75, 469);
-	}
-	
-	public Point getCancelButton() {
-		return point(75, 505);
-	}
+//	public Point getUpdateButton() {
+//		return point(75, 469);
+//	}
+//	
+//	public Point getCancelButton() {
+//		return point(75, 505);
+//	}
 	
 	public Point getAlphaButton(int index) {
 		Point[] array = getOpacityButtons();
@@ -183,34 +195,46 @@ public class BobRustPalette {
 		return colorMap.get(color);
 	}
 	
+	private Point[] opacityButtons;
 	private Point[] getOpacityButtons() {
-		return new Point[] {
-			point( 22, 138),
-			point( 43, 138),
-			point( 64, 138),
-			point( 85, 138),
-			point(106, 138),
-			point(127, 138),
-		};
+		if(opacityButtons == null) {
+			opacityButtons = new Point[] {
+				point( 22, 138),
+				point( 43, 138),
+				point( 64, 138),
+				point( 85, 138),
+				point(106, 138),
+				point(127, 138),
+			};
+		}
+		return opacityButtons;
 	}
 	
+	private Point[] sizeButtons;
 	private Point[] getSizeButtons() {
-		return new Point[] {
-			point( 25, 62),
-			point( 45, 62),
-			point( 65, 62),
-			point( 85, 62),
-			point(105, 62),
-			point(125, 62),
-		};
+		if(sizeButtons == null) {
+			sizeButtons = new Point[] {
+				point( 25, 62),
+				point( 45, 62),
+				point( 65, 62),
+				point( 85, 62),
+				point(105, 62),
+				point(125, 62),
+			};
+		}
+		return sizeButtons;
 	}
-	
+
+	private Point[] shapeButtons;
 	private Point[] getShapeButtons() {
-		return new Point[] {
-			point( 27, 100), // Soft halo
-			point( 59, 100), // Circle
-			point( 91, 100), // Strong halo
-			point(123, 100), // Square
-		};
+		if(shapeButtons == null) {
+			shapeButtons = new Point[] {
+				point( 27, 100), // Soft halo
+				point( 59, 100), // Circle
+				point( 91, 100), // Strong halo
+				point(123, 100), // Square
+			};
+		}
+		return shapeButtons;
 	}
 }

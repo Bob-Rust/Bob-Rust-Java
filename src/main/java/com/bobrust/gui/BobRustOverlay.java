@@ -37,6 +37,7 @@ public class BobRustOverlay extends JPanel {
 	private static final Dimension DEFAULT_DIALOG_SIZE = new Dimension(146, 376);
 	private static final int RECTANGLE_SELECTION_SIZE = 10;
 	private static final int SHAPE_CACHE_INTERVAL = 500;
+	private static final int ESTIMATE_DELAY_OFFSET = 14;
 	private static final int BORDER_SIZE = 3;
 	
 	public final JDialog dialog;
@@ -687,7 +688,8 @@ public class BobRustOverlay extends JPanel {
 	
 	protected void setEstimatedGenerationLabel(int index, int maxShapes) {
 		generationLabel.setText("%d/%d shapes generated".formatted(index, maxShapes));
-		generationInfo.setText("Estimated %s".formatted(RustTranslator.getTimeMinutesMessage((long)(index * 1.1 * (1000.0 / (double)gui.getSettingsClickInterval())))));
+		long time = (long)(index * 1.1 * (ESTIMATE_DELAY_OFFSET + 1000.0 / (double)gui.getSettingsClickInterval()));
+		generationInfo.setText("Estimated %s".formatted(RustTranslator.getTimeMinutesMessage(time)));
 	}
 	
 	protected void setExactGenerationLabel(long time) {
