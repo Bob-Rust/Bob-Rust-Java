@@ -25,6 +25,7 @@ import com.bobrust.gui.comp.JStyledToggleButton;
 import com.bobrust.lang.RustTranslator;
 import com.bobrust.logging.LogUtils;
 import com.bobrust.robot.BobRustPalette;
+import com.bobrust.util.Sign;
 import com.bobrust.util.UrlUtils;
 
 /**

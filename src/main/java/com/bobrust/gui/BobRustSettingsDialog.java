@@ -333,6 +333,14 @@ public class BobRustSettingsDialog {
 	}
 	
 	public void openDialog(Point point) {
+		// Update the fields to correctly show the settings.
+		clickIntervalField.setText(Integer.toString(gui.getSettingsClickInterval()));
+		callbackIntervalField.setText(Integer.toString(gui.getSettingsCallbackInterval()));
+		maxShapesField.setText(Integer.toString(gui.getSettingsMaxShapes()));
+		autosaveIntervalField.setText(Integer.toString(gui.getSettingsAutosaveInterval()));
+		alphaCombobox.setSelectedIndex(gui.getSettingsAlpha());
+		
+		// Show the dialog.
 		dialog.setLocation(point);
 		dialog.setVisible(true);
 		

@@ -7,6 +7,9 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+
+import com.bobrust.util.RustConstants;
+
 import javax.swing.border.EmptyBorder;
 
 public class BobRustColorPicker {
@@ -61,7 +64,7 @@ public class BobRustColorPicker {
 				
 				int cx = x * 31 + 15 + 12;
 				int cy = y * 30 + 15 + 12;
-				selectedColor = new Color(BobRustConstants.COLOR_PALETTE.getRGB(cx, cy));
+				selectedColor = new Color(RustConstants.COLOR_PALETTE.getRGB(cx, cy));
 				colorLabel.setBackground(selectedColor);
 			}
 		});
@@ -74,7 +77,7 @@ public class BobRustColorPicker {
 		
 		JLabel lblNewLabel = new JLabel("");
 		lblNewLabel.setBorder(null);
-		lblNewLabel.setIcon(new ImageIcon(BobRustConstants.COLOR_PALETTE));
+		lblNewLabel.setIcon(new ImageIcon(RustConstants.COLOR_PALETTE));
 		panel.add(lblNewLabel);
 		
 		JButton btnCustomColor = new JButton("Custom");

@@ -9,8 +9,8 @@ import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.BobRustOverlay;
-import com.bobrust.gui.Sign;
-import com.bobrust.util.BobRustUtil;
+import com.bobrust.util.RustUtil;
+import com.bobrust.util.Sign;
 
 public class BobRustPainter {
 	// This is the index of the circle shape.
@@ -52,7 +52,7 @@ public class BobRustPainter {
 		
 		// Calculate the total amount of presses needed.
 		// For each autosave press there is one more click.
-		int score = BobRustUtil.getScore(list) + count + (count / (autosaveInterval < 1 ? 1:autosaveInterval));
+		int score = RustUtil.getScore(list) + count + (count / (autosaveInterval < 1 ? 1:autosaveInterval));
 		
 		{
 			// Make sure that we have selected the game.
@@ -65,17 +65,13 @@ public class BobRustPainter {
 			clickPoint(robot, palette.getShapeButton(shapeSetting), 4, autoDelay);
 		}
 		
-//		{
-//			long time = System.nanoTime();
-//			for(int i = 0; i < 10000; i++) {
-//				Point p = MouseInfo.getPointerInfo().getLocation();
-//			}
-//			time = System.nanoTime() - time;
-//			System.out.printf("Took: %.4f ms\n", (time / 10000.0) / 1000000.0);
-//		}
-		
+		// We create an update thread because repainting graphics
+		// could be an expensive operation. And because we only need
+		// the current thread to click on the screen we want to minimize
+		// the amount of noise that rendering components could generate.
 		Thread guiUpdateThread = new Thread(() -> {
 			long start = System.nanoTime();
+			int msDelay = delayPerCycle;
 			while(true) {
 				try {
 					Thread.sleep(50);
@@ -85,7 +81,6 @@ public class BobRustPainter {
 					break;
 				}
 				
-				int msDelay = delayPerCycle;
 				if(clickIndex > 0) {
 					long time = System.nanoTime() - start;
 					msDelay = (int)((time / 1000000.0) / (double)clickIndex);
@@ -145,6 +140,7 @@ public class BobRustPainter {
 				clickPoint(robot, palette.getSaveButton(), 4, autoDelay);
 			}
 		} finally {
+			// Interupt the update thread and join.
 			guiUpdateThread.interrupt();
 			guiUpdateThread.join();
 			
@@ -183,10 +179,9 @@ public class BobRustPainter {
 		//System.out.printf("Time: took %.4f, wanted: %.4f\n", time, delay * 3.0);
 	}
 	
-	private Point getMousePointer() {
-		return MouseInfo.getPointerInfo().getLocation();
-	}
-	
+	/**
+	 * This method is used to provide a more accurate timing than {@code Robot.setAutoDelay}.
+	 */
 	private void addTimeDelay(double expected) {
 		double time = expected - (System.nanoTime() / 1000000.0);
 		if(time < 0) return;

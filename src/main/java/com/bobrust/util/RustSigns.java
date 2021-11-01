@@ -1,11 +1,11 @@
-package com.bobrust.gui;
+package com.bobrust.util;
+
+import static com.bobrust.util.RustConstants.*;
 
 import java.util.HashMap;
 
 import java.util.List;
 import java.util.Map;
-
-import static com.bobrust.gui.BobRustConstants.*;
 
 public class RustSigns {
 	public static final Map<String, Sign> SIGNS;

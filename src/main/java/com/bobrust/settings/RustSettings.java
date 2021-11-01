@@ -1,7 +1,8 @@
 package com.bobrust.settings;
 
 import java.awt.Color;
-import com.bobrust.gui.Sign;
+
+import com.bobrust.util.Sign;
 
 public interface RustSettings {
 	void setBorderColor(Color color);

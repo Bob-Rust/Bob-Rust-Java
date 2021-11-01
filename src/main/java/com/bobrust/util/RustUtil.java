@@ -8,7 +8,7 @@ import com.bobrust.generator.Model;
 import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
 
-public class BobRustUtil {
+public class RustUtil {
 	public static BlobList convertToList(Model model, int count) {
 		final int len = Math.min(model.colors.size(), count);
 		

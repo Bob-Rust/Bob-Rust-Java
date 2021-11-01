@@ -1,4 +1,4 @@
-package com.bobrust.gui;
+package com.bobrust.util;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -7,8 +7,10 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
-public class BobRustConstants {
-	// TODO: Approximate these
+import com.bobrust.gui.BobRustOverlay;
+
+public class RustConstants {
+	// TODO: Approximate these.
 	public static final Color CANVAS_AVERAGE = new Color(0x8f887c);
 	public static final Color WOODEN_AVERAGE = new Color(0x6d5033);
 	public static final Color TOWN_POST_AVERAGE = new Color(0x94624d);

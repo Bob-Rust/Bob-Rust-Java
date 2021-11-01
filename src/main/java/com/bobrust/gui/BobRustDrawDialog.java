@@ -14,7 +14,7 @@ import com.bobrust.gui.comp.JIntegerField;
 import com.bobrust.logging.LogUtils;
 import com.bobrust.robot.BobRustPainter;
 import com.bobrust.robot.BobRustPalette;
-import com.bobrust.util.BobRustUtil;
+import com.bobrust.util.RustUtil;
 import com.bobrust.util.UrlUtils;
 
 public class BobRustDrawDialog {
@@ -130,9 +130,9 @@ public class BobRustDrawDialog {
 		btnCalculateExactTime.addActionListener((event) -> {
 			int count = maxShapesField.getNumberValue();
 			
-			BlobList list = BobRustUtil.convertToList(overlay.getBorstData().getModel(), count);
+			BlobList list = RustUtil.convertToList(overlay.getBorstData().getModel(), count);
 			list = BorstSorter.sort(list);
-			int after = BobRustUtil.getScore(list);
+			int after = RustUtil.getScore(list);
 			
 			int totalClicks = after + count;
 			
@@ -170,7 +170,7 @@ public class BobRustDrawDialog {
 					overlay.setHideRegions(true);
 					
 					int count = maxShapesField.getNumberValue();
-					BlobList list = BorstSorter.sort(BobRustUtil.convertToList(overlay.getBorstData().getModel(), count));
+					BlobList list = BorstSorter.sort(RustUtil.convertToList(overlay.getBorstData().getModel(), count));
 					if(!rustPainter.startDrawing(list)) {
 						LogUtils.warn("The user stoped the drawing process early");
 					}

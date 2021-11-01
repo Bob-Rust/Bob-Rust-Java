@@ -6,9 +6,9 @@ import java.util.Objects;
 import java.util.Properties;
 
 import com.bobrust.generator.BorstSettings;
-import com.bobrust.gui.BobRustConstants;
-import com.bobrust.gui.RustSigns;
-import com.bobrust.gui.Sign;
+import com.bobrust.util.RustConstants;
+import com.bobrust.util.RustSigns;
+import com.bobrust.util.Sign;
 
 public abstract class RustSettingsImpl implements RustSettings {
 	private static final File CONFIG_FILE = new File(System.getProperty("user.home"), "bobrust.properties");
@@ -21,7 +21,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 	private String presetPath;
 	
 	// Generator configuration
-	private Color settingsBackground = BobRustConstants.CANVAS_AVERAGE;
+	private Color settingsBackground = RustConstants.CANVAS_AVERAGE;
 	private Sign settingsSign;
 	private int clickInterval;
 	private int autosaveInterval;
