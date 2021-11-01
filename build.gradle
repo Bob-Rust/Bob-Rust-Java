@@ -29,30 +29,36 @@ task clearDist {
     doLast {
         println "Cleaning dist"
         project.delete(files("${buildDir}/distributions"))
+        def jpackageTemp = file("${buildDir}/jpackagetemp");
+        project.delete(jpackageTemp)
+        jpackageTemp.mkdirs()
     }
 }
 
 /**
  * https://github.com/petr-panteleyev/jpackage-gradle-plugin
- * This may take a bit
+ * https://docs.oracle.com/en/java/javase/16/jpackage/override-jpackage-resources.html#GUID-1B718F8B-B68D-4D46-B1DB-003D7729AAB6
  */
 tasks.jpackage {
     dependsOn("clearDist")
     dependsOn("build")
 
     appName = "Bob Rust"
-    type = "EXE"
+    temp="${buildDir}/jpackagetemp"
+    type = "MSI"
     input  = "$buildDir/$libsDirName"
     destination = "$buildDir/$distsDirName"
     mainClass = "com.bobrust.main.Main"
-    icon = "${projectDir}/src/main/resources/icons/icon.ico"
+    verbose = true
 
     mainJar = jar.archiveFileName.get()
 
     windows {
+        resourceDir = "$projectDir/jpackage"
         winMenu = true
         winDirChooser = true
+        winShortcut = true
         winUpgradeUuid = "2a3ea308-884a-4d37-81ce-9899b022d9ef"
-        icon = "${projectDir}/src/main/resources/icons/icon.ico"
+        icon = "$projectDir/jpackage/assets/icon.ico"
     }
 }

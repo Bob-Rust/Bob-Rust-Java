@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <?ifdef JpIsSystemWide ?>
+    <?define JpInstallScope="perMachine"?>
+  <?else?>
+    <?define JpInstallScope="perUser"?>
+  <?endif?>
+
+  <?define JpProductLanguage=1033 ?>
+  <?define JpInstallerVersion=200 ?>
+  <?define JpCompressedMsi=yes ?>
+
+  <?define AssetsDir="$(var.JpConfigDir)/../../../jpackage/assets"?>
+
+  <!--
+  https://wixtoolset.org/documentation/
+  https://wixtoolset.org/documentation/manual/v3/
+   -->
+  <Product
+    Id="$(var.JpProductCode)"
+    Name="$(var.JpAppName)"
+    Language="$(var.JpProductLanguage)"
+    Version="$(var.JpAppVersion)"
+    Manufacturer="$(var.JpAppVendor)"
+    UpgradeCode="$(var.JpProductUpgradeCode)">
+
+    <Package
+      Description="$(var.JpAppDescription)"
+      Manufacturer="$(var.JpAppVendor)"
+      InstallerVersion="$(var.JpInstallerVersion)"
+      Compressed="$(var.JpCompressedMsi)"
+      InstallScope="$(var.JpInstallScope)" Platform="x64"
+    />
+
+    <Binary Id="JpCaDll" SourceFile="wixhelper.dll"/>
+    <CustomAction Id="JpCheckInstallDir" BinaryKey="JpCaDll" DllEntry="CheckInstallDir" />
+    <UI>
+      <Dialog Id="JpInvalidInstallDir" Width="300" Height="85" Title="[ProductName] Setup" NoMinimize="yes">
+        <Control Id="JpInvalidInstallDirYes" Type="PushButton" X="100" Y="55" Width="50" Height="15" Default="no" Cancel="no" Text="Yes">
+          <Publish Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+        </Control>
+        <Control Id="JpInvalidInstallDirNo" Type="PushButton" X="150" Y="55" Width="50" Height="15" Default="yes" Cancel="yes" Text="No">
+          <Publish Event="NewDialog" Value="InstallDirDlg">1</Publish>
+        </Control>
+        <Control Id="Text" Type="Text" X="25" Y="15" Width="250" Height="30" TabSkip="no">
+          <Text>!(loc.message.install.dir.exist)</Text>
+        </Control>
+      </Dialog>
+
+      <!--
+        Run WixUI_InstallDir dialog in the default install directory.
+      -->
+
+      <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR"/>
+      <UIRef Id="WixUI_InstallDir" />
+
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="DoAction" Value="JpCheckInstallDir" Order="3">1</Publish>
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="NewDialog" Value="JpInvalidInstallDir" Order="5">INSTALLDIR_VALID="0"</Publish>
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg" Order="5">INSTALLDIR_VALID="1"</Publish>
+
+    </UI>
+
+    <MajorUpgrade
+        Schedule='afterInstallInitialize'
+        DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.'/>
+
+    <!--
+      This is the banner which shows throughout parts of the install process along the top
+      The banner BMP dimensions are 493 x 58 pixels.
+    -->
+    <WixVariable Id='WixUIBannerBmp' Value="$(var.AssetsDir)/launcher_banner.png"/>
+
+    <!--
+          This image is the first one you see when you open the launcher and fills the entire window background
+          The dialog BMP dimensions are 493 x 312 pixels.
+     -->
+    <WixVariable Id='WixUIDialogBmp' Value="$(var.AssetsDir)/launcher_background.png"/>
+  </Product>
+</Wix>
