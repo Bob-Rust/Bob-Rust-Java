@@ -1,0 +1,18 @@
+name: GraalVM Native Image build
+
+on: [push]
+
+jobs:
+  buildOnWindows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1.5.0
+      - uses: microsoft/setup-msbuild@v1
+      - uses: ayltai/setup-graalvm@v1
+          java-version: 16
+          graalvm-version: 21.1.0
+          native-image: true
+      - name: Build with gradle
+        run: ./gradlew build nativeImage
