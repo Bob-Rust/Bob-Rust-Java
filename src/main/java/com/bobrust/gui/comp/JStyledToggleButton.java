@@ -27,6 +27,8 @@ public class JStyledToggleButton extends JToggleButton {
 	public JStyledToggleButton(String text) {
 		super(text);
 		setContentAreaFilled(false);
+		setFocusable(false);
+		setOpaque(false);
 		
 		addMouseListener(new MouseAdapter() {
 			@Override

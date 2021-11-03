@@ -20,9 +20,12 @@ import com.bobrust.generator.BorstColor;
 import com.bobrust.generator.BorstGenerator.BorstData;
 import com.bobrust.generator.BorstSettings;
 import com.bobrust.generator.Model;
+import com.bobrust.gui.comp.JRandomPanel;
 import com.bobrust.gui.comp.JStyledButton;
 import com.bobrust.gui.comp.JStyledToggleButton;
 import com.bobrust.lang.RustTranslator;
+import com.bobrust.lang.RustUI;
+import com.bobrust.lang.RustUI.Type;
 import com.bobrust.logging.LogUtils;
 import com.bobrust.robot.BobRustPalette;
 import com.bobrust.util.Sign;
@@ -70,7 +73,7 @@ public class BobRustOverlay extends JPanel {
 	
 	private final JStyledButton btnOptions;
 	private final JStyledButton btnMaximize;
-	private final JPanel actionPanel;
+	private final JRandomPanel actionPanel;
 	
 	private final java.util.List<JLabel> labels = new ArrayList<>();
 	private final JLabel generationLabel;
@@ -309,7 +312,7 @@ public class BobRustOverlay extends JPanel {
 		this.setBackground(new Color(0, true));
 		this.setLayout(null);
 
-		actionPanel = new JPanel();
+		actionPanel = new JRandomPanel(gui);
 		actionPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		actionPanel.setLayout(new BoxLayout(actionPanel, BoxLayout.Y_AXIS));
 		actionPanel.setBackground(Color.WHITE);
@@ -342,15 +345,13 @@ public class BobRustOverlay extends JPanel {
 		
 		Dimension buttonSize = new Dimension(120, 24);
 		
-		JLabel lblOptions = new JLabel("Options");
+		JLabel lblOptions = new JLabel(RustUI.getString(Type.ACTION_OPTIONS_LABEL));
 		lblOptions.setForeground(Color.BLACK);
 		actionPanel.add(lblOptions);
 		labels.add(lblOptions);
 		
-		btnSelectMonitor = new JStyledButton("Select Monitor");
+		btnSelectMonitor = new JStyledButton(RustUI.getString(Type.ACTION_SELECTMONITOR_BUTTON));
 		btnSelectMonitor.setMaximumSize(buttonSize);
-		btnSelectMonitor.setFocusable(false);
-		btnSelectMonitor.setOpaque(false);
 		btnSelectMonitor.addActionListener((event) -> {
 			GraphicsConfiguration gc = monitorPicker.openDialog();
 			if(isFullscreen) {
@@ -361,41 +362,19 @@ public class BobRustOverlay extends JPanel {
 			LogUtils.info("Selected Monitor: { id: '%s', x: %d, y: %d, width: %d, height: %d }", idString, bounds.x, bounds.y, bounds.width, bounds.height);
 		});
 		
-		btnMaximize = new JStyledButton("Make Fullscreen");
-		btnMaximize.setOpaque(false);
+		btnMaximize = new JStyledButton(RustUI.getString(Type.ACTION_MAKEFULLSCREEN_ON));
 		btnMaximize.setMaximumSize(new Dimension(120, 24));
-		btnMaximize.setFocusable(false);
 		btnMaximize.addActionListener(this::changeFullscreen);
 		actionPanel.add(btnMaximize);
 		actionPanel.add(btnSelectMonitor);
 		
-		btnOpenImage = new JStyledButton("Load Image");
+		btnOpenImage = new JStyledButton(RustUI.getString(Type.ACTION_LOADIMAGE_BUTTON));
 		btnOpenImage.setMaximumSize(buttonSize);
-		btnOpenImage.setFocusable(false);
-		btnOpenImage.setOpaque(false);
-		btnOpenImage.addActionListener((event) -> {
-			File file = gui.openImageFileChooser(dialog);
-			if(file != null) {
-				try {
-					BufferedImage selectedImage = ImageIO.read(file);
-					LogUtils.info("Loaded image '%s'", file);
-					image = selectedImage;
-					updateButtons();
-				} catch(IOException e) {
-					LogUtils.error("Failed to read image '%s'", file);
-				} catch(Throwable t) {
-					t.printStackTrace();
-				}
-				
-				repaint();
-			}
-		});
+		btnOpenImage.addActionListener((event) -> openImage());
 		actionPanel.add(btnOpenImage);
 		
-		btnOptions = new JStyledButton("Options");
-		btnOptions.setOpaque(false);
+		btnOptions = new JStyledButton(RustUI.getString(Type.ACTION_OPTIONS_LABEL));
 		btnOptions.setMaximumSize(buttonSize);
-		btnOptions.setFocusable(false);
 		btnOptions.addActionListener((event) -> {
 			settingsGui.openDialog(btnOptions.getLocationOnScreen());
 			updateButtons();
@@ -410,24 +389,20 @@ public class BobRustOverlay extends JPanel {
 			actionPanel.add(regionsPanel);
 			regionsPanel.setLayout(new BoxLayout(regionsPanel, BoxLayout.Y_AXIS));
 			
-			JLabel lblRegions = new JLabel("Regions");
+			JLabel lblRegions = new JLabel(RustUI.getString(Type.ACTION_REGIONS_LABEL));
 			lblRegions.setBorder(new EmptyBorder(10, 0, 0, 0));
 			lblRegions.setForeground(Color.BLACK);
 			regionsPanel.add(lblRegions);
 			labels.add(lblRegions);
 			
-			btnHideRegions = new JStyledToggleButton("Show Regions");
-			btnHideRegions.setOpaque(false);
+			btnHideRegions = new JStyledToggleButton(RustUI.getString(Type.ACTION_SHOWREGIONS_ON));
 			btnHideRegions.setMaximumSize(new Dimension(120, 24));
-			btnHideRegions.setFocusable(false);
 			btnHideRegions.setSelected(true);
 			btnHideRegions.addActionListener((event) -> setHideRegions(btnHideRegions.isSelected()));
 			regionsPanel.add(btnHideRegions);
 			
-			btnSelectCanvasRegion = new JStyledToggleButton("Canvas Region");
+			btnSelectCanvasRegion = new JStyledToggleButton(RustUI.getString(Type.ACTION_CANVASREGION_BUTTON));
 			btnSelectCanvasRegion.setMaximumSize(buttonSize);
-			btnSelectCanvasRegion.setFocusable(false);
-			btnSelectCanvasRegion.setOpaque(false);
 			btnSelectCanvasRegion.setEnabled(false);
 			btnSelectCanvasRegion.addActionListener((event) -> {
 				if(btnSelectCanvasRegion.isSelected()) {
@@ -438,10 +413,8 @@ public class BobRustOverlay extends JPanel {
 			});
 			regionsPanel.add(btnSelectCanvasRegion);
 			
-			btnSelectImageRegion = new JStyledToggleButton("Image Region");
+			btnSelectImageRegion = new JStyledToggleButton(RustUI.getString(Type.ACTION_IMAGEREGION_BUTTON));
 			btnSelectImageRegion.setMaximumSize(buttonSize);
-			btnSelectImageRegion.setOpaque(false);
-			btnSelectImageRegion.setFocusable(false);
 			btnSelectImageRegion.setEnabled(false);
 			btnSelectImageRegion.addActionListener((event) -> {
 				if(btnSelectImageRegion.isSelected()) {
@@ -462,93 +435,38 @@ public class BobRustOverlay extends JPanel {
 			actionPanel.add(previewPanel);
 			previewPanel.setLayout(new BoxLayout(previewPanel, BoxLayout.Y_AXIS));
 			
-			JLabel lblActions = new JLabel("Preview Actions");
+			JLabel lblActions = new JLabel(RustUI.getString(Type.ACTION_PREVIEWACTIONS_LABEL));
 			lblActions.setForeground(Color.BLACK);
 			lblActions.setBorder(new EmptyBorder(10, 0, 0, 0));
 			previewPanel.add(lblActions);
 			labels.add(lblActions);
 			
-			btnStartGenerate = new JStyledButton("Start Generate");
+			btnStartGenerate = new JStyledButton(RustUI.getString(Type.ACTION_STARTGENERATE_BUTTON));
 			btnStartGenerate.setMaximumSize(buttonSize);
 			btnStartGenerate.setEnabled(false);
-			btnStartGenerate.setFocusable(false);
-			btnStartGenerate.setOpaque(false);
-			btnStartGenerate.addActionListener((event) -> {
-				if(!gui.borstGenerator.isRunning()) {
-					Rectangle rect = canvasRegion.createIntersection(imageRegion).getBounds();
-					
-					if(!rect.isEmpty()) {
-						Sign signType = gui.getSettingsSign();
-						Color bgColor = gui.getSettingsBackgroundCalculated();
-						
-						BufferedImage clip = new BufferedImage(canvasRegion.width, canvasRegion.height, BufferedImage.TYPE_INT_ARGB);
-						Graphics2D g = clip.createGraphics();
-						g.drawImage(image, imageRegion.x - canvasRegion.x, imageRegion.y - canvasRegion.y, imageRegion.width, imageRegion.height, null);
-						g.dispose();
-						
-						BufferedImage scaled = new BufferedImage(signType.width, signType.height, BufferedImage.TYPE_INT_ARGB);
-						g = scaled.createGraphics();
-						g.setColor(bgColor);
-						g.fillRect(0, 0, scaled.getWidth(), scaled.getHeight());
-						g.drawImage(clip, 0, 0, scaled.getWidth(), scaled.getHeight(), null);
-						g.dispose();
-						
-						BorstSettings settings = gui.getBorstSettings();
-						settings.Background = bgColor.getRGB();
-						settings.DirectImage = scaled;
-						updateEditor();
-						if(gui.borstGenerator.start()) {
-							shapeRender.createCanvas(scaled.getWidth(), scaled.getHeight(), bgColor.getRGB());
-							
-							action = OverlayType.GENERATE_IMAGE;
-							updateButtons();
-						}
-					}
-					
-					repaint();
-				}
-			});
+			btnStartGenerate.addActionListener((event) -> startGeneration());
 			previewPanel.add(btnStartGenerate);
 	
-			btnPauseGenerate = new JStyledButton("Pause Generate");
-			btnPauseGenerate.setOpaque(false);
+			btnPauseGenerate = new JStyledButton(RustUI.getString(Type.ACTION_PAUSEGENERATE_ON));
 			btnPauseGenerate.setMaximumSize(buttonSize);
-			btnPauseGenerate.setFocusable(false);
 			btnPauseGenerate.setEnabled(false);
 			btnPauseGenerate.addActionListener((event) -> setPauseGeneration(gui.borstGenerator.isPaused()));
 			previewPanel.add(btnPauseGenerate);
 			
-			btnResetGenerate = new JStyledButton("Reset Generate");
-			btnResetGenerate.setOpaque(false);
+			btnResetGenerate = new JStyledButton(RustUI.getString(Type.ACTION_RESETGENERATE_BUTTON));
 			btnResetGenerate.setMaximumSize(new Dimension(120, 24));
-			btnResetGenerate.setFocusable(false);
 			btnResetGenerate.setEnabled(false);
-			btnResetGenerate.addActionListener((event) -> {
-				if(gui.borstGenerator.isRunning()) {
-					try {
-						gui.getBorstSettings().DirectImage = null;
-						gui.borstGenerator.stop();
-						modelImage = null;
-					} catch(InterruptedException e) {
-						e.printStackTrace();
-					}
-					
-					shapeRender.reset();
-					lastData = null;
-					action = OverlayType.NONE;
-					updateButtons();
-					updateEditor();
-					repaint();
-				}
-			});
+			btnResetGenerate.addActionListener((event) -> resetGeneration());
 			previewPanel.add(btnResetGenerate);
 			
-			JStyledButton btnClose = new JStyledButton("Close");
-			btnClose.setOpaque(false);
+			JStyledButton btnClose = new JStyledButton(RustUI.getString(Type.ACTION_CLOSE_BUTTON));
 			btnClose.setMaximumSize(buttonSize);
-			btnClose.setFocusable(false);
 			btnClose.addActionListener((event) -> {
-				int dialogResult = JOptionPane.showConfirmDialog(dialog, "Do you want to close the application?", "Warning", JOptionPane.YES_NO_OPTION);
+				int dialogResult = JOptionPane.showConfirmDialog(dialog,
+					RustUI.getString(Type.ACTION_CLOSEDIALOG_MESSAGE),
+					RustUI.getString(Type.ACTION_CLOSEDIALOG_TITLE),
+					JOptionPane.YES_NO_OPTION
+				);
 				if(dialogResult == JOptionPane.YES_OPTION) {
 					System.exit(0);
 				}
@@ -564,17 +482,15 @@ public class BobRustOverlay extends JPanel {
 			actionPanel.add(painterPanel);
 			painterPanel.setLayout(new BoxLayout(painterPanel, BoxLayout.Y_AXIS));
 			
-			JLabel lblPaintImage = new JLabel("Draw");
+			JLabel lblPaintImage = new JLabel(RustUI.getString(Type.ACTION_DRAW_LABEL));
 			lblPaintImage.setForeground(Color.BLACK);
 			lblPaintImage.setBorder(new EmptyBorder(10, 0, 0, 0));
 			painterPanel.add(lblPaintImage);
 			labels.add(lblPaintImage);
 			
-			btnDrawImage = new JStyledButton("Draw Image");
-			btnDrawImage.setEnabled(false);
-			btnDrawImage.setOpaque(false);
+			btnDrawImage = new JStyledButton(RustUI.getString(Type.ACTION_DRAWIMAGE_BUTTON));
 			btnDrawImage.setMaximumSize(new Dimension(120, 24));
-			btnDrawImage.setFocusable(false);
+			btnDrawImage.setEnabled(false);
 			btnDrawImage.addActionListener((event) -> {
 				drawDialog.openDialog(btnDrawImage.getLocationOnScreen());
 				doRenderShapes = false;
@@ -594,30 +510,24 @@ public class BobRustOverlay extends JPanel {
 			helpPanel.setMinimumSize(textDimension);
 			helpPanel.setLayout(new BoxLayout(helpPanel, BoxLayout.X_AXIS));
 			
-			JLabel lblHelp = new JLabel("Help");
+			JLabel lblHelp = new JLabel(RustUI.getString(Type.ACTION_HELP_LABEL));
 			lblHelp.setForeground(Color.BLACK);
 			lblHelp.setBorder(new EmptyBorder(10, 0, 0, 0));
 			helpPanel.add(lblHelp);
 			labels.add(lblHelp);
 			
-			JStyledButton btnGithubIssue = new JStyledButton("Report Issue");
-			btnGithubIssue.setOpaque(false);
+			JStyledButton btnGithubIssue = new JStyledButton(RustUI.getString(Type.ACTION_REPORTISSUE_BUTTON));
 			btnGithubIssue.setMaximumSize(new Dimension(120, 24));
-			btnGithubIssue.setFocusable(false);
 			btnGithubIssue.addActionListener((event) -> UrlUtils.openIssueUrl());
 			actionPanel.add(btnGithubIssue);
 			
-			JStyledButton btnDonate = new JStyledButton("Donate");
-			btnDonate.setOpaque(false);
-			btnDonate.setFocusable(false);
+			JStyledButton btnDonate = new JStyledButton(RustUI.getString(Type.ACTION_DONATE_BUTTON));
 			btnDonate.setMaximumSize(new Dimension(120, 24));
 			btnDonate.addActionListener((event) -> UrlUtils.openDonationUrl());
 			actionPanel.add(btnDonate);
 			
-			JStyledButton btnAbout = new JStyledButton("About");
-			btnAbout.setOpaque(false);
+			JStyledButton btnAbout = new JStyledButton(RustUI.getString(Type.ACTION_ABOUT_BUTTON));
 			btnAbout.setMaximumSize(new Dimension(120, 24));
-			btnAbout.setFocusable(false);
 			btnAbout.addActionListener((event) -> {
 				String message = "Created by HardCoded & Sekwah41\n" +
 								 "\n" +
@@ -637,11 +547,84 @@ public class BobRustOverlay extends JPanel {
 		updateEditor();
 	}
 	
+	private void openImage() {
+		File file = gui.openImageFileChooser(dialog);
+		if(file != null) {
+			try {
+				BufferedImage selectedImage = ImageIO.read(file);
+				LogUtils.info("Loaded image '%s'", file);
+				image = selectedImage;
+				updateButtons();
+			} catch(IOException e) {
+				LogUtils.error("Failed to read image '%s'", file);
+			} catch(Throwable t) {
+				t.printStackTrace();
+			}
+			
+			repaint();
+		}
+	}
+	
+	private void startGeneration() {
+		if(!gui.borstGenerator.isRunning()) {
+			Rectangle rect = canvasRegion.createIntersection(imageRegion).getBounds();
+			
+			if(!rect.isEmpty()) {
+				Sign signType = gui.getSettingsSign();
+				Color bgColor = gui.getSettingsBackgroundCalculated();
+				
+				BufferedImage clip = new BufferedImage(canvasRegion.width, canvasRegion.height, BufferedImage.TYPE_INT_ARGB);
+				Graphics2D g = clip.createGraphics();
+				g.drawImage(image, imageRegion.x - canvasRegion.x, imageRegion.y - canvasRegion.y, imageRegion.width, imageRegion.height, null);
+				g.dispose();
+				
+				BufferedImage scaled = new BufferedImage(signType.width, signType.height, BufferedImage.TYPE_INT_ARGB);
+				g = scaled.createGraphics();
+				g.setColor(bgColor);
+				g.fillRect(0, 0, scaled.getWidth(), scaled.getHeight());
+				g.drawImage(clip, 0, 0, scaled.getWidth(), scaled.getHeight(), null);
+				g.dispose();
+				
+				BorstSettings settings = gui.getBorstSettings();
+				settings.Background = bgColor.getRGB();
+				settings.DirectImage = scaled;
+				updateEditor();
+				if(gui.borstGenerator.start()) {
+					shapeRender.createCanvas(scaled.getWidth(), scaled.getHeight(), bgColor.getRGB());
+					
+					action = OverlayType.GENERATE_IMAGE;
+					updateButtons();
+				}
+			}
+			
+			repaint();
+		}
+	}
+		
+	private void resetGeneration() {
+		if(gui.borstGenerator.isRunning()) {
+			try {
+				gui.getBorstSettings().DirectImage = null;
+				gui.borstGenerator.stop();
+				modelImage = null;
+			} catch(InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			shapeRender.reset();
+			lastData = null;
+			action = OverlayType.NONE;
+			updateButtons();
+			updateEditor();
+			repaint();
+		}
+	}
+	
 	protected void setHideRegions(boolean enable) {
 		if(enable) {
-			btnHideRegions.setText("Show Regions");
+			btnHideRegions.setText(RustUI.getString(Type.ACTION_SHOWREGIONS_ON));
 		} else {
-			btnHideRegions.setText("Hide Regions");
+			btnHideRegions.setText(RustUI.getString(Type.ACTION_SHOWREGIONS_OFF));
 		}
 		
 		btnHideRegions.setSelected(enable);
@@ -652,10 +635,10 @@ public class BobRustOverlay extends JPanel {
 	
 	private void setPauseGeneration(boolean enable) {
 		if(enable) {
-			btnPauseGenerate.setText("Pause Generate");
+			btnPauseGenerate.setText(RustUI.getString(Type.ACTION_PAUSEGENERATE_ON));
 			gui.borstGenerator.resume();
 		} else {
-			btnPauseGenerate.setText("Resume Generate");
+			btnPauseGenerate.setText(RustUI.getString(Type.ACTION_PAUSEGENERATE_OFF));
 			gui.borstGenerator.pause();
 		}
 		
@@ -676,7 +659,11 @@ public class BobRustOverlay extends JPanel {
 		BorstData lastData = this.lastData;
 		setEstimatedGenerationLabel(lastData != null ? lastData.getIndex():0, gui.getSettingsMaxShapes());
 		
-		btnPauseGenerate.setText(gui.borstGenerator.isPaused() ? "Resume Generate":"Pause Generate");
+		if(gui.borstGenerator.isPaused()) {
+			btnPauseGenerate.setText(RustUI.getString(Type.ACTION_PAUSEGENERATE_OFF));
+		} else {
+			btnPauseGenerate.setText(RustUI.getString(Type.ACTION_PAUSEGENERATE_ON));
+		}
 	}
 	
 	public Rectangle getCanvasArea() {
@@ -726,7 +713,7 @@ public class BobRustOverlay extends JPanel {
 	
 	private void changeFullscreen(ActionEvent event) {
 		isFullscreen = !isFullscreen;
-		btnMaximize.setText(isFullscreen ? "Minimize":"Make Fullscreen");
+		btnMaximize.setText(RustUI.getString(isFullscreen ? Type.ACTION_MAKEFULLSCREEN_OFF:Type.ACTION_MAKEFULLSCREEN_ON));
 		actionPanel.setLocation(isFullscreen ? BORDER_SIZE:0, isFullscreen ? BORDER_SIZE:0);
 		
 		dialog.setVisible(false);
@@ -770,7 +757,8 @@ public class BobRustOverlay extends JPanel {
 	
 	private boolean doRenderShapes = false;
 	private int renderShapesAmount = 0;
-	public void renderShapes(int value) {
+	public void setRenderPreviewShapes(int value) {
+		// TODO: Render the preview in a better way!
 		doRenderShapes = true;
 		renderShapesAmount = value;
 	}

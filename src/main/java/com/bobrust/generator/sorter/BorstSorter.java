@@ -140,7 +140,7 @@ public class BorstSorter {
 			List<Integer> indexList = new ArrayList<>(array.length);
 			for(int i = 1, len = array.length; i < len; i++) indexList.add(i);
 			indexList.parallelStream().forEach((i) -> {
-				// Worst case senario O(N^2) if every single circle is in the same position
+				// Worst case senario O(N^2) if every circle is in the same position
 				map[i] = get_intersections(array[i], array, tree);
 				map[i].reverse();
 			});
