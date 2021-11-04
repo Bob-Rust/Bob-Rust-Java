@@ -1,16 +1,18 @@
 package com.bobrust.gui;
 
-import java.awt.*;
+import java.awt.Color;
 import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import com.bobrust.generator.BorstUtils;
 import com.bobrust.util.RustConstants;
-
-import javax.swing.border.EmptyBorder;
 
 public class BobRustColorPicker {
 	private final BobRustEditor gui;
@@ -64,7 +66,7 @@ public class BobRustColorPicker {
 				
 				int cx = x * 31 + 15 + 12;
 				int cy = y * 30 + 15 + 12;
-				selectedColor = new Color(RustConstants.COLOR_PALETTE.getRGB(cx, cy));
+				selectedColor = new Color(BorstUtils.getClosestColor(RustConstants.COLOR_PALETTE.getRGB(cx, cy)).rgb);
 				colorLabel.setBackground(selectedColor);
 			}
 		});

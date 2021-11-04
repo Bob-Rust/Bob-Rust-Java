@@ -28,6 +28,7 @@ import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
 import com.bobrust.logging.LogUtils;
 import com.bobrust.robot.BobRustPalette;
+import com.bobrust.util.RustImageUtil;
 import com.bobrust.util.Sign;
 import com.bobrust.util.UrlUtils;
 
@@ -573,17 +574,19 @@ public class BobRustOverlay extends JPanel {
 				Sign signType = gui.getSettingsSign();
 				Color bgColor = gui.getSettingsBackgroundCalculated();
 				
-				BufferedImage clip = new BufferedImage(canvasRegion.width, canvasRegion.height, BufferedImage.TYPE_INT_ARGB);
-				Graphics2D g = clip.createGraphics();
-				g.drawImage(image, imageRegion.x - canvasRegion.x, imageRegion.y - canvasRegion.y, imageRegion.width, imageRegion.height, null);
-				g.dispose();
+				BufferedImage scaled;
+				scaled = RustImageUtil.getScaledInstance(
+					image,
+					canvasRegion,
+					imageRegion,
+					signType.width,
+					signType.height,
+					bgColor,
+					RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR
+				);
 				
-				BufferedImage scaled = new BufferedImage(signType.width, signType.height, BufferedImage.TYPE_INT_ARGB);
-				g = scaled.createGraphics();
-				g.setColor(bgColor);
-				g.fillRect(0, 0, scaled.getWidth(), scaled.getHeight());
-				g.drawImage(clip, 0, 0, scaled.getWidth(), scaled.getHeight(), null);
-				g.dispose();
+				// Apply the ICC cmyk lut filter.
+				scaled = RustImageUtil.applyFilters(scaled);
 				
 				BorstSettings settings = gui.getBorstSettings();
 				settings.Background = bgColor.getRGB();
