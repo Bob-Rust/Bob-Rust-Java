@@ -10,6 +10,8 @@ public class RustUI {
 		SETTINGS_AUTOSAVEINTERVAL_TOOLTIP("How many presses done between saves"),
 		SETTINGS_ALPHAINDEX_LABEL("Alpha Index"),
 		SETTINGS_ALPHAINDEX_TOOLTIP("The alpha value used when drawing the image"),
+		SETTINGS_SCALINGTYPE_LABEL("Scaling Type"),
+		SETTINGS_SCALINGTYPE_TOOLTIP("The type of scaling performed when resizing the image"),
 		SETTINGS_MAXSHAPES_LABEL("Max Shapes"),
 		SETTINGS_MAXSHAPES_TOOLTIP("The max amount of shapes used when drawing the image"),
 		SETTINGS_SIGNTYPE_LABEL("Sign Type"),

@@ -64,9 +64,18 @@ public class RustImageUtil {
 		return image;
 	}
 	
-	public static BufferedImage getScaledInstance(BufferedImage source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, Object interpolationHint) {
-		if(interpolationHint == null) {
-			interpolationHint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+	public static BufferedImage getScaledInstance(BufferedImage source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, int scalingType) {
+		Object hint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+		switch(scalingType) {
+			case RustConstants.IMAGE_SCALING_NEAREST -> {
+				hint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+			}
+			case RustConstants.IMAGE_SCALING_BILINEAR -> {
+				hint = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+			}
+			case RustConstants.IMAGE_SCALING_BICUBIC -> {
+				hint = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+			}
 		}
 		
 		int dst_x1 = ((imageRect.x - canvasRect.x) * width) / canvasRect.width;
@@ -76,7 +85,7 @@ public class RustImageUtil {
 		
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, interpolationHint);
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
 		g.setColor(bgColor);
 		g.fillRect(0, 0, width, height);
 		g.drawImage(source, dst_x1, dst_y1, dst_x2, dst_y2, 0, 0, source.getWidth(), source.getHeight(), null);

@@ -11,15 +11,18 @@ HardCoded
 Sekwah41
 * Generation
 
-# Can I get banned?
-We have reached out to the Rust team and they told us that our application is ok.
-We are still waiting for a response from the EAC team.
+If you have any problem with the program please create a new issue and tell us what went wrong.
 
 # Usage
-Work in progress...
+Check out our wiki for more information
+[Wiki](https://github.com/Bob-Rust/Bob-Rust-Java/wiki)
 
-# Preview
-![Example](.github/assets/screenshots/example_1.jpg)
+# FAQ
 
-# Issue
-If you have any problem with the program please create a new issue and tell us what went wrong.
+## How many colors?
+This tool can approximate most colors from the color spectrum.
+![Example](.github/assets/screenshots/example_2.jpg)
+
+## Can I get banned?
+We have reached out to the Rust team and they told us that our application is ok.
+We are still waiting for a response from the EAC team.

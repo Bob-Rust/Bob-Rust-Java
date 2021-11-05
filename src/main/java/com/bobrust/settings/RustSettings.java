@@ -11,6 +11,7 @@ public interface RustSettings {
 	void setEditorImageDirectory(String pathname);
 	void setEditorPresetDirectory(String pathname);
 	void setSettingsAlpha(int alpha);
+	void setSettingsScaling(int index);
 	void setSettingsMaxShapes(int maxShapes);
 	void setSettingsCallbackInterval(int callbackInterval);
 	void setSettingsSign(Sign sign);
@@ -24,6 +25,16 @@ public interface RustSettings {
 	String getEditorImageDirectory();
 	String getEditorPresetDirectory();
 	int getSettingsAlpha();
+	
+	/**
+	 * Returns:
+	 * <pre>
+	 * 0: Nearest neighbour
+	 * 1: Bilinear
+	 * 2: Bicubic
+	 * </pre>
+	 */
+	int getSettingsScaling();
 	int getSettingsMaxShapes();
 	int getSettingsCallbackInterval();
 	int getSettingsAutosaveInterval();

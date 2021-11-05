@@ -25,6 +25,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 	private Sign settingsSign;
 	private int clickInterval;
 	private int autosaveInterval;
+	private int scalingType;
 	
 	// Properties
 	private final Properties properties;
@@ -67,6 +68,9 @@ public abstract class RustSettingsImpl implements RustSettings {
 		
 		Integer settingsAlpha = getSettingInteger(Settings.SETTINGS_ALPHA);
 		setSettingsAlpha(settingsAlpha == null ? 2:settingsAlpha);
+		
+		Integer settingsScaling = getSettingInteger(Settings.SETTINGS_SCALING);
+		setSettingsScaling(settingsScaling == null ? RustConstants.IMAGE_SCALING_NEAREST:settingsScaling);
 		
 		Integer settingsMaxShapes = getSettingInteger(Settings.SETTINGS_MAX_SHAPES);
 		setSettingsMaxShapes(settingsMaxShapes == null ? 4000:settingsMaxShapes);
@@ -156,6 +160,12 @@ public abstract class RustSettingsImpl implements RustSettings {
 		borstSettings.Alpha = alpha;
 		setProperty(Settings.SETTINGS_ALPHA, alpha);
 	}
+	
+	@Override
+	public void setSettingsScaling(int index) {
+		scalingType = index;
+		setProperty(Settings.SETTINGS_SCALING, index);
+	}
 
 	@Override
 	public void setSettingsMaxShapes(int maxShapes) {
@@ -222,7 +232,12 @@ public abstract class RustSettingsImpl implements RustSettings {
 	public int getSettingsAlpha() {
 		return borstSettings.Alpha;
 	}
-
+	
+	@Override
+	public int getSettingsScaling() {
+		return scalingType;
+	}
+	
 	@Override
 	public int getSettingsMaxShapes() {
 		return borstSettings.MaxShapes;

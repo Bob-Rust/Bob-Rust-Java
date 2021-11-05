@@ -19,6 +19,7 @@ import com.bobrust.logging.LogUtils;
 public class BobRustPalette {
 	private final Map<BorstColor, Point> colorMap;
 	private Point panel_offset;
+	private Point preview_middle;
 	
 	public BobRustPalette() {
 		colorMap = new HashMap<>();
@@ -39,7 +40,7 @@ public class BobRustPalette {
 		Point red_middle = null;
 		for(int i = 0, lastNonRed = 0; i < screen_height; i++) {
 			int red = (screenshot.getRGB(x, i) >> 16) & 0xff;
-
+			
 			if(red < 220) {
 				lastNonRed = i;
 			}
@@ -61,10 +62,13 @@ public class BobRustPalette {
 		return null;
 	}
 	
-	public synchronized boolean analyse(JDialog dialog, BufferedImage bi, Point screenLocation, Point screenOffset) {
-		this.panel_offset = new Point(screenOffset.x, screenOffset.y - 152);
+	public synchronized boolean analyse(JDialog dialog, BufferedImage bi, Rectangle screenBounds, Point screenOffset) {
+		this.panel_offset = new Point(screenOffset.x, screenOffset.y - 152); // Point screenLocation, 
+		// (-215, -67) from screen corner
+		this.preview_middle = new Point(screenBounds.x + screenBounds.width - 215, screenBounds.y + screenBounds.height - 67);
 		this.colorMap.clear();
 		
+		Point screenLocation = screenBounds.getLocation();
 		Rectangle rect = new Rectangle(panel_offset.x - screenLocation.x, panel_offset.y - screenLocation.y, 150, 525);
 		BufferedImage image;
 		try {
@@ -127,6 +131,7 @@ public class BobRustPalette {
 	
 	public void reset() {
 		colorMap.clear();
+		preview_middle = null;
 		panel_offset = null;
 		opacityButtons = null;
 		shapeButtons = null;
@@ -149,12 +154,9 @@ public class BobRustPalette {
 		return focusPoint;
 	}
 	
-//	@Deprecated
-//	public Point getColorPreview() {
-//		// 1704, 1012
-//		// -66, 735
-//		return point(-66, 735);
-//	}
+	public Point getColorPreview() {
+		return preview_middle;
+	}
 	
 //	public Point getClearButton() {
 //		return point(55, 24);

@@ -19,6 +19,7 @@ public class BobRustSettingsDialog {
 	private final JDialog dialog;
 	
 	private final JComboBox<Integer> alphaCombobox;
+	private final JComboBox<String> scalingCombobox;
 	private final JIntegerField maxShapesField;
 	private final JIntegerField callbackIntervalField;
 	private final JIntegerField clickIntervalField;
@@ -95,73 +96,105 @@ public class BobRustSettingsDialog {
 		});
 		signPanel.add(btnSign);
 		
-		JPanel alphaPanel = new JPanel();
-		alphaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		alphaPanel.setBorder(new EmptyBorder(5, 5, 0, 5));
-		alphaPanel.setPreferredSize(optionSize);
-		alphaPanel.setMinimumSize(optionSize);
-		alphaPanel.setMaximumSize(optionSize);
-		panel.add(alphaPanel);
-		alphaPanel.setLayout(new BoxLayout(alphaPanel, BoxLayout.Y_AXIS));
+		{
+			JPanel alphaPanel = new JPanel();
+			alphaPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			alphaPanel.setBorder(new EmptyBorder(5, 5, 0, 5));
+			alphaPanel.setPreferredSize(optionSize);
+			alphaPanel.setMinimumSize(optionSize);
+			alphaPanel.setMaximumSize(optionSize);
+			panel.add(alphaPanel);
+			alphaPanel.setLayout(new BoxLayout(alphaPanel, BoxLayout.Y_AXIS));
+			
+			JLabel alphaLabel = new JLabel(RustUI.getString(Type.SETTINGS_ALPHAINDEX_LABEL));
+			alphaLabel.setToolTipText(RustUI.getString(Type.SETTINGS_ALPHAINDEX_TOOLTIP));
+			alphaLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			alphaLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			alphaPanel.add(alphaLabel);
+			
+			alphaCombobox = new JComboBox<Integer>();
+			alphaCombobox.setAlignmentX(Component.LEFT_ALIGNMENT);
+			alphaCombobox.setFocusable(false);
+			alphaLabel.setLabelFor(alphaCombobox);
+			alphaCombobox.setMaximumSize(new Dimension(116, 20));
+			alphaCombobox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 0, 1, 2, 3, 4, 5 }));
+			alphaCombobox.setSelectedIndex(gui.getSettingsAlpha());
+			alphaPanel.add(alphaCombobox);
+		}
 		
-		JLabel alphaLabel = new JLabel(RustUI.getString(Type.SETTINGS_ALPHAINDEX_LABEL));
-		alphaLabel.setToolTipText(RustUI.getString(Type.SETTINGS_ALPHAINDEX_TOOLTIP));
-		alphaLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-		alphaLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		alphaPanel.add(alphaLabel);
+		{
+			JPanel scalingPanel = new JPanel();
+			scalingPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			scalingPanel.setBorder(new EmptyBorder(5, 5, 0, 5));
+			scalingPanel.setPreferredSize(optionSize);
+			scalingPanel.setMinimumSize(optionSize);
+			scalingPanel.setMaximumSize(optionSize);
+			panel.add(scalingPanel);
+			scalingPanel.setLayout(new BoxLayout(scalingPanel, BoxLayout.Y_AXIS));
+			
+			JLabel scalingLabel = new JLabel(RustUI.getString(Type.SETTINGS_SCALINGTYPE_LABEL));
+			scalingLabel.setToolTipText(RustUI.getString(Type.SETTINGS_SCALINGTYPE_TOOLTIP));
+			scalingLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			scalingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			scalingPanel.add(scalingLabel);
+			
+			scalingCombobox = new JComboBox<String>();
+			scalingCombobox.setAlignmentX(Component.LEFT_ALIGNMENT);
+			scalingCombobox.setFocusable(false);
+			scalingLabel.setLabelFor(scalingCombobox);
+			scalingCombobox.setMaximumSize(new Dimension(116, 20));
+			scalingCombobox.setModel(new DefaultComboBoxModel<String>(new String[] { "NEAREST", "BILINEAR", "BICUBIC" }));
+			scalingCombobox.setSelectedIndex(gui.getSettingsScaling());
+			scalingPanel.add(scalingCombobox);
+		}
 		
-		alphaCombobox = new JComboBox<Integer>();
-		alphaCombobox.setAlignmentX(Component.LEFT_ALIGNMENT);
-		alphaCombobox.setFocusable(false);
-		alphaLabel.setLabelFor(alphaCombobox);
-		alphaCombobox.setMaximumSize(new Dimension(116, 20));
-		alphaCombobox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 0, 1, 2, 3, 4, 5 }));
-		alphaCombobox.setSelectedIndex(gui.getSettingsAlpha());
-		alphaPanel.add(alphaCombobox);
+		{
+			JPanel shapesPanel = new JPanel();
+			shapesPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			shapesPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+			shapesPanel.setPreferredSize(optionSize);
+			shapesPanel.setMinimumSize(optionSize);
+			shapesPanel.setMaximumSize(optionSize);
+			panel.add(shapesPanel);
+			shapesPanel.setLayout(new BoxLayout(shapesPanel, BoxLayout.Y_AXIS));
+			
+			JLabel shapesLabel = new JLabel(RustUI.getString(Type.SETTINGS_MAXSHAPES_LABEL));
+			shapesLabel.setToolTipText(RustUI.getString(Type.SETTINGS_MAXSHAPES_TOOLTIP));
+			shapesLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			shapesLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			shapesPanel.add(shapesLabel);
+			
+			maxShapesField = new JIntegerField(gui.getSettingsMaxShapes());
+			maxShapesField.setAlignmentX(Component.LEFT_ALIGNMENT);
+			maxShapesField.setFocusable(true);
+			maxShapesField.setMaximumSize(new Dimension(116, 20));
+			shapesLabel.setLabelFor(maxShapesField);
+			shapesPanel.add(maxShapesField);
+		}
 		
-		JPanel shapesPanel = new JPanel();
-		shapesPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		shapesPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		shapesPanel.setPreferredSize(optionSize);
-		shapesPanel.setMinimumSize(optionSize);
-		shapesPanel.setMaximumSize(optionSize);
-		panel.add(shapesPanel);
-		shapesPanel.setLayout(new BoxLayout(shapesPanel, BoxLayout.Y_AXIS));
-		
-		JLabel shapesLabel = new JLabel(RustUI.getString(Type.SETTINGS_MAXSHAPES_LABEL));
-		shapesLabel.setToolTipText(RustUI.getString(Type.SETTINGS_MAXSHAPES_TOOLTIP));
-		shapesLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-		shapesLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		shapesPanel.add(shapesLabel);
-		
-		maxShapesField = new JIntegerField(gui.getSettingsMaxShapes());
-		maxShapesField.setAlignmentX(Component.LEFT_ALIGNMENT);
-		maxShapesField.setFocusable(true);
-		maxShapesField.setMaximumSize(new Dimension(116, 20));
-		shapesLabel.setLabelFor(maxShapesField);
-		shapesPanel.add(maxShapesField);
-		
-		JPanel callbackPanel = new JPanel();
-		callbackPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		callbackPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		callbackPanel.setPreferredSize(optionSize);
-		callbackPanel.setMinimumSize(optionSize);
-		callbackPanel.setMaximumSize(optionSize);
-		panel.add(callbackPanel);
-		callbackPanel.setLayout(new BoxLayout(callbackPanel, BoxLayout.Y_AXIS));
-		
-		JLabel callbackLabel = new JLabel(RustUI.getString(Type.SETTINGS_CALLBACKINTERVAL_LABEL));
-		callbackLabel.setToolTipText(RustUI.getString(Type.SETTINGS_CALLBACKINTERVAL_TOOLTIP));
-		callbackLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-		callbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		callbackPanel.add(callbackLabel);
-		
-		callbackIntervalField = new JIntegerField(gui.getSettingsCallbackInterval());
-		callbackIntervalField.setAlignmentX(Component.LEFT_ALIGNMENT);
-		callbackIntervalField.setFocusable(true);
-		callbackIntervalField.setMaximumSize(new Dimension(116, 20));
-		callbackLabel.setLabelFor(callbackIntervalField);
-		callbackPanel.add(callbackIntervalField);
+		{
+			JPanel callbackPanel = new JPanel();
+			callbackPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			callbackPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+			callbackPanel.setPreferredSize(optionSize);
+			callbackPanel.setMinimumSize(optionSize);
+			callbackPanel.setMaximumSize(optionSize);
+			panel.add(callbackPanel);
+			callbackPanel.setLayout(new BoxLayout(callbackPanel, BoxLayout.Y_AXIS));
+			
+			JLabel callbackLabel = new JLabel(RustUI.getString(Type.SETTINGS_CALLBACKINTERVAL_LABEL));
+			callbackLabel.setToolTipText(RustUI.getString(Type.SETTINGS_CALLBACKINTERVAL_TOOLTIP));
+			callbackLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			callbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			callbackPanel.add(callbackLabel);
+			
+			callbackIntervalField = new JIntegerField(gui.getSettingsCallbackInterval());
+			callbackIntervalField.setAlignmentX(Component.LEFT_ALIGNMENT);
+			callbackIntervalField.setFocusable(true);
+			callbackIntervalField.setMaximumSize(new Dimension(116, 20));
+			callbackLabel.setLabelFor(callbackIntervalField);
+			callbackPanel.add(callbackIntervalField);
+		}
 		
 		{
 			JPanel clickIntervalPanel = new JPanel();
@@ -351,6 +384,7 @@ public class BobRustSettingsDialog {
 		dialog.setVisible(true);
 		
 		gui.setSettingsAlpha(alphaCombobox.getSelectedIndex());
+		gui.setSettingsScaling(scalingCombobox.getSelectedIndex());
 		
 		try {
 			gui.setSettingsMaxShapes(maxShapesField.getNumberValue());

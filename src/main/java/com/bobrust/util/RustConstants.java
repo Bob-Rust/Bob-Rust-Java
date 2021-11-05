@@ -13,6 +13,11 @@ public class RustConstants {
 	// Used by JRandomPanel.
 	public static final boolean ENABLE_RANDOM_BACKGROUND = false;
 	
+	// Used for image scaling.
+	public static final int IMAGE_SCALING_NEAREST = 0;
+	public static final int IMAGE_SCALING_BILINEAR = 1;
+	public static final int IMAGE_SCALING_BICUBIC = 2;
+	
 	// TODO: Approximate these.
 	public static final Color CANVAS_AVERAGE = new Color(0x8f887c);
 	public static final Color WOODEN_AVERAGE = new Color(0x6d5033);
