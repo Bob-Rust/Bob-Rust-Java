@@ -582,7 +582,7 @@ public class BobRustOverlay extends JPanel {
 					signType.width,
 					signType.height,
 					bgColor,
-					RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR
+					gui.getSettingsScaling()
 				);
 				
 				// Apply the ICC cmyk lut filter.

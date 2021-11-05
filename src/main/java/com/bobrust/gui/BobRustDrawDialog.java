@@ -212,18 +212,18 @@ public class BobRustDrawDialog {
 	
 	private boolean findColorPalette() {
 		// The bounds of the screen.
-		Rectangle screen = overlay.dialog.getBounds();
+		Rectangle screenBounds = overlay.dialog.getBounds();
 		
 		// Check for bright red on the edge of the screen.
 		try {
-			BufferedImage screenshot = new Robot().createScreenCapture(screen);
+			BufferedImage screenshot = new Robot().createScreenCapture(screenBounds);
 			Point paletteLocation = rustPalette.findPalette(screenshot);
 			
 			if(paletteLocation != null) {
 				overlay.colorRegion.setLocation(paletteLocation.x, paletteLocation.y + 132 + 100);
-				Point paletteScreenLocation = new Point(screen.x + paletteLocation.x, screen.y + paletteLocation.y);
+				Point paletteScreenLocation = new Point(screenBounds.x + paletteLocation.x, screenBounds.y + paletteLocation.y);
 				
-				if(rustPalette.analyse(dialog, screenshot, screen.getLocation(), paletteScreenLocation)) {
+				if(rustPalette.analyse(dialog, screenshot, screenBounds, paletteScreenLocation)) {
 					// Found the palette.
 					LogUtils.info("Found the color palette (%d, %d)", paletteScreenLocation.x, paletteScreenLocation.y);
 					overlay.repaint();

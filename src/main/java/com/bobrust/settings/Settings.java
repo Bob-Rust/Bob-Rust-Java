@@ -7,6 +7,7 @@ public enum Settings {
 	IMAGE_PATH("editor.imagepath"),
 	PRESET_PATH("editor.presetpath"),
 	SETTINGS_ALPHA("settings.alpha"),
+	SETTINGS_SCALING("settings.scaling"),
 	SETTINGS_MAX_SHAPES("settings.maxshapes"),
 	SETTINGS_CALLBACK_INTERVAL("settings.callbackinterval"),
 	SETTINGS_SIGN_TYPE("settings.signtype"),

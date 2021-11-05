@@ -9,6 +9,7 @@ import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.BobRustOverlay;
+import com.bobrust.logging.LogUtils;
 import com.bobrust.util.RustUtil;
 import com.bobrust.util.Sign;
 
@@ -30,6 +31,8 @@ public class BobRustPainter {
 	}
 	
 	public boolean startDrawing(BlobList list) throws Exception {
+		if(list.size() < 1) return true;
+		
 		Robot robot = new Robot();
 		
 		Rectangle canvas = overlay.getCanvasArea();
@@ -56,13 +59,13 @@ public class BobRustPainter {
 		
 		{
 			// Make sure that we have selected the game.
-			clickPoint(robot, palette.getFocusPoint(), 4, autoDelay);
+			clickPoint(robot, palette.getFocusPoint(), 4, 50);
 			
 			// Make sure that we have selected the correct alpha.
-			clickPoint(robot, palette.getAlphaButton(alphaSetting), 4, autoDelay);
+			clickPoint(robot, palette.getAlphaButton(alphaSetting), 4, 50);
 			
 			// Make sure that we have selected the correct shape.
-			clickPoint(robot, palette.getShapeButton(shapeSetting), 4, autoDelay);
+			clickPoint(robot, palette.getShapeButton(shapeSetting), 4, 50);
 		}
 		
 		// We create an update thread because repainting graphics
@@ -98,19 +101,31 @@ public class BobRustPainter {
 			Point lastPoint = new Point(0, 0);
 			int lastColor = -1;
 			int lastSize = -1;
+			
+			{
+				Blob first = blobList.get(0);
+				
+				// Select first color to prevent exception.
+				clickPoint(robot, palette.getColorButton(BorstUtils.getClosestColor(first.color)), 4, 50);
+				lastColor = first.colorIndex;
+			}
+			
 			for(int i = 0, l = 1; i < count; i++, l++) {
 				Blob blob = blobList.get(i);
 				
 				// Change the size.
 				if(lastSize != blob.sizeIndex) {
-					clickPoint(robot, palette.getSizeButton(blob.sizeIndex), autoDelay);
+					clickSize(robot, palette.getSizeButton(blob.sizeIndex), 20, autoDelay);
 					lastSize = blob.sizeIndex;
 					l++;
 				}
 				
 				// Change the color.
 				if(lastColor != blob.colorIndex) {
-					clickPoint(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), autoDelay);
+					if(!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 20, autoDelay)) {
+						LogUtils.warn("Potentially failed to change color! Will still keep try drawing");
+					}
+					
 					lastColor = blob.colorIndex;
 					l++;
 				}
@@ -177,6 +192,38 @@ public class BobRustPainter {
 		
 		//time = (System.nanoTime() / 1000000.0) - time;
 		//System.out.printf("Time: took %.4f, wanted: %.4f\n", time, delay * 3.0);
+	}
+	
+	private void clickSize(Robot robot, Point point, int maxAttempts, double delay) {
+		// Make sure that we press the size
+		while(maxAttempts-- > 0) {
+			clickPoint(robot, point, delay);
+			
+			Color after = robot.getPixelColor(point.x, point.y + 8);
+			if(after.getGreen() > 120) {
+				return;
+			}
+		}
+		
+		throw new IllegalStateException("Failed to select size");
+	}
+	
+	private boolean clickColor(Robot robot, Point point, int maxAttempts, double delay) {
+		Point colorPreview = palette.getColorPreview();
+		Color before = robot.getPixelColor(colorPreview.x, colorPreview.y);
+		
+		// Make sure that we press the size
+		while(maxAttempts-- > 0) {
+			clickPoint(robot, point, delay);
+			
+			Color after = robot.getPixelColor(colorPreview.x, colorPreview.y);
+			if(!before.equals(after)) {
+				return true;
+			}
+		}
+		
+//		throw new IllegalStateException("Failed to select color");
+		return false;
 	}
 	
 	/**
