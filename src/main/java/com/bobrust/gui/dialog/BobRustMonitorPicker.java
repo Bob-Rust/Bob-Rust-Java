@@ -1,4 +1,4 @@
-package com.bobrust.gui;
+package com.bobrust.gui.dialog;
 
 import java.awt.*;
 import java.awt.Dialog.ModalityType;

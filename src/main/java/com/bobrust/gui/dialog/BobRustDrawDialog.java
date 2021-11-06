@@ -1,4 +1,4 @@
-package com.bobrust.gui;
+package com.bobrust.gui.dialog;
 
 import java.awt.*;
 import java.awt.Dialog.ModalityType;
@@ -10,6 +10,8 @@ import javax.swing.event.HyperlinkEvent;
 
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.generator.sorter.BorstSorter;
+import com.bobrust.gui.BobRustEditor;
+import com.bobrust.gui.BobRustOverlay;
 import com.bobrust.gui.comp.JIntegerField;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
@@ -45,7 +47,7 @@ public class BobRustDrawDialog {
 		this.rustPalette = new BobRustPalette();
 		this.rustPainter = new BobRustPainter(gui, overlay, rustPalette);
 		
-		dialog = new JDialog(parent, "Draw Settings", ModalityType.APPLICATION_MODAL);
+		dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_DRAWDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		dialog.setResizable(false);
 		dialog.setSize(REGULAR);
 		dialog.getContentPane().setLayout(new BorderLayout(0, 0));

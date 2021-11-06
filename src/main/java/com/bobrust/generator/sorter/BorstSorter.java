@@ -1,6 +1,7 @@
 package com.bobrust.generator.sorter;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 import com.bobrust.generator.BorstUtils;
 
@@ -137,9 +138,7 @@ public class BorstSorter {
 			
 			// Takes 4600 ms for 60000 shapes
 			// Use the quad tree to efficiently calculate the collisions
-			List<Integer> indexList = new ArrayList<>(array.length);
-			for(int i = 1, len = array.length; i < len; i++) indexList.add(i);
-			indexList.parallelStream().forEach((i) -> {
+			IntStream.range(1, array.length).parallel().forEach((i) -> {
 				// Worst case senario O(N^2) if every circle is in the same position
 				map[i] = get_intersections(array[i], array, tree);
 				map[i].reverse();

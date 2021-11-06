@@ -23,6 +23,8 @@ import com.bobrust.generator.Model;
 import com.bobrust.gui.comp.JRandomPanel;
 import com.bobrust.gui.comp.JStyledButton;
 import com.bobrust.gui.comp.JStyledToggleButton;
+import com.bobrust.gui.dialog.BobRustDrawDialog;
+import com.bobrust.gui.dialog.BobRustMonitorPicker;
 import com.bobrust.lang.RustTranslator;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
@@ -101,7 +103,6 @@ public class BobRustOverlay extends JPanel {
 		public void mousePressed(MouseEvent e) {
 			isToolbarArea = e.getX() < 137 - RECTANGLE_SELECTION_SIZE;
 			if(isToolbarArea) {
-				// If the point is in the action panel we should not compute anything
 				return;
 			}
 			
@@ -109,92 +110,57 @@ public class BobRustOverlay extends JPanel {
 			if(originPoint.x < 137) {
 				originPoint.x = 137;
 			}
-			if(action == OverlayType.SELECT_CANVAS_REGION) rectangle = canvasRegion;
-			if(action == OverlayType.SELECT_IMAGE_REGION) rectangle = imageRegion;
 			
-			switch(action) {
-				case SELECT_CANVAS_REGION, SELECT_IMAGE_REGION -> {
-					// Keep a copy of the original.
-					original.setBounds(rectangle);
-					
-					Rectangle larger = new Rectangle(rectangle);
-					larger.setBounds(
-						rectangle.x - RECTANGLE_SELECTION_SIZE,
-						rectangle.y - RECTANGLE_SELECTION_SIZE,
-						rectangle.x + rectangle.width + RECTANGLE_SELECTION_SIZE * 2,
-						rectangle.y + rectangle.height + RECTANGLE_SELECTION_SIZE * 2
-					);
-					
-					Point mouse = e.getPoint();
-					
-					if(!larger.contains(mouse)) {
-						resizeOption = ResizeOption.ALL;
-					} else {
-						boolean top = Math.abs(rectangle.y - mouse.y) < RECTANGLE_SELECTION_SIZE;
-						boolean right = Math.abs(rectangle.x + rectangle.width - mouse.x) < RECTANGLE_SELECTION_SIZE;
-						boolean bottom  = Math.abs(rectangle.y + rectangle.height - mouse.y) < RECTANGLE_SELECTION_SIZE;
-						boolean left = Math.abs(rectangle.x - mouse.x) < RECTANGLE_SELECTION_SIZE;
-						
-						if(top) {
-							resizeOption = right ? ResizeOption.TOP_RIGHT:(left ? ResizeOption.TOP_LEFT:ResizeOption.TOP);
-						} else if(bottom) {
-							resizeOption = right ? ResizeOption.BOTTOM_RIGHT:(left ? ResizeOption.BOTTOM_LEFT:ResizeOption.BOTTOM);
-						} else {
-							resizeOption = right ? ResizeOption.RIGHT:(left ? ResizeOption.LEFT:ResizeOption.ALL);
-						}
-					}
-					
-					modifyRectangle(e.getPoint());
-				}
-				default -> {
-					
-				}
-			}
+			updateResizeOption(e.getPoint());
+			modifyRectangle(e.getPoint());
 		}
 		
+		@Override
 		public void mouseMoved(MouseEvent e) {
 			if(isToolbarArea) {
 				return;
 			}
 			
-			if(action == OverlayType.SELECT_CANVAS_REGION) rectangle = canvasRegion;
-			if(action == OverlayType.SELECT_IMAGE_REGION) rectangle = imageRegion;
+			updateResizeOption(e.getPoint());
+			repaint();
+		}
+		
+		private void updateResizeOption(Point mouse) {
+			if(action == OverlayType.SELECT_CANVAS_REGION) {
+				rectangle = canvasRegion;
+			} else if(action == OverlayType.SELECT_IMAGE_REGION) {
+				rectangle = imageRegion;
+			} else {
+				// Return if the action was not canvas or image.
+				return;
+			}
 			
-			switch(action) {
-				case SELECT_CANVAS_REGION, SELECT_IMAGE_REGION -> {
-					// Keep a copy of the original.
-					original.setBounds(rectangle);
-					
-					Point mouse = e.getPoint();
-					
-					Rectangle larger = new Rectangle(rectangle);
-					larger.setBounds(
-						rectangle.x - RECTANGLE_SELECTION_SIZE,
-						rectangle.y - RECTANGLE_SELECTION_SIZE,
-						rectangle.width + RECTANGLE_SELECTION_SIZE * 2,
-						rectangle.height + RECTANGLE_SELECTION_SIZE * 2
-					);
-					
-					if(!larger.contains(mouse)) {
-						resizeOption = ResizeOption.ALL;
-					} else {
-						boolean top = Math.abs(rectangle.y - mouse.y) < RECTANGLE_SELECTION_SIZE;
-						boolean right = Math.abs(rectangle.x + rectangle.width - mouse.x) < RECTANGLE_SELECTION_SIZE;
-						boolean bottom  = Math.abs(rectangle.y + rectangle.height - mouse.y) < RECTANGLE_SELECTION_SIZE;
-						boolean left = Math.abs(rectangle.x - mouse.x) < RECTANGLE_SELECTION_SIZE;
-						
-						if(top) {
-							resizeOption = right ? ResizeOption.TOP_RIGHT:(left ? ResizeOption.TOP_LEFT:ResizeOption.TOP);
-						} else if(bottom) {
-							resizeOption = right ? ResizeOption.BOTTOM_RIGHT:(left ? ResizeOption.BOTTOM_LEFT:ResizeOption.BOTTOM);
-						} else {
-							resizeOption = right ? ResizeOption.RIGHT:(left ? ResizeOption.LEFT:ResizeOption.ALL);
-						}
-					}
-					
-					repaint();
+			// Keep a copy of the original.
+			original.setBounds(rectangle);
+			
+			Rectangle larger = new Rectangle(rectangle);
+			larger.setBounds(
+				rectangle.x - RECTANGLE_SELECTION_SIZE,
+				rectangle.y - RECTANGLE_SELECTION_SIZE,
+				rectangle.width + RECTANGLE_SELECTION_SIZE * 2,
+				rectangle.height + RECTANGLE_SELECTION_SIZE * 2
+			);
+			
+			if(!larger.contains(mouse)) {
+				resizeOption = ResizeOption.ALL;
+			} else {
+				boolean top = Math.abs(rectangle.y - mouse.y) < RECTANGLE_SELECTION_SIZE;
+				boolean right = Math.abs(rectangle.x + rectangle.width - mouse.x) < RECTANGLE_SELECTION_SIZE;
+				boolean bottom  = Math.abs(rectangle.y + rectangle.height - mouse.y) < RECTANGLE_SELECTION_SIZE;
+				boolean left = Math.abs(rectangle.x - mouse.x) < RECTANGLE_SELECTION_SIZE;
+				
+				if(top) {
+					resizeOption = right ? ResizeOption.TOP_RIGHT:(left ? ResizeOption.TOP_LEFT:ResizeOption.TOP);
+				} else if(bottom) {
+					resizeOption = right ? ResizeOption.BOTTOM_RIGHT:(left ? ResizeOption.BOTTOM_LEFT:ResizeOption.BOTTOM);
+				} else {
+					resizeOption = right ? ResizeOption.RIGHT:(left ? ResizeOption.LEFT:ResizeOption.ALL);
 				}
-				default -> {}
 			}
 		}
 		
@@ -364,7 +330,7 @@ public class BobRustOverlay extends JPanel {
 		});
 		
 		btnMaximize = new JStyledButton(RustUI.getString(Type.ACTION_MAKEFULLSCREEN_ON));
-		btnMaximize.setMaximumSize(new Dimension(120, 24));
+		btnMaximize.setMaximumSize(buttonSize);
 		btnMaximize.addActionListener(this::changeFullscreen);
 		actionPanel.add(btnMaximize);
 		actionPanel.add(btnSelectMonitor);
@@ -397,7 +363,7 @@ public class BobRustOverlay extends JPanel {
 			labels.add(lblRegions);
 			
 			btnHideRegions = new JStyledToggleButton(RustUI.getString(Type.ACTION_SHOWREGIONS_ON));
-			btnHideRegions.setMaximumSize(new Dimension(120, 24));
+			btnHideRegions.setMaximumSize(buttonSize);
 			btnHideRegions.setSelected(true);
 			btnHideRegions.addActionListener((event) -> setHideRegions(btnHideRegions.isSelected()));
 			regionsPanel.add(btnHideRegions);
@@ -455,7 +421,7 @@ public class BobRustOverlay extends JPanel {
 			previewPanel.add(btnPauseGenerate);
 			
 			btnResetGenerate = new JStyledButton(RustUI.getString(Type.ACTION_RESETGENERATE_BUTTON));
-			btnResetGenerate.setMaximumSize(new Dimension(120, 24));
+			btnResetGenerate.setMaximumSize(buttonSize);
 			btnResetGenerate.setEnabled(false);
 			btnResetGenerate.addActionListener((event) -> resetGeneration());
 			previewPanel.add(btnResetGenerate);
@@ -490,7 +456,7 @@ public class BobRustOverlay extends JPanel {
 			labels.add(lblPaintImage);
 			
 			btnDrawImage = new JStyledButton(RustUI.getString(Type.ACTION_DRAWIMAGE_BUTTON));
-			btnDrawImage.setMaximumSize(new Dimension(120, 24));
+			btnDrawImage.setMaximumSize(buttonSize);
 			btnDrawImage.setEnabled(false);
 			btnDrawImage.addActionListener((event) -> {
 				drawDialog.openDialog(btnDrawImage.getLocationOnScreen());
@@ -518,17 +484,17 @@ public class BobRustOverlay extends JPanel {
 			labels.add(lblHelp);
 			
 			JStyledButton btnGithubIssue = new JStyledButton(RustUI.getString(Type.ACTION_REPORTISSUE_BUTTON));
-			btnGithubIssue.setMaximumSize(new Dimension(120, 24));
+			btnGithubIssue.setMaximumSize(buttonSize);
 			btnGithubIssue.addActionListener((event) -> UrlUtils.openIssueUrl());
 			actionPanel.add(btnGithubIssue);
 			
 			JStyledButton btnDonate = new JStyledButton(RustUI.getString(Type.ACTION_DONATE_BUTTON));
-			btnDonate.setMaximumSize(new Dimension(120, 24));
+			btnDonate.setMaximumSize(buttonSize);
 			btnDonate.addActionListener((event) -> UrlUtils.openDonationUrl());
 			actionPanel.add(btnDonate);
 			
 			JStyledButton btnAbout = new JStyledButton(RustUI.getString(Type.ACTION_ABOUT_BUTTON));
-			btnAbout.setMaximumSize(new Dimension(120, 24));
+			btnAbout.setMaximumSize(buttonSize);
 			btnAbout.addActionListener((event) -> {
 				String message = "Created by HardCoded & Sekwah41\n" +
 								 "\n" +
@@ -623,7 +589,7 @@ public class BobRustOverlay extends JPanel {
 		}
 	}
 	
-	protected void setHideRegions(boolean enable) {
+	public void setHideRegions(boolean enable) {
 		if(enable) {
 			btnHideRegions.setText(RustUI.getString(Type.ACTION_SHOWREGIONS_ON));
 		} else {
@@ -649,11 +615,11 @@ public class BobRustOverlay extends JPanel {
 	}
 	
 	public void updateEditor() {
-		setBorder(isFullscreen ? new LineBorder(gui.getBorderColor(), BORDER_SIZE):null);
-		actionPanel.setBackground(gui.getToolbarColor());
+		setBorder(isFullscreen ? new LineBorder(gui.getEditorBorderColor(), BORDER_SIZE):null);
+		actionPanel.setBackground(gui.getEditorToolbarColor());
 		
 		for(JLabel label : labels) {
-			label.setForeground(gui.getLabelColor());
+			label.setForeground(gui.getEditorLabelColor());
 		}
 		
 		generationLabel.setLocation((topBarPanel.getWidth() - generationLabel.getWidth()) / 2, generationLabel.getY());
@@ -677,13 +643,13 @@ public class BobRustOverlay extends JPanel {
 		return monitorPicker.getMonitor().getBounds();
 	}
 	
-	protected void setEstimatedGenerationLabel(int index, int maxShapes) {
+	public void setEstimatedGenerationLabel(int index, int maxShapes) {
 		generationLabel.setText("%d/%d shapes generated".formatted(index, maxShapes));
 		long time = (long)(index * 1.1 * (ESTIMATE_DELAY_OFFSET + 1000.0 / (double)gui.getSettingsClickInterval()));
 		generationInfo.setText("Estimated %s".formatted(RustTranslator.getTimeMinutesMessage(time)));
 	}
 	
-	protected void setExactGenerationLabel(long time) {
+	public void setExactGenerationLabel(long time) {
 		generationInfo.setText("Time %s".formatted(RustTranslator.getTimeMinutesMessage(time)));
 	}
 	
@@ -742,7 +708,7 @@ public class BobRustOverlay extends JPanel {
 		dialog.setVisible(true);
 	}
 	
-	protected BorstData getBorstData() {
+	public BorstData getBorstData() {
 		return lastData;
 	}
 	
@@ -754,7 +720,7 @@ public class BobRustOverlay extends JPanel {
 		repaint();
 		
 		if(data.isDone()) {
-			btnPauseGenerate.setText("Pause Generate");
+			btnPauseGenerate.setText(RustUI.getString(Type.ACTION_PAUSEGENERATE_ON));
 		}
 	}
 	
@@ -840,38 +806,43 @@ public class BobRustOverlay extends JPanel {
 				}
 			}
 			
-			// TODO: Find a better way to draw these than crashing the application. xd
-			try {
+
+			{
 				BobRustPalette palette = drawDialog.getPalette();
-				Map<BorstColor, Point> map = palette.getColorMap();
-				
-				g.setColor(Color.white);
-				Point screen = dialog.getLocationOnScreen();
-				for(Map.Entry<BorstColor, Point> entry : map.entrySet()) {
-					Point point = entry.getValue();
-					Point sc = new Point(point.x - screen.x, point.y - screen.y);
-					g.drawOval(sc.x - 15, sc.y - 15, 30, 29);
+				if(palette.hasPalette()) {
+					Map<BorstColor, Point> map = palette.getColorMap();
+					
+					g.setColor(Color.white);
+					Point screen = dialog.getLocationOnScreen();
+					for(Map.Entry<BorstColor, Point> entry : map.entrySet()) {
+						Point point = entry.getValue();
+						Point sc = new Point(point.x - screen.x, point.y - screen.y);
+						g.drawOval(sc.x - 15, sc.y - 15, 30, 29);
+					}
+					
+					// TODO: Find a better way to draw these than crashing the application. xd
+					try {
+						for(int i = 0; i < 6; i++) {
+							Point point = palette.getAlphaButton(i);
+							Point sc = new Point(point.x - screen.x, point.y - screen.y);
+							g.drawOval(sc.x - 10, sc.y - 10, 20, 20);
+						}
+						
+						for(int i = 0; i < 6; i++) {
+							Point point = palette.getSizeButton(i);
+							Point sc = new Point(point.x - screen.x, point.y - screen.y);
+							g.drawOval(sc.x - 10, sc.y - 10, 20, 20);
+						}
+						
+						for(int i = 0; i < 4; i++) {
+							Point point = palette.getShapeButton(i);
+							Point sc = new Point(point.x - screen.x, point.y - screen.y);
+							g.drawOval(sc.x - 15, sc.y - 15, 30, 29);
+						}
+					} catch(Exception e) {
+						e.printStackTrace();
+					}
 				}
-				
-				for(int i = 0; i < 6; i++) {
-					Point point = palette.getAlphaButton(i);
-					Point sc = new Point(point.x - screen.x, point.y - screen.y);
-					g.drawOval(sc.x - 10, sc.y - 10, 20, 20);
-				}
-				
-				for(int i = 0; i < 6; i++) {
-					Point point = palette.getSizeButton(i);
-					Point sc = new Point(point.x - screen.x, point.y - screen.y);
-					g.drawOval(sc.x - 10, sc.y - 10, 20, 20);
-				}
-				
-				for(int i = 0; i < 4; i++) {
-					Point point = palette.getShapeButton(i);
-					Point sc = new Point(point.x - screen.x, point.y - screen.y);
-					g.drawOval(sc.x - 15, sc.y - 15, 30, 29);
-				}
-			} catch(Exception e) {
-				
 			}
 		}
 	}

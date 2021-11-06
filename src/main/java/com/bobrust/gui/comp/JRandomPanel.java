@@ -26,8 +26,8 @@ public class JRandomPanel extends JPanel {
 		super.paintComponent(gr);
 		
 		if(RustConstants.ENABLE_RANDOM_BACKGROUND) {
-			if(!gui.getToolbarColor().equals(lastToolbarColor) || randomPaint == null) {
-				lastToolbarColor = gui.getToolbarColor();
+			if(!gui.getEditorToolbarColor().equals(lastToolbarColor) || randomPaint == null) {
+				lastToolbarColor = gui.getEditorToolbarColor();
 				BufferedImage randomImage = getRandomImage(128, 128, lastToolbarColor.darker(), 0, 120, 0);
 				randomPaint = new TexturePaint(randomImage, new Rectangle2D.Double(0, 0, 128, 128));
 			}
