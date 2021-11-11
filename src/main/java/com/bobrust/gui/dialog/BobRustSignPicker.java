@@ -1,4 +1,4 @@
-package com.bobrust.gui;
+package com.bobrust.gui.dialog;
 
 import java.awt.*;
 import java.awt.Dialog.ModalityType;
@@ -11,7 +11,10 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.comp.JStyledToggleButton;
+import com.bobrust.lang.RustUI;
+import com.bobrust.lang.RustUI.Type;
 import com.bobrust.util.RustSigns;
 import com.bobrust.util.Sign;
 
@@ -20,7 +23,7 @@ public class BobRustSignPicker {
 	private Sign selectedSign;
 	
 	public BobRustSignPicker(BobRustEditor gui, JDialog parent) {
-		dialog = new JDialog(parent, "Sign picker", ModalityType.APPLICATION_MODAL);
+		dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SIGNPICKERDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		dialog.setSize(520, 670);
 		dialog.setResizable(false);
 		dialog.getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
@@ -74,7 +77,6 @@ public class BobRustSignPicker {
 			button.setMinimumSize(buttonSize);
 			button.setMaximumSize(buttonSize);
 			button.addActionListener(buttonListener);
-			button.setFocusable(false);
 			dialog.getContentPane().add(button);
 			
 			buttonGroup.add(button);

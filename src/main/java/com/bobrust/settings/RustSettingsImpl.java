@@ -6,9 +6,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 import com.bobrust.generator.BorstSettings;
-import com.bobrust.util.RustConstants;
-import com.bobrust.util.RustSigns;
-import com.bobrust.util.Sign;
+import com.bobrust.util.*;
 
 public abstract class RustSettingsImpl implements RustSettings {
 	private static final File CONFIG_FILE = new File(System.getProperty("user.home"), "bobrust.properties");
@@ -54,41 +52,20 @@ public abstract class RustSettingsImpl implements RustSettings {
 			e.printStackTrace();
 		}
 		
-		Integer borderColor = getSettingInteger(Settings.BORDER_COLOR);
-		setBorderColor(borderColor == null ? null:new Color(borderColor));
-		
-		Integer toolbarColor = getSettingInteger(Settings.TOOLBAR_COLOR);
-		setToolbarColor(toolbarColor == null ? null:new Color(toolbarColor));
-		
-		Integer labelColor = getSettingInteger(Settings.LABEL_COLOR);
-		setLabelColor(labelColor == null ? null:new Color(labelColor));
-		
+		setEditorBorderColor(getSettingsColor(Settings.BORDER_COLOR));
+		setEditorToolbarColor(getSettingsColor(Settings.TOOLBAR_COLOR));
+		setEditorLabelColor(getSettingsColor(Settings.LABEL_COLOR));
 		setEditorImageDirectory(getSettingsProperty(Settings.IMAGE_PATH));
 		setEditorPresetDirectory(getSettingsProperty(Settings.PRESET_PATH));
+		setEditorCallbackInterval(getSettingInteger(Settings.SETTINGS_CALLBACK_INTERVAL));
 		
-		Integer settingsAlpha = getSettingInteger(Settings.SETTINGS_ALPHA);
-		setSettingsAlpha(settingsAlpha == null ? 2:settingsAlpha);
-		
-		Integer settingsScaling = getSettingInteger(Settings.SETTINGS_SCALING);
-		setSettingsScaling(settingsScaling == null ? RustConstants.IMAGE_SCALING_NEAREST:settingsScaling);
-		
-		Integer settingsMaxShapes = getSettingInteger(Settings.SETTINGS_MAX_SHAPES);
-		setSettingsMaxShapes(settingsMaxShapes == null ? 4000:settingsMaxShapes);
-		
-		Integer settingsCallbackInterval = getSettingInteger(Settings.SETTINGS_CALLBACK_INTERVAL);
-		setSettingsCallbackInterval(settingsCallbackInterval == null ? 100:settingsCallbackInterval);
-		
-		String settingsSigntype = getSettingsProperty(Settings.SETTINGS_SIGN_TYPE);
-		setSettingsSign(RustSigns.SIGNS.get(settingsSigntype));
-		
-		Integer settingsBackground = getSettingInteger(Settings.SETTINGS_BACKGROUND);
-		setSettingsBackground(settingsBackground == null ? null:new Color(settingsBackground));
-		
-		Integer clickInterval = getSettingInteger(Settings.SETTINGS_CLICK_INTERVAL);
-		setSettingsClickInterval(clickInterval == null ? 30:clickInterval);
-		
-		Integer autosaveInterval = getSettingInteger(Settings.SETTINGS_AUTOSAVE_INTERVAL);
-		setSettingsAutosaveInterval(autosaveInterval == null ? 1000:autosaveInterval);
+		setSettingsAlpha(getSettingInteger(Settings.SETTINGS_ALPHA));
+		setSettingsScaling(getSettingInteger(Settings.SETTINGS_SCALING));
+		setSettingsMaxShapes(getSettingInteger(Settings.SETTINGS_MAX_SHAPES));
+		setSettingsSign(RustSigns.SIGNS.get(getSettingsProperty(Settings.SETTINGS_SIGN_TYPE)));
+		setSettingsBackground(getSettingsColor(Settings.SETTINGS_BACKGROUND));
+		setSettingsClickInterval(getSettingInteger(Settings.SETTINGS_CLICK_INTERVAL));
+		setSettingsAutosaveInterval(getSettingInteger(Settings.SETTINGS_AUTOSAVE_INTERVAL));
 		
 		allowSaving = true;
 		saveSettings();
@@ -100,6 +77,11 @@ public abstract class RustSettingsImpl implements RustSettings {
 		} catch(NumberFormatException e) {
 			return null;
 		}
+	}
+	
+	private Color getSettingsColor(Settings key) {
+		Integer rgb = getSettingInteger(key);
+		return rgb == null ? null:new Color(rgb);
 	}
 	
 	private String getSettingsProperty(Settings key) {
@@ -126,19 +108,19 @@ public abstract class RustSettingsImpl implements RustSettings {
 	}
 	
 	@Override
-	public void setBorderColor(Color color) {
+	public void setEditorBorderColor(Color color) {
 		borderColor = color == null ? new Color(0xff3333):color;
 		setProperty(Settings.BORDER_COLOR, borderColor.getRGB());
 	}
 
 	@Override
-	public void setToolbarColor(Color color) {
+	public void setEditorToolbarColor(Color color) {
 		toolbarColor = color == null ? new Color(0x4f4033):color;
 		setProperty(Settings.TOOLBAR_COLOR, toolbarColor.getRGB());
 	}
 
 	@Override
-	public void setLabelColor(Color color) {
+	public void setEditorLabelColor(Color color) {
 		labelColor = color == null ? Color.white:color;
 		setProperty(Settings.LABEL_COLOR, labelColor.getRGB());
 	}
@@ -154,29 +136,33 @@ public abstract class RustSettingsImpl implements RustSettings {
 		presetPath = pathname == null ? System.getProperty("user.home"):pathname;
 		setProperty(Settings.PRESET_PATH, presetPath);
 	}
+	
+	@Override
+	public void setEditorCallbackInterval(Integer interval) {
+		interval = interval == null ? 100:RustUtil.clamp(interval, 1, 99999);
+		borstSettings.CallbackInterval = interval;
+		setProperty(Settings.SETTINGS_CALLBACK_INTERVAL, interval);
+	}
 
 	@Override
-	public void setSettingsAlpha(int alpha) {
+	public void setSettingsAlpha(Integer alpha) {
+		alpha = alpha == null ? 2:RustUtil.clamp(alpha, 0, 5);
 		borstSettings.Alpha = alpha;
 		setProperty(Settings.SETTINGS_ALPHA, alpha);
 	}
 	
 	@Override
-	public void setSettingsScaling(int index) {
+	public void setSettingsScaling(Integer index) {
+		index = index == null ? RustConstants.IMAGE_SCALING_NEAREST:RustUtil.clamp(index, 0, 2);
 		scalingType = index;
 		setProperty(Settings.SETTINGS_SCALING, index);
 	}
 
 	@Override
-	public void setSettingsMaxShapes(int maxShapes) {
+	public void setSettingsMaxShapes(Integer maxShapes) {
+		maxShapes = maxShapes == null ? 4000:maxShapes;
 		borstSettings.MaxShapes = maxShapes;
 		setProperty(Settings.SETTINGS_MAX_SHAPES, maxShapes);
-	}
-
-	@Override
-	public void setSettingsCallbackInterval(int callbackInterval) {
-		borstSettings.CallbackInterval = callbackInterval;
-		setProperty(Settings.SETTINGS_CALLBACK_INTERVAL, callbackInterval);
 	}
 
 	@Override
@@ -192,29 +178,31 @@ public abstract class RustSettingsImpl implements RustSettings {
 	}
 
 	@Override
-	public void setSettingsClickInterval(int interval) {
+	public void setSettingsClickInterval(Integer interval) {
+		interval = interval == null ? 30:RustUtil.clamp(interval, 1, 99999);
 		clickInterval = interval;
-		setProperty(Settings.SETTINGS_CLICK_INTERVAL, clickInterval);
+		setProperty(Settings.SETTINGS_CLICK_INTERVAL, interval);
 	}
 
 	@Override
-	public void setSettingsAutosaveInterval(int interval) {
+	public void setSettingsAutosaveInterval(Integer interval) {
+		interval = interval == null ? 1000:RustUtil.clamp(interval, 1, 99999);
 		autosaveInterval = interval;
-		setProperty(Settings.SETTINGS_AUTOSAVE_INTERVAL, autosaveInterval);
+		setProperty(Settings.SETTINGS_AUTOSAVE_INTERVAL, interval);
 	}
 
 	@Override
-	public Color getBorderColor() {
+	public Color getEditorBorderColor() {
 		return Objects.requireNonNull(borderColor);
 	}
 
 	@Override
-	public Color getToolbarColor() {
+	public Color getEditorToolbarColor() {
 		return Objects.requireNonNull(toolbarColor);
 	}
 
 	@Override
-	public Color getLabelColor() {
+	public Color getEditorLabelColor() {
 		return Objects.requireNonNull(labelColor);
 	}
 
@@ -226,6 +214,11 @@ public abstract class RustSettingsImpl implements RustSettings {
 	@Override
 	public String getEditorPresetDirectory() {
 		return Objects.requireNonNull(presetPath);
+	}
+
+	@Override
+	public int getEditorCallbackInterval() {
+		return borstSettings.CallbackInterval;
 	}
 
 	@Override
@@ -241,11 +234,6 @@ public abstract class RustSettingsImpl implements RustSettings {
 	@Override
 	public int getSettingsMaxShapes() {
 		return borstSettings.MaxShapes;
-	}
-
-	@Override
-	public int getSettingsCallbackInterval() {
-		return borstSettings.CallbackInterval;
 	}
 
 	@Override

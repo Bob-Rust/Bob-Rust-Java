@@ -57,4 +57,8 @@ public class RustUtil {
 		
 		LogUtils.info("Size change: %d / %d", getScore(list), getScore(BorstSorter.sort(list)));
 	}
+
+	public static int clamp(int value, int min, int max) {
+		return value < min ? min:(value > max ? max:value);
+	}
 }

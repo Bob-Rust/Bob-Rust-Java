@@ -4,8 +4,6 @@ public class RustUI {
 	public enum Type {
 		SETTINGS_CLICKINTERVAL_LABEL("Clicks per second"),
 		SETTINGS_CLICKINTERVAL_TOOLTIP("The amount of clicks per second"),
-		SETTINGS_CALLBACKINTERVAL_LABEL("Callback Interval"),
-		SETTINGS_CALLBACKINTERVAL_TOOLTIP("The amount of shapes to generate before updating the screen"),
 		SETTINGS_AUTOSAVEINTERVAL_LABEL("Autosave Interval"),
 		SETTINGS_AUTOSAVEINTERVAL_TOOLTIP("How many presses done between saves"),
 		SETTINGS_ALPHAINDEX_LABEL("Alpha Index"),
@@ -21,6 +19,11 @@ public class RustUI {
 		SETTINGS_BACKGROUNDCOLOR_BUTTON("Background Color"),
 		SETTINGS_BACKGROUNDCOLOR_TOOLTIP("The background color of the canvas"),
 		
+		EDITOR_SIGNPICKERDIALOG_TITLE("Sign Picker"),
+		EDITOR_DRAWDIALOG_TITLE("Draw Settings"),
+		EDITOR_SETTINGSDIALOG_TITLE("Settings"),
+		EDITOR_TITLEBORDER_GENERATOR("Generator"),
+		EDITOR_TITLEBORDER_EDITOR("Editor"),
 		EDITOR_COLORDIALOG_TITLE("Color picker"),
 		
 		EDITOR_BORDERCOLOR_LABEL("Border Color"),
@@ -32,11 +35,17 @@ public class RustUI {
 		EDITOR_LABELCOLOR_LABEL("Label Color"),
 		EDITOR_LABELCOLOR_BUTTON("Label Color"),
 		EDITOR_LABELCOLOR_TOOLTIP("The label color of the editor"),
+		EDITOR_CALLBACKINTERVAL_LABEL("Callback Interval"),
+		EDITOR_CALLBACKINTERVAL_TOOLTIP("The amount of shapes to generate before updating the screen"),
 		EDITOR_RESETEDITOR_LABEL("Reset Editor"),
 		EDITOR_RESETEDITOR_BUTTON("Reset Editor"),
 		EDITOR_RESETEDITOR_TOOLTIP("Reset the editor colors"),
 		EDITOR_RESETEDITORDIALOG_TITLE("Warning"),
 		EDITOR_RESETEDITORDIALOG_MESSAGE("Are you sure you want to reset the editor?"),
+
+		EDITOR_COLORPICKER_BUTTON_DEFAULT("Default"),
+		EDITOR_COLORPICKER_BUTTON_CUSTOM("Custom"),
+		EDITOR_COLORPICKER_LABEL_CURRENTCOLOR("Current Color"),
 		
 		ACTION_OPTIONS_LABEL("Options"),
 		ACTION_MAKEFULLSCREEN_ON("Make Fullscreen"),
@@ -75,7 +84,6 @@ public class RustUI {
 		ACTION_SELECTCOLORPALETTE_BUTTON("Select Color Palette"),
 		
 		ACTION_PALETTEWARNINGDIALOG_TITLE("Could not find the palette"),
-		
 		
 		;
 		

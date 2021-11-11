@@ -7,6 +7,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import com.bobrust.gui.comp.JIntegerField;
+import com.bobrust.gui.dialog.BobRustColorPicker;
+import com.bobrust.gui.dialog.BobRustSignPicker;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
 import com.bobrust.logging.LogUtils;
@@ -27,7 +29,7 @@ public class BobRustSettingsDialog {
 	
 	public BobRustSettingsDialog(BobRustEditor gui, JDialog parent) {
 		this.gui = gui;
-		this.dialog = new JDialog(parent, "Settings", ModalityType.APPLICATION_MODAL);
+		this.dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SETTINGSDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		this.signPicker = new BobRustSignPicker(gui, dialog);
 		this.colorPicker = new BobRustColorPicker(gui, dialog);
 		dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.X_AXIS));
@@ -35,12 +37,12 @@ public class BobRustSettingsDialog {
 		Dimension optionSize = new Dimension(140, 50);
 		Dimension buttonSize = new Dimension(120, 23);
 		
-		JPanel panel = new JPanel();
-		panel.setAlignmentY(Component.TOP_ALIGNMENT);
-		panel.setBorder(new TitledBorder(null, "Generator", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		dialog.getContentPane().add(panel);
-		panel.setFocusable(true);
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		JPanel generatorPanel = new JPanel();
+		generatorPanel.setAlignmentY(Component.TOP_ALIGNMENT);
+		generatorPanel.setBorder(new TitledBorder(null, RustUI.getString(Type.EDITOR_TITLEBORDER_GENERATOR), TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		dialog.getContentPane().add(generatorPanel);
+		generatorPanel.setFocusable(true);
+		generatorPanel.setLayout(new BoxLayout(generatorPanel, BoxLayout.Y_AXIS));
 		
 		JPanel backgroundPanel = new JPanel();
 		backgroundPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -48,7 +50,7 @@ public class BobRustSettingsDialog {
 		backgroundPanel.setPreferredSize(optionSize);
 		backgroundPanel.setMinimumSize(optionSize);
 		backgroundPanel.setMaximumSize(optionSize);
-		panel.add(backgroundPanel);
+		generatorPanel.add(backgroundPanel);
 		backgroundPanel.setLayout(new BoxLayout(backgroundPanel, BoxLayout.Y_AXIS));
 		
 		JLabel lblBackgroundColor = new JLabel(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_LABEL));
@@ -74,7 +76,7 @@ public class BobRustSettingsDialog {
 		signPanel.setPreferredSize(optionSize);
 		signPanel.setMinimumSize(optionSize);
 		signPanel.setMaximumSize(optionSize);
-		panel.add(signPanel);
+		generatorPanel.add(signPanel);
 		signPanel.setLayout(new BoxLayout(signPanel, BoxLayout.Y_AXIS));
 		
 		JLabel signLabel = new JLabel(RustUI.getString(Type.SETTINGS_SIGNTYPE_LABEL));
@@ -103,7 +105,7 @@ public class BobRustSettingsDialog {
 			alphaPanel.setPreferredSize(optionSize);
 			alphaPanel.setMinimumSize(optionSize);
 			alphaPanel.setMaximumSize(optionSize);
-			panel.add(alphaPanel);
+			generatorPanel.add(alphaPanel);
 			alphaPanel.setLayout(new BoxLayout(alphaPanel, BoxLayout.Y_AXIS));
 			
 			JLabel alphaLabel = new JLabel(RustUI.getString(Type.SETTINGS_ALPHAINDEX_LABEL));
@@ -129,7 +131,7 @@ public class BobRustSettingsDialog {
 			scalingPanel.setPreferredSize(optionSize);
 			scalingPanel.setMinimumSize(optionSize);
 			scalingPanel.setMaximumSize(optionSize);
-			panel.add(scalingPanel);
+			generatorPanel.add(scalingPanel);
 			scalingPanel.setLayout(new BoxLayout(scalingPanel, BoxLayout.Y_AXIS));
 			
 			JLabel scalingLabel = new JLabel(RustUI.getString(Type.SETTINGS_SCALINGTYPE_LABEL));
@@ -143,7 +145,7 @@ public class BobRustSettingsDialog {
 			scalingCombobox.setFocusable(false);
 			scalingLabel.setLabelFor(scalingCombobox);
 			scalingCombobox.setMaximumSize(new Dimension(116, 20));
-			scalingCombobox.setModel(new DefaultComboBoxModel<String>(new String[] { "NEAREST", "BILINEAR", "BICUBIC" }));
+			scalingCombobox.setModel(new DefaultComboBoxModel<String>(new String[] { "Nearest", "Bilinear", "Bicubic" }));
 			scalingCombobox.setSelectedIndex(gui.getSettingsScaling());
 			scalingPanel.add(scalingCombobox);
 		}
@@ -155,7 +157,7 @@ public class BobRustSettingsDialog {
 			shapesPanel.setPreferredSize(optionSize);
 			shapesPanel.setMinimumSize(optionSize);
 			shapesPanel.setMaximumSize(optionSize);
-			panel.add(shapesPanel);
+			generatorPanel.add(shapesPanel);
 			shapesPanel.setLayout(new BoxLayout(shapesPanel, BoxLayout.Y_AXIS));
 			
 			JLabel shapesLabel = new JLabel(RustUI.getString(Type.SETTINGS_MAXSHAPES_LABEL));
@@ -173,37 +175,13 @@ public class BobRustSettingsDialog {
 		}
 		
 		{
-			JPanel callbackPanel = new JPanel();
-			callbackPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-			callbackPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-			callbackPanel.setPreferredSize(optionSize);
-			callbackPanel.setMinimumSize(optionSize);
-			callbackPanel.setMaximumSize(optionSize);
-			panel.add(callbackPanel);
-			callbackPanel.setLayout(new BoxLayout(callbackPanel, BoxLayout.Y_AXIS));
-			
-			JLabel callbackLabel = new JLabel(RustUI.getString(Type.SETTINGS_CALLBACKINTERVAL_LABEL));
-			callbackLabel.setToolTipText(RustUI.getString(Type.SETTINGS_CALLBACKINTERVAL_TOOLTIP));
-			callbackLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			callbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
-			callbackPanel.add(callbackLabel);
-			
-			callbackIntervalField = new JIntegerField(gui.getSettingsCallbackInterval());
-			callbackIntervalField.setAlignmentX(Component.LEFT_ALIGNMENT);
-			callbackIntervalField.setFocusable(true);
-			callbackIntervalField.setMaximumSize(new Dimension(116, 20));
-			callbackLabel.setLabelFor(callbackIntervalField);
-			callbackPanel.add(callbackIntervalField);
-		}
-		
-		{
 			JPanel clickIntervalPanel = new JPanel();
 			clickIntervalPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 			clickIntervalPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 			clickIntervalPanel.setPreferredSize(optionSize);
 			clickIntervalPanel.setMinimumSize(optionSize);
 			clickIntervalPanel.setMaximumSize(optionSize);
-			panel.add(clickIntervalPanel);
+			generatorPanel.add(clickIntervalPanel);
 			clickIntervalPanel.setLayout(new BoxLayout(clickIntervalPanel, BoxLayout.Y_AXIS));
 			
 			JLabel clickIntervalLabel = new JLabel(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_LABEL));
@@ -229,7 +207,7 @@ public class BobRustSettingsDialog {
 			autosaveIntervalPanel.setPreferredSize(optionSize);
 			autosaveIntervalPanel.setMinimumSize(optionSize);
 			autosaveIntervalPanel.setMaximumSize(optionSize);
-			panel.add(autosaveIntervalPanel);
+			generatorPanel.add(autosaveIntervalPanel);
 			autosaveIntervalPanel.setLayout(new BoxLayout(autosaveIntervalPanel, BoxLayout.Y_AXIS));
 			
 			JLabel autosaveIntervalLabel = new JLabel(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_LABEL));
@@ -250,7 +228,7 @@ public class BobRustSettingsDialog {
 		
 		JPanel editorPanel = new JPanel();
 		editorPanel.setAlignmentY(Component.TOP_ALIGNMENT);
-		editorPanel.setBorder(new TitledBorder(null, "Editor", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		editorPanel.setBorder(new TitledBorder(null, RustUI.getString(Type.EDITOR_TITLEBORDER_EDITOR), TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		dialog.getContentPane().add(editorPanel);
 		editorPanel.setLayout(new BoxLayout(editorPanel, BoxLayout.Y_AXIS));
 		
@@ -274,9 +252,9 @@ public class BobRustSettingsDialog {
 			btnBorderColor.setMaximumSize(buttonSize);
 			btnBorderColor.setFocusable(false);
 			btnBorderColor.addActionListener((event) -> {
-				Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.getBorderColor(), false);
+				Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.getEditorBorderColor(), false);
 				if(color != null) {
-					gui.setBorderColor(color);
+					gui.setEditorBorderColor(color);
 				}
 			});
 			borderPanel.add(btnBorderColor);
@@ -301,9 +279,9 @@ public class BobRustSettingsDialog {
 			btnToolbarColor.setFocusable(false);
 			lblToolbarColor.setLabelFor(btnToolbarColor);
 			btnToolbarColor.addActionListener((event) -> {
-				Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.getToolbarColor(), false);
+				Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.getEditorToolbarColor(), false);
 				if(color != null) {
-					gui.setToolbarColor(color);
+					gui.setEditorToolbarColor(color);
 				}
 			});
 			toolbarPanel.add(btnToolbarColor);
@@ -327,12 +305,34 @@ public class BobRustSettingsDialog {
 			btnLabelColor.setMaximumSize(buttonSize);
 			btnLabelColor.setFocusable(false);
 			btnLabelColor.addActionListener((event) -> {
-				Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.getLabelColor(), false);
+				Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.getEditorLabelColor(), false);
 				if(color != null) {
-					gui.setLabelColor(color);
+					gui.setEditorLabelColor(color);
 				}
 			});
 			labelPanel.add(btnLabelColor);
+			
+			JPanel callbackPanel = new JPanel();
+			callbackPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+			callbackPanel.setBorder(new EmptyBorder(5, 5, 0, 5));
+			callbackPanel.setPreferredSize(optionSize);
+			callbackPanel.setMinimumSize(optionSize);
+			callbackPanel.setMaximumSize(optionSize);
+			editorPanel.add(callbackPanel);
+			callbackPanel.setLayout(new BoxLayout(callbackPanel, BoxLayout.Y_AXIS));
+			
+			JLabel callbackLabel = new JLabel(RustUI.getString(Type.EDITOR_CALLBACKINTERVAL_LABEL));
+			callbackLabel.setToolTipText(RustUI.getString(Type.EDITOR_CALLBACKINTERVAL_TOOLTIP));
+			callbackLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			callbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			callbackPanel.add(callbackLabel);
+			
+			callbackIntervalField = new JIntegerField(gui.getEditorCallbackInterval());
+			callbackIntervalField.setAlignmentX(Component.LEFT_ALIGNMENT);
+			callbackIntervalField.setFocusable(true);
+			callbackIntervalField.setMaximumSize(new Dimension(116, 20));
+			callbackLabel.setLabelFor(callbackIntervalField);
+			callbackPanel.add(callbackIntervalField);
 			
 			JPanel resetPanel = new JPanel();
 			resetPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -359,9 +359,10 @@ public class BobRustSettingsDialog {
 					JOptionPane.YES_NO_OPTION
 				);
 				if(dialogResult == JOptionPane.YES_OPTION){
-					gui.setBorderColor(null);
-					gui.setToolbarColor(null);
-					gui.setLabelColor(null);
+					gui.setEditorBorderColor(null);
+					gui.setEditorToolbarColor(null);
+					gui.setEditorLabelColor(null);
+					gui.setEditorCallbackInterval(null);
 				}
 			});
 			resetPanel.add(btnResetEditor);
@@ -374,10 +375,11 @@ public class BobRustSettingsDialog {
 	public void openDialog(Point point) {
 		// Update the fields to correctly show the settings.
 		clickIntervalField.setText(Integer.toString(gui.getSettingsClickInterval()));
-		callbackIntervalField.setText(Integer.toString(gui.getSettingsCallbackInterval()));
+		callbackIntervalField.setText(Integer.toString(gui.getEditorCallbackInterval()));
 		maxShapesField.setText(Integer.toString(gui.getSettingsMaxShapes()));
 		autosaveIntervalField.setText(Integer.toString(gui.getSettingsAutosaveInterval()));
 		alphaCombobox.setSelectedIndex(gui.getSettingsAlpha());
+		scalingCombobox.setSelectedIndex(gui.getSettingsScaling());
 		
 		// Show the dialog.
 		dialog.setLocation(point);
@@ -394,10 +396,10 @@ public class BobRustSettingsDialog {
 		}
 		
 		try {
-			gui.setSettingsCallbackInterval(callbackIntervalField.getNumberValue());
+			gui.setEditorCallbackInterval(callbackIntervalField.getNumberValue());
 		} catch(NumberFormatException e) {
 			LogUtils.warn("Invalid callback interval '%s'", callbackIntervalField.getText());
-			callbackIntervalField.setText(Integer.toString(gui.getSettingsCallbackInterval()));
+			callbackIntervalField.setText(Integer.toString(gui.getEditorCallbackInterval()));
 		}
 		
 		try {

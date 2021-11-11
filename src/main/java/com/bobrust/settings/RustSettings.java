@@ -5,25 +5,26 @@ import java.awt.Color;
 import com.bobrust.util.Sign;
 
 public interface RustSettings {
-	void setBorderColor(Color color);
-	void setToolbarColor(Color color);
-	void setLabelColor(Color color);
+	void setEditorBorderColor(Color color);
+	void setEditorToolbarColor(Color color);
+	void setEditorLabelColor(Color color);
 	void setEditorImageDirectory(String pathname);
 	void setEditorPresetDirectory(String pathname);
-	void setSettingsAlpha(int alpha);
-	void setSettingsScaling(int index);
-	void setSettingsMaxShapes(int maxShapes);
-	void setSettingsCallbackInterval(int callbackInterval);
+	void setEditorCallbackInterval(Integer callbackInterval);
+	void setSettingsAlpha(Integer alpha);
+	void setSettingsScaling(Integer index);
+	void setSettingsMaxShapes(Integer maxShapes);
 	void setSettingsSign(Sign sign);
 	void setSettingsBackground(Color color);
-	void setSettingsClickInterval(int interval);
-	void setSettingsAutosaveInterval(int interval);
+	void setSettingsClickInterval(Integer interval);
+	void setSettingsAutosaveInterval(Integer interval);
 	
-	Color getBorderColor();
-	Color getToolbarColor();
-	Color getLabelColor();
+	Color getEditorBorderColor();
+	Color getEditorToolbarColor();
+	Color getEditorLabelColor();
 	String getEditorImageDirectory();
 	String getEditorPresetDirectory();
+	int getEditorCallbackInterval();
 	int getSettingsAlpha();
 	
 	/**
@@ -36,7 +37,6 @@ public interface RustSettings {
 	 */
 	int getSettingsScaling();
 	int getSettingsMaxShapes();
-	int getSettingsCallbackInterval();
 	int getSettingsAutosaveInterval();
 	Color getSettingsBackground();
 	Sign getSettingsSign();

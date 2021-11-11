@@ -141,6 +141,15 @@ public class BobRustPalette {
 		saveButton = null;
 	}
 	
+	public boolean hasPalette() {
+		/*
+		 * Because the color map is the only required value
+		 * we can assume that if the map has enough elements
+		 * then we have the palette.
+		 */
+		return colorMap.size() == BorstUtils.COLORS.length;
+	}
+	
 	private Point point(int x, int y) {
 		return new Point(panel_offset.x + x, panel_offset.y + y);
 	}
