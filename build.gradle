@@ -17,7 +17,7 @@ repositories {
 }
 
 group = 'Bob-Rust-Java'
-version = '0.0.1'
+version = '0.0.2'
 description = 'Bob-Rust-Java'
 java.sourceCompatibility = JavaVersion.VERSION_16
 
