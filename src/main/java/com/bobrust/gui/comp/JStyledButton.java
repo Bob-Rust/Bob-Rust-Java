@@ -7,18 +7,14 @@ import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.JButton;
 
+import com.bobrust.util.RustConstants;
+
 @SuppressWarnings("serial")
 public class JStyledButton extends JButton {
-	private static final int BORDER_RADIUS = 17;
-	private static final Color DEFAULT_COLOR = new Color(234, 234, 234);
-	private static final Color HOVER_COLOR = new Color(229, 243, 255);
-	private static final Color DISABLED_COLOR = Color.lightGray;
-	private static final Color SELECTED_COLOR = new Color(204, 232, 255);
-	
-	private Color defaultColor = DEFAULT_COLOR;
-	private Color hoverColor = HOVER_COLOR;
-	private Color selectedColor = SELECTED_COLOR;
-	private Color disabledColor = DISABLED_COLOR;
+	private Color defaultColor = RustConstants.BUTTON_DEFAULT_COLOR;
+	private Color hoverColor = RustConstants.BUTTON_HOVER_COLOR;
+	private Color selectedColor = RustConstants.BUTTON_SELECTED_COLOR;
+	private Color disabledColor = RustConstants.BUTTON_DISABLED_COLOR;
 	
 	public JStyledButton() {
 		this("");
@@ -83,7 +79,14 @@ public class JStyledButton extends JButton {
 		Graphics2D g = (Graphics2D)gr;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setColor(getBackground());
-		RoundRectangle2D shape = new RoundRectangle2D.Float(1, 2, getWidth() - 2, getHeight() - 4, BORDER_RADIUS, BORDER_RADIUS);
+		
+		// TODO: Cache this value and only update when the component is resized.
+		RoundRectangle2D shape = new RoundRectangle2D.Float(
+			1, 2, getWidth() - 2, getHeight() - 4,
+			RustConstants.BUTTON_BORDER_RADIUS,
+			RustConstants.BUTTON_BORDER_RADIUS
+		);
+		
 		g.fill(shape);
 		super.paint(gr);
 	}

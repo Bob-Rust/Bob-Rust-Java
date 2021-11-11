@@ -11,18 +11,85 @@ plugins {
 
 repositories {
     mavenLocal()
-    maven {
-        url = uri('https://repo.maven.apache.org/maven2/')
-    }
+    maven { url 'https://repo.maven.apache.org/maven2' }
 }
 
-group = 'Bob-Rust-Java'
-version = '0.0.2'
-description = 'Bob-Rust-Java'
+project.ext {
+    lwjglVersion = '3.2.3'
+    log4jVersion = '2.14.1'
+    majorVersion = '0'
+    minorVersion = '1'
+}
+version = "${majorVersion}.${minorVersion}.${getBuildId()}"
+group = "Bob-Rust-Java"
+description = "Bob-Rust-Java"
 java.sourceCompatibility = JavaVersion.VERSION_16
 
 application {
     mainClass = 'com.bobrust.main.Main'
+}
+
+import org.gradle.internal.os.OperatingSystem
+
+switch (OperatingSystem.current()) {
+    case OperatingSystem.LINUX:
+        def osArch = System.getProperty("os.arch")
+        project.ext.lwjglNatives = osArch.startsWith("arm") || osArch.startsWith("aarch64")
+            ? "natives-linux-${osArch.contains("64") || osArch.startsWith("armv8") ? "arm64" : "arm32"}"
+            : "natives-linux"
+        break
+    case OperatingSystem.MAC_OS:
+        project.ext.lwjglNatives = natives-macos
+        break
+    case OperatingSystem.WINDOWS:
+        def osArch = System.getProperty("os.arch")
+        project.ext.lwjglNatives = osArch.contains("64")
+            ? "natives-windows${osArch.startsWith("aarch64") ? "-arm64" : ""}"
+            : "natives-windows-x86"
+        break
+}
+
+configurations {
+    packImpl {
+        canBeResolved = true
+        transitive = false
+    }
+    
+    implementation.extendsFrom(packImpl)
+}
+
+dependencies {
+    packImpl "org.lwjgl:lwjgl:$lwjglVersion"
+    packImpl "org.lwjgl:lwjgl-tinyfd:$lwjglVersion"
+    packImpl "org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives"
+    packImpl "org.lwjgl:lwjgl-tinyfd:$lwjglVersion:$lwjglNatives"
+    
+    packImpl "org.apache.logging.log4j:log4j-api:$log4jVersion"
+    packImpl "org.apache.logging.log4j:log4j-core:$log4jVersion"
+}
+
+
+def incrementBuildId() {
+    def versionPropsFile = file('version.properties')
+    if (versionPropsFile.canRead()) {
+        def Properties versionProps = new Properties()
+        
+        versionProps.load(new FileInputStream(versionPropsFile))
+        def code = versionProps['build_id'].toInteger() + 1
+        versionProps['build_id'] = code.toString()
+        versionProps.store(versionPropsFile.newWriter(), null)
+    }
+}
+
+def getBuildId() {
+    def versionPropsFile = file('version.properties')
+    if (versionPropsFile.canRead()) {
+        def Properties versionProps = new Properties()
+        
+        versionProps.load(new FileInputStream(versionPropsFile))
+        return versionProps['build_id'].toInteger()
+    }
+    return 0
 }
 
 task clearDist {
@@ -35,18 +102,34 @@ task clearDist {
     }
 }
 
+task assembleRelease {
+    doFirst {
+        println "AutoIncrement"
+        incrementBuildId()
+    }
+}
+
+task copyRuntimeLibs(type: Copy) {
+    into "${buildDir}/$libsDirName"
+    from configurations.packImpl
+}
+
 /**
  * https://github.com/petr-panteleyev/jpackage-gradle-plugin
  * https://docs.oracle.com/en/java/javase/16/jpackage/override-jpackage-resources.html#GUID-1B718F8B-B68D-4D46-B1DB-003D7729AAB6
  */
 tasks.jpackage {
+    dependsOn("copyRuntimeLibs")
     dependsOn("clearDist")
     dependsOn("build")
+    
+    // autoincrement version
+    dependsOn("assembleRelease")
 
     appName = "Bob Rust"
-    temp="${buildDir}/jpackagetemp"
+    temp = "${buildDir}/jpackagetemp"
     type = "MSI"
-    input  = "$buildDir/$libsDirName"
+    input = "$buildDir/$libsDirName"
     destination = "$buildDir/$distsDirName"
     mainClass = "com.bobrust.main.Main"
     verbose = true

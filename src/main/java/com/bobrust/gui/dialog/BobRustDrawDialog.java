@@ -8,25 +8,28 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.generator.sorter.BorstSorter;
+import com.bobrust.gui.BobRustDesktopOverlay;
 import com.bobrust.gui.BobRustEditor;
-import com.bobrust.gui.BobRustOverlay;
 import com.bobrust.gui.comp.JIntegerField;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
-import com.bobrust.logging.LogUtils;
 import com.bobrust.robot.BobRustPainter;
 import com.bobrust.robot.BobRustPalette;
 import com.bobrust.util.RustUtil;
 import com.bobrust.util.UrlUtils;
 
 public class BobRustDrawDialog {
+	private static final Logger LOGGER = LogManager.getLogger(BobRustDrawDialog.class);
 	private static final Dimension REGULAR = new Dimension(320, 240);
 	private static final Dimension MINIMIZED = new Dimension(120, 240);
 	
 	private final BobRustEditor gui;
-	private final BobRustOverlay overlay;
+	private final BobRustDesktopOverlay overlay;
 	private final BobRustPalette rustPalette;
 	private final BobRustPainter rustPainter;
 	
@@ -41,7 +44,7 @@ public class BobRustDrawDialog {
 	private final JButton btnSelectColorPalette;
 	private final JButton btnStartDrawing;
 	
-	public BobRustDrawDialog(BobRustEditor gui, BobRustOverlay overlay, JDialog parent) {
+	public BobRustDrawDialog(BobRustEditor gui, BobRustDesktopOverlay overlay, JDialog parent) {
 		this.gui = gui;
 		this.overlay = overlay;
 		this.rustPalette = new BobRustPalette();
@@ -176,10 +179,10 @@ public class BobRustDrawDialog {
 					int count = maxShapesField.getNumberValue();
 					BlobList list = BorstSorter.sort(RustUtil.convertToList(overlay.getBorstData().getModel(), count));
 					if(!rustPainter.startDrawing(list)) {
-						LogUtils.warn("The user stoped the drawing process early");
+						LOGGER.warn("The user stoped the drawing process early");
 					}
 				} catch(IllegalStateException e) {
-					LogUtils.warn("The user stoped the drawing process early");
+					LOGGER.warn("The user stoped the drawing process early");
 				} catch(Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -227,7 +230,7 @@ public class BobRustDrawDialog {
 				
 				if(rustPalette.analyse(dialog, screenshot, screenBounds, paletteScreenLocation)) {
 					// Found the palette.
-					LogUtils.info("Found the color palette (%d, %d)", paletteScreenLocation.x, paletteScreenLocation.y);
+					LOGGER.info("Found the color palette ({}, {})", paletteScreenLocation.x, paletteScreenLocation.y);
 					overlay.repaint();
 					return true;
 				}
@@ -236,7 +239,7 @@ public class BobRustDrawDialog {
 			e.printStackTrace();
 		}
 		
-		LogUtils.warn("User needs to manually select the color palette");
+		LOGGER.warn("User needs to manually select the color palette");
 		return false;
 	}
 	
@@ -261,7 +264,7 @@ public class BobRustDrawDialog {
 		try {
 			gui.setSettingsClickInterval(Integer.parseInt(clickIntervalField.getText()));
 		} catch(NumberFormatException e) {
-			LogUtils.warn("Invalid click interval '%s'", clickIntervalField.getText());
+			LOGGER.warn("Invalid click interval '{}'", clickIntervalField.getText());
 			clickIntervalField.setText(Integer.toString(gui.getSettingsClickInterval()));
 		}
 	}

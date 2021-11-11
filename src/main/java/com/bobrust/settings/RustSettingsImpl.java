@@ -5,11 +5,15 @@ import java.io.*;
 import java.util.Objects;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.bobrust.generator.BorstSettings;
 import com.bobrust.util.*;
 
 public abstract class RustSettingsImpl implements RustSettings {
-	private static final File CONFIG_FILE = new File(System.getProperty("user.home"), "bobrust.properties");
+	private static final Logger LOGGER = LogManager.getLogger(RustSettingsImpl.class);
+	private static final File CONFIG_FILE = new File("bobrust.properties");
 	
 	// Editor configurations
 	private Color toolbarColor;
@@ -42,6 +46,8 @@ public abstract class RustSettingsImpl implements RustSettings {
 			try {
 				CONFIG_FILE.createNewFile();
 			} catch(IOException e) {
+				LOGGER.error("Error creating config file: {}", e);
+				LOGGER.throwing(e);
 				e.printStackTrace();
 			}
 		}
@@ -49,6 +55,8 @@ public abstract class RustSettingsImpl implements RustSettings {
 		try(FileInputStream stream = new FileInputStream(CONFIG_FILE)) {
 			properties.load(stream);
 		} catch(IOException e) {
+			LOGGER.error("Error reading config file: {}", e);
+			LOGGER.throwing(e);
 			e.printStackTrace();
 		}
 		
@@ -74,7 +82,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 	private Integer getSettingInteger(Settings key) {
 		try {
 			return Integer.valueOf(properties.getProperty(key.id));
-		} catch(NumberFormatException e) {
+		} catch(NumberFormatException ignored) {
 			return null;
 		}
 	}
@@ -94,6 +102,8 @@ public abstract class RustSettingsImpl implements RustSettings {
 		try(FileOutputStream stream = new FileOutputStream(CONFIG_FILE)) {
 			properties.store(stream, "");
 		} catch(IOException e) {
+			LOGGER.error("Error saving config file: {}", e);
+			LOGGER.throwing(e);
 			e.printStackTrace();
 		}
 	}
@@ -115,7 +125,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 
 	@Override
 	public void setEditorToolbarColor(Color color) {
-		toolbarColor = color == null ? new Color(0x4f4033):color;
+		toolbarColor = color == null ? new Color(0x333333):color;
 		setProperty(Settings.TOOLBAR_COLOR, toolbarColor.getRGB());
 	}
 
@@ -139,7 +149,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 	
 	@Override
 	public void setEditorCallbackInterval(Integer interval) {
-		interval = interval == null ? 100:RustUtil.clamp(interval, 1, 99999);
+		interval = interval == null ? 20:RustUtil.clamp(interval, 1, 99999);
 		borstSettings.CallbackInterval = interval;
 		setProperty(Settings.SETTINGS_CALLBACK_INTERVAL, interval);
 	}
@@ -160,7 +170,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 
 	@Override
 	public void setSettingsMaxShapes(Integer maxShapes) {
-		maxShapes = maxShapes == null ? 4000:maxShapes;
+		maxShapes = maxShapes == null ? 99999:RustUtil.clamp(maxShapes, 0, 99999);
 		borstSettings.MaxShapes = maxShapes;
 		setProperty(Settings.SETTINGS_MAX_SHAPES, maxShapes);
 	}

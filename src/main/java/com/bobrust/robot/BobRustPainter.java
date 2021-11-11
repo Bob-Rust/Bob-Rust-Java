@@ -4,27 +4,30 @@ import java.awt.*;
 import java.awt.event.InputEvent;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.bobrust.generator.BorstUtils;
 import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.gui.BobRustEditor;
-import com.bobrust.gui.BobRustOverlay;
-import com.bobrust.logging.LogUtils;
+import com.bobrust.gui.BobRustDesktopOverlay;
 import com.bobrust.util.RustUtil;
 import com.bobrust.util.Sign;
 
 public class BobRustPainter {
+	private static final Logger LOGGER = LogManager.getLogger(BobRustPainter.class);
 	// This is the index of the circle shape.
 	private static final int CIRCLE_SHAPE = 1;
 	// The maximum distance the mouse can be from the correct position.
 	private static final double MAXIMUM_DISPLACEMENT = 10;
 	
 	private final BobRustEditor gui;
-	private final BobRustOverlay overlay;
+	private final BobRustDesktopOverlay overlay;
 	private final BobRustPalette palette;
 	private volatile int clickIndex;
 	
-	public BobRustPainter(BobRustEditor gui, BobRustOverlay overlay, BobRustPalette palette) {
+	public BobRustPainter(BobRustEditor gui, BobRustDesktopOverlay overlay, BobRustPalette palette) {
 		this.gui = gui;
 		this.overlay = overlay;
 		this.palette = palette;
@@ -123,7 +126,7 @@ public class BobRustPainter {
 				// Change the color.
 				if(lastColor != blob.colorIndex) {
 					if(!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 20, autoDelay)) {
-						LogUtils.warn("Potentially failed to change color! Will still keep try drawing");
+						LOGGER.warn("Potentially failed to change color! Will still keep try drawing");
 					}
 					
 					lastColor = blob.colorIndex;
@@ -222,7 +225,6 @@ public class BobRustPainter {
 			}
 		}
 		
-//		throw new IllegalStateException("Failed to select color");
 		return false;
 	}
 	

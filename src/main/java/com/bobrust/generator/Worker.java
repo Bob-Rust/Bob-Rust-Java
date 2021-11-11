@@ -18,7 +18,7 @@ class Worker {
 		this.w = target.width;
 		this.h = target.height;
 		this.target = target;
-		this.buffer = new BorstImage(w, h);
+		this.buffer = new BorstImage(new int[this.w * this.h],  this.w);
 		this.rnd = new Random(0);
 		this.alpha = alpha;
 	}

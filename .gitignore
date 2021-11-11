@@ -24,3 +24,7 @@ target/
 bin/
 .classpath
 .project
+
+# project
+logs/
+bobrust.properties

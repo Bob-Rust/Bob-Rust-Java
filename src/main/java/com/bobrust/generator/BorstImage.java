@@ -27,6 +27,17 @@ public class BorstImage {
 		this.width = width;
 		this.height = height;
 	}
+	
+	/**
+	 * Creates a new BorstImage that has no internal bufferedImage.
+	 * @param pixels the pixel buffer
+	 */
+	public BorstImage(int[] pixels, int width) {
+		this.image = null;
+		this.pixels = pixels;
+		this.width = width;
+		this.height = pixels.length / width;
+	}
 
 	public BorstImage createCopy() {
 		BorstImage copy = new BorstImage(width, height);

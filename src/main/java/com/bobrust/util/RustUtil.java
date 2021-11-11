@@ -2,6 +2,9 @@ package com.bobrust.util;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.bobrust.generator.BorstColor;
 import com.bobrust.generator.Circle;
 import com.bobrust.generator.Model;
@@ -9,9 +12,10 @@ import com.bobrust.generator.BorstGenerator.BorstData;
 import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.generator.sorter.BorstSorter;
-import com.bobrust.logging.LogUtils;
 
 public class RustUtil {
+	private static final Logger LOGGER = LogManager.getLogger(RustUtil.class);
+	
 	public static BlobList convertToList(Model model, int count) {
 		final int len = Math.min(model.colors.size(), count);
 		
@@ -55,7 +59,7 @@ public class RustUtil {
 			list.add(Blob.get(circle.x, circle.y, circle.r, color.rgb));
 		}
 		
-		LogUtils.info("Size change: %d / %d", getScore(list), getScore(BorstSorter.sort(list)));
+		LOGGER.info("Size change: {} / {}", getScore(list), getScore(BorstSorter.sort(list)));
 	}
 
 	public static int clamp(int value, int min, int max) {

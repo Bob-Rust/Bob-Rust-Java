@@ -4,23 +4,29 @@ import java.awt.Color;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.bobrust.generator.BorstGenerator;
 import com.bobrust.generator.BorstGenerator.BorstData;
 import com.bobrust.generator.BorstGenerator.BorstGeneratorBuilder;
+import com.bobrust.gui.dialog.RustFileDialog;
 import com.bobrust.settings.RustSettingsImpl;
 import com.bobrust.settings.Settings;
 
 public class BobRustEditor extends RustSettingsImpl {
-	private BobRustOverlay overlayDialog;
+	private static final Logger LOGGER = LogManager.getLogger(BobRustEditor.class);
+	private BobRustDesktopOverlay overlayDialog;
 	
-	private JFileChooser fileChooser;
-	private FileFilter filterImages;
+	private RustFileDialog fileChooser;
+	private FileNameExtensionFilter filterImages;
 	@SuppressWarnings("unused")
-	private FileFilter filterPresets;
+	private FileNameExtensionFilter filterPresets;
 	
 	final BorstGenerator borstGenerator;
 	
@@ -30,6 +36,8 @@ public class BobRustEditor extends RustSettingsImpl {
 			.setSettings(getBorstSettings())
 			.create();
 		this.loadSettings();
+		
+		LOGGER.info("Starting application");
 		SwingUtilities.invokeLater(this::setup);
 	}
 	
@@ -40,26 +48,19 @@ public class BobRustEditor extends RustSettingsImpl {
 			// Do nothing
 		}
 		
-		fileChooser = new JFileChooser();
-		fileChooser.setMultiSelectionEnabled(false);
-		fileChooser.setCurrentDirectory(new File(getEditorImageDirectory()));
+		fileChooser = new RustFileDialog();
 		filterImages = new FileNameExtensionFilter("Image Files", ImageIO.getReaderFileSuffixes());
 		filterPresets = new FileNameExtensionFilter("Preset Files", "borst");
 		
-		overlayDialog = new BobRustOverlay(this);
+		overlayDialog = new BobRustDesktopOverlay(this);
 		overlayDialog.dialog.setVisible(true);
 	}
 	
 	public File openImageFileChooser(JDialog dialog) {
-		fileChooser.resetChoosableFileFilters();
-		fileChooser.addChoosableFileFilter(filterImages);
-		fileChooser.setCurrentDirectory(new File(getEditorImageDirectory()));
-		fileChooser.setFileFilter(filterImages);
-		int status = fileChooser.showOpenDialog(dialog);
-		
-		if(status == JFileChooser.APPROVE_OPTION) {
-			setEditorImageDirectory(fileChooser.getCurrentDirectory().getAbsolutePath());
-			return fileChooser.getSelectedFile();
+		File file = fileChooser.open(dialog, filterImages, "Open Image", getEditorImageDirectory());
+		if(file != null) {
+			setEditorImageDirectory(file.getParentFile().getAbsolutePath());
+			return file;
 		}
 		
 		return null;

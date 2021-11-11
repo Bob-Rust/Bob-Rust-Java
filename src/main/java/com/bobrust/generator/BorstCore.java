@@ -1,7 +1,7 @@
 package com.bobrust.generator;
 
 class BorstCore {
-	public static BorstColor computeColor(BorstImage target, BorstImage current, Scanline[] lines, int alpha) {
+	static BorstColor computeColor(BorstImage target, BorstImage current, Scanline[] lines, int alpha) {
 		long rsum_1 = 0;
 		long gsum_1 = 0;
 		long bsum_1 = 0;
@@ -49,7 +49,7 @@ class BorstCore {
 		return BorstUtils.getClosestColor((alpha << 24) | (r << 16) | (g << 8) | (b));
 	}
 
-	public static void copyLines_replaceRegion(BorstImage dst, BorstImage src, Scanline[] lines) {
+	static void copyLines_replaceRegion(BorstImage dst, BorstImage src, Scanline[] lines) {
 		int w = dst.width;
 		int len = lines.length;
 		for(int i = 0; i < len; i++) {
@@ -60,7 +60,7 @@ class BorstCore {
 		}
 	}
 
-	public static void drawLines(BorstImage im, BorstColor c, Scanline[] lines, int alpha) {
+	static void drawLines(BorstImage im, BorstColor c, Scanline[] lines, int alpha) {
 		int cr = c.r * alpha;
 		int cg = c.g * alpha;
 		int cb = c.b * alpha;
@@ -86,9 +86,8 @@ class BorstCore {
 			}
 		}
 	}
-
-	// [Only used once]
-	public static float differenceFull(BorstImage a, BorstImage b) {
+	
+	static float differenceFull(BorstImage a, BorstImage b) {
 		int w = a.width;
 		int h = a.height;
 		
@@ -120,7 +119,7 @@ class BorstCore {
 		return (float)(Math.sqrt(total / (w * h * 4.0)) / 255.0);
 	}
 	
-	public static float differencePartial(BorstImage target, BorstImage before, BorstImage after, float score, Scanline[] lines) {
+	static float differencePartial(BorstImage target, BorstImage before, BorstImage after, float score, Scanline[] lines) {
 		int w = target.width;
 		int h = target.height;
 		double denom = (w * h * 4.0);
@@ -166,6 +165,6 @@ class BorstCore {
 			}
 		}
 		
-		return (float)(Math.sqrt(total / denom) * 0.003921568627451);
+		return (float)(Math.sqrt(total / denom) / 255.0);
 	}
 }
