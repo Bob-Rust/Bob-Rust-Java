@@ -22,9 +22,13 @@ public class RustUI {
 		EDITOR_SIGNPICKERDIALOG_TITLE("Sign Picker"),
 		EDITOR_DRAWDIALOG_TITLE("Draw Settings"),
 		EDITOR_SETTINGSDIALOG_TITLE("Settings"),
-		EDITOR_TITLEBORDER_GENERATOR("Generator"),
-		EDITOR_TITLEBORDER_EDITOR("Editor"),
+		EDITOR_TAB_GENERATOR("Generator"),
+		EDITOR_TAB_EDITOR("Editor"),
+		EDITOR_TAB_DEBUGGING("Debugging"),
 		EDITOR_COLORDIALOG_TITLE("Color picker"),
+		
+		DEBUG_OPENCONFIGDIRECTORY_LABEL("Open config directory"),
+		DEBUG_OPENCONFIGDIRECTORY_BUTTON("Config directory"),
 		
 		EDITOR_BORDERCOLOR_LABEL("Border Color"),
 		EDITOR_BORDERCOLOR_BUTTON("Border Color"),
@@ -88,10 +92,10 @@ public class RustUI {
 		;
 		
 		private final String id;
-		private final String def;
-		private Type(String def) {
+		private final String defaultValue;
+		private Type(String defaultValue) {
 			this.id = name().replace('_', '.').toLowerCase();
-			this.def = def;
+			this.defaultValue = defaultValue;
 		}
 		
 		public String getId() {
@@ -101,6 +105,6 @@ public class RustUI {
 	
 	public static String getString(Type type) {
 		// TODO: Create language files.
-		return type.def;
+		return type.defaultValue;
 	}
 }

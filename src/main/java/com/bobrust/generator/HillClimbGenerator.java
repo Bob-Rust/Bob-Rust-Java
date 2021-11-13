@@ -46,7 +46,7 @@ class HillClimbGenerator {
 		return bestState;
 	}
 	
-	public static State BestHillClimbState(Worker worker, int max_random_states, int age, int times) {
+	public static State getBestHillClimbState(Worker worker, int max_random_states, int age, int times) {
 		float bestEnergy = 0;
 		State bestState = null;
 		

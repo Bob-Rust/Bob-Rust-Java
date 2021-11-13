@@ -2,6 +2,7 @@ package com.bobrust.gui.dialog;
 
 import java.awt.*;
 import java.awt.Dialog.ModalityType;
+import java.io.File;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -14,6 +15,7 @@ import com.bobrust.gui.comp.JIntegerField;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
 import com.bobrust.util.RustConstants;
+import com.bobrust.util.UrlUtils;
 
 public class BobRustSettingsDialog {
 	private static final Logger LOGGER = LogManager.getLogger(BobRustSettingsDialog.class);
@@ -22,12 +24,38 @@ public class BobRustSettingsDialog {
 	private final BobRustColorPicker colorPicker;
 	private final JDialog dialog;
 	
-	private final JComboBox<Integer> alphaCombobox;
-	private final JComboBox<String> scalingCombobox;
-	private final JIntegerField maxShapesField;
-	private final JIntegerField callbackIntervalField;
-	private final JIntegerField clickIntervalField;
-	private final JIntegerField autosaveIntervalField;
+	// TabbedPane
+	final JTabbedPane tabbedPane;
+	
+	// Generator
+	final JLabel lblBackgroundColor;
+	final JButton btnBackgroundColor;
+	final JLabel lblSignType;
+	final JButton btnSignType;
+	final JLabel lblAlphaIndex;
+	final JComboBox<Integer> alphaCombobox;
+	final JLabel lblScalingLabel;
+	final JComboBox<String> scalingCombobox;
+	final JLabel lblShapesLabel;
+	final JIntegerField maxShapesField;
+	final JLabel lblClickIntervalLabel;
+	final JLabel lblAutosaveIntervalLabel;
+	final JIntegerField autosaveIntervalField;
+	final JIntegerField clickIntervalField;
+	
+	// Editor
+	final JLabel lblBorderColor;
+	final JButton btnBorderColor;
+	final JLabel lblToolbarColor;
+	final JButton btnToolbarColor;
+	final JLabel lblLabelColor;
+	final JButton btnLabelColor;
+	final JLabel lblCallbackLabel;
+	final JIntegerField callbackIntervalField;
+	final JLabel lblResetEditor;
+	final JButton btnResetEditor;
+	
+	// Debug
 	
 	public BobRustSettingsDialog(BobRustEditor gui, JDialog parent) {
 		this.gui = gui;
@@ -37,11 +65,12 @@ public class BobRustSettingsDialog {
 		this.dialog.setResizable(false);
 		this.signPicker = new BobRustSignPicker(gui, dialog);
 		this.colorPicker = new BobRustColorPicker(gui, dialog);
+		
 		dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.X_AXIS));
 		
 		Dimension buttonSize = new Dimension(120, 23);
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		tabbedPane.setFocusable(false);
 		dialog.getContentPane().add(tabbedPane);
@@ -51,7 +80,7 @@ public class BobRustSettingsDialog {
 			generatorPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 			generatorPanel.setOpaque(false);
 			generatorPanel.setAlignmentY(Component.TOP_ALIGNMENT);
-			tabbedPane.addTab("Generator", generatorPanel);
+			tabbedPane.addTab(RustUI.getString(Type.EDITOR_TAB_GENERATOR), generatorPanel);
 			generatorPanel.setFocusable(false);
 			GridBagLayout gbl_generatorPanel = new GridBagLayout();
 			gbl_generatorPanel.columnWidths = new int[]{140, 0, 0};
@@ -60,7 +89,7 @@ public class BobRustSettingsDialog {
 			gbl_generatorPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 			generatorPanel.setLayout(gbl_generatorPanel);
 			
-			JLabel lblBackgroundColor = new JLabel(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_LABEL));
+			lblBackgroundColor = new JLabel(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_LABEL));
 			GridBagConstraints gbc_lblBackgroundColor = new GridBagConstraints();
 			gbc_lblBackgroundColor.anchor = GridBagConstraints.WEST;
 			gbc_lblBackgroundColor.insets = new Insets(0, 0, 5, 5);
@@ -69,7 +98,7 @@ public class BobRustSettingsDialog {
 			generatorPanel.add(lblBackgroundColor, gbc_lblBackgroundColor);
 			lblBackgroundColor.setToolTipText(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_TOOLTIP));
 			
-			JButton btnBackgroundColor = new JButton(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_BUTTON));
+			btnBackgroundColor = new JButton(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_BUTTON));
 			lblBackgroundColor.setLabelFor(btnBackgroundColor);
 			GridBagConstraints gbc_btnBackgroundColor = new GridBagConstraints();
 			gbc_btnBackgroundColor.fill = GridBagConstraints.HORIZONTAL;
@@ -87,48 +116,48 @@ public class BobRustSettingsDialog {
 				colorPicker.openColorDialog(dialogLocation);
 			});
 			
-			JLabel signLabel = new JLabel(RustUI.getString(Type.SETTINGS_SIGNTYPE_LABEL));
-			GridBagConstraints gbc_signLabel = new GridBagConstraints();
-			gbc_signLabel.anchor = GridBagConstraints.WEST;
-			gbc_signLabel.insets = new Insets(0, 0, 5, 5);
-			gbc_signLabel.gridx = 0;
-			gbc_signLabel.gridy = 1;
-			generatorPanel.add(signLabel, gbc_signLabel);
-			signLabel.setToolTipText(RustUI.getString(Type.SETTINGS_SIGNTYPE_TOOLTIP));
-			signLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			signLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			lblSignType = new JLabel(RustUI.getString(Type.SETTINGS_SIGNTYPE_LABEL));
+			GridBagConstraints gbc_lblSignType = new GridBagConstraints();
+			gbc_lblSignType.anchor = GridBagConstraints.WEST;
+			gbc_lblSignType.insets = new Insets(0, 0, 5, 5);
+			gbc_lblSignType.gridx = 0;
+			gbc_lblSignType.gridy = 1;
+			generatorPanel.add(lblSignType, gbc_lblSignType);
+			lblSignType.setToolTipText(RustUI.getString(Type.SETTINGS_SIGNTYPE_TOOLTIP));
+			lblSignType.setHorizontalTextPosition(SwingConstants.CENTER);
+			lblSignType.setHorizontalAlignment(SwingConstants.CENTER);
 			
-			final JButton btnSign = new JButton(RustUI.getString(Type.SETTINGS_SIGNTYPE_BUTTON));
+			btnSignType = new JButton(RustUI.getString(Type.SETTINGS_SIGNTYPE_BUTTON));
 			GridBagConstraints gbc_btnSign = new GridBagConstraints();
 			gbc_btnSign.fill = GridBagConstraints.HORIZONTAL;
 			gbc_btnSign.insets = new Insets(0, 0, 5, 0);
 			gbc_btnSign.gridx = 1;
 			gbc_btnSign.gridy = 1;
-			generatorPanel.add(btnSign, gbc_btnSign);
-			btnSign.setPreferredSize(buttonSize);
-			btnSign.setMinimumSize(buttonSize);
-			btnSign.setMaximumSize(buttonSize);
-			btnSign.setFocusable(false);
-			btnSign.addActionListener((event) -> {
+			generatorPanel.add(btnSignType, gbc_btnSign);
+			btnSignType.setPreferredSize(buttonSize);
+			btnSignType.setMinimumSize(buttonSize);
+			btnSignType.setMaximumSize(buttonSize);
+			btnSignType.setFocusable(false);
+			btnSignType.addActionListener((event) -> {
 				Point dialogLocation = new Point(dialog.getLocationOnScreen());
 				dialogLocation.x += 130;
 				signPicker.openSignDialog(dialogLocation);
 				gui.setSettingsSign(signPicker.getSelectedSign());;
 			});
 			
-			JLabel alphaLabel = new JLabel(RustUI.getString(Type.SETTINGS_ALPHAINDEX_LABEL));
-			GridBagConstraints gbc_alphaLabel = new GridBagConstraints();
-			gbc_alphaLabel.anchor = GridBagConstraints.WEST;
-			gbc_alphaLabel.insets = new Insets(0, 0, 5, 5);
-			gbc_alphaLabel.gridx = 0;
-			gbc_alphaLabel.gridy = 2;
-			generatorPanel.add(alphaLabel, gbc_alphaLabel);
-			alphaLabel.setToolTipText(RustUI.getString(Type.SETTINGS_ALPHAINDEX_TOOLTIP));
-			alphaLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			alphaLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			lblAlphaIndex = new JLabel(RustUI.getString(Type.SETTINGS_ALPHAINDEX_LABEL));
+			GridBagConstraints gbc_lblAlphaIndex = new GridBagConstraints();
+			gbc_lblAlphaIndex.anchor = GridBagConstraints.WEST;
+			gbc_lblAlphaIndex.insets = new Insets(0, 0, 5, 5);
+			gbc_lblAlphaIndex.gridx = 0;
+			gbc_lblAlphaIndex.gridy = 2;
+			generatorPanel.add(lblAlphaIndex, gbc_lblAlphaIndex);
+			lblAlphaIndex.setToolTipText(RustUI.getString(Type.SETTINGS_ALPHAINDEX_TOOLTIP));
+			lblAlphaIndex.setHorizontalTextPosition(SwingConstants.CENTER);
+			lblAlphaIndex.setHorizontalAlignment(SwingConstants.CENTER);
 			
 			alphaCombobox = new JComboBox<Integer>();
-			alphaLabel.setLabelFor(alphaCombobox);
+			lblAlphaIndex.setLabelFor(alphaCombobox);
 			GridBagConstraints gbc_alphaCombobox = new GridBagConstraints();
 			gbc_alphaCombobox.fill = GridBagConstraints.HORIZONTAL;
 			gbc_alphaCombobox.insets = new Insets(0, 0, 5, 0);
@@ -141,19 +170,19 @@ public class BobRustSettingsDialog {
 			alphaCombobox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 0, 1, 2, 3, 4, 5 }));
 			alphaCombobox.setSelectedIndex(gui.getSettingsAlpha());
 			
-			JLabel scalingLabel = new JLabel(RustUI.getString(Type.SETTINGS_SCALINGTYPE_LABEL));
-			GridBagConstraints gbc_scalingLabel = new GridBagConstraints();
-			gbc_scalingLabel.anchor = GridBagConstraints.WEST;
-			gbc_scalingLabel.insets = new Insets(0, 0, 5, 5);
-			gbc_scalingLabel.gridx = 0;
-			gbc_scalingLabel.gridy = 3;
-			generatorPanel.add(scalingLabel, gbc_scalingLabel);
-			scalingLabel.setToolTipText(RustUI.getString(Type.SETTINGS_SCALINGTYPE_TOOLTIP));
-			scalingLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			scalingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			lblScalingLabel = new JLabel(RustUI.getString(Type.SETTINGS_SCALINGTYPE_LABEL));
+			GridBagConstraints gbc_lblScalingLabel = new GridBagConstraints();
+			gbc_lblScalingLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblScalingLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblScalingLabel.gridx = 0;
+			gbc_lblScalingLabel.gridy = 3;
+			generatorPanel.add(lblScalingLabel, gbc_lblScalingLabel);
+			lblScalingLabel.setToolTipText(RustUI.getString(Type.SETTINGS_SCALINGTYPE_TOOLTIP));
+			lblScalingLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			lblScalingLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			
 			scalingCombobox = new JComboBox<String>();
-			scalingLabel.setLabelFor(scalingCombobox);
+			lblScalingLabel.setLabelFor(scalingCombobox);
 			GridBagConstraints gbc_scalingCombobox = new GridBagConstraints();
 			gbc_scalingCombobox.fill = GridBagConstraints.HORIZONTAL;
 			gbc_scalingCombobox.insets = new Insets(0, 0, 5, 0);
@@ -166,19 +195,19 @@ public class BobRustSettingsDialog {
 			scalingCombobox.setModel(new DefaultComboBoxModel<String>(new String[] { "Nearest", "Bilinear", "Bicubic" }));
 			scalingCombobox.setSelectedIndex(gui.getSettingsScaling());
 			
-			JLabel shapesLabel = new JLabel(RustUI.getString(Type.SETTINGS_MAXSHAPES_LABEL));
-			GridBagConstraints gbc_shapesLabel = new GridBagConstraints();
-			gbc_shapesLabel.anchor = GridBagConstraints.WEST;
-			gbc_shapesLabel.insets = new Insets(0, 0, 5, 5);
-			gbc_shapesLabel.gridx = 0;
-			gbc_shapesLabel.gridy = 4;
-			generatorPanel.add(shapesLabel, gbc_shapesLabel);
-			shapesLabel.setToolTipText(RustUI.getString(Type.SETTINGS_MAXSHAPES_TOOLTIP));
-			shapesLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			shapesLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			lblShapesLabel = new JLabel(RustUI.getString(Type.SETTINGS_MAXSHAPES_LABEL));
+			GridBagConstraints gbc_lblShapesLabel = new GridBagConstraints();
+			gbc_lblShapesLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblShapesLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblShapesLabel.gridx = 0;
+			gbc_lblShapesLabel.gridy = 4;
+			generatorPanel.add(lblShapesLabel, gbc_lblShapesLabel);
+			lblShapesLabel.setToolTipText(RustUI.getString(Type.SETTINGS_MAXSHAPES_TOOLTIP));
+			lblShapesLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			lblShapesLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			
 			maxShapesField = new JIntegerField(gui.getSettingsMaxShapes());
-			shapesLabel.setLabelFor(maxShapesField);
+			lblShapesLabel.setLabelFor(maxShapesField);
 			GridBagConstraints gbc_maxShapesField = new GridBagConstraints();
 			gbc_maxShapesField.fill = GridBagConstraints.HORIZONTAL;
 			gbc_maxShapesField.insets = new Insets(0, 0, 5, 0);
@@ -189,19 +218,19 @@ public class BobRustSettingsDialog {
 			maxShapesField.setFocusable(true);
 			maxShapesField.setMaximumSize(new Dimension(116, 20));
 			
-			JLabel clickIntervalLabel = new JLabel(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_LABEL));
-			GridBagConstraints gbc_clickIntervalLabel = new GridBagConstraints();
-			gbc_clickIntervalLabel.anchor = GridBagConstraints.WEST;
-			gbc_clickIntervalLabel.insets = new Insets(0, 0, 5, 5);
-			gbc_clickIntervalLabel.gridx = 0;
-			gbc_clickIntervalLabel.gridy = 5;
-			generatorPanel.add(clickIntervalLabel, gbc_clickIntervalLabel);
-			clickIntervalLabel.setToolTipText(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_TOOLTIP));
-			clickIntervalLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			clickIntervalLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			lblClickIntervalLabel = new JLabel(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_LABEL));
+			GridBagConstraints gbc_lblClickIntervalLabel = new GridBagConstraints();
+			gbc_lblClickIntervalLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblClickIntervalLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblClickIntervalLabel.gridx = 0;
+			gbc_lblClickIntervalLabel.gridy = 5;
+			generatorPanel.add(lblClickIntervalLabel, gbc_lblClickIntervalLabel);
+			lblClickIntervalLabel.setToolTipText(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_TOOLTIP));
+			lblClickIntervalLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			lblClickIntervalLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			
 			clickIntervalField = new JIntegerField(gui.getSettingsClickInterval());
-			clickIntervalLabel.setLabelFor(clickIntervalField);
+			lblClickIntervalLabel.setLabelFor(clickIntervalField);
 			GridBagConstraints gbc_clickIntervalField = new GridBagConstraints();
 			gbc_clickIntervalField.fill = GridBagConstraints.HORIZONTAL;
 			gbc_clickIntervalField.insets = new Insets(0, 0, 5, 0);
@@ -214,19 +243,19 @@ public class BobRustSettingsDialog {
 			clickIntervalField.setMaximum(60);
 			clickIntervalField.setMaximumSize(new Dimension(116, 20));
 			
-			JLabel autosaveIntervalLabel = new JLabel(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_LABEL));
+			lblAutosaveIntervalLabel = new JLabel(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_LABEL));
 			GridBagConstraints gbc_autosaveIntervalLabel = new GridBagConstraints();
 			gbc_autosaveIntervalLabel.anchor = GridBagConstraints.WEST;
 			gbc_autosaveIntervalLabel.insets = new Insets(0, 0, 0, 5);
 			gbc_autosaveIntervalLabel.gridx = 0;
 			gbc_autosaveIntervalLabel.gridy = 6;
-			generatorPanel.add(autosaveIntervalLabel, gbc_autosaveIntervalLabel);
-			autosaveIntervalLabel.setToolTipText(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_TOOLTIP));
-			autosaveIntervalLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			autosaveIntervalLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			generatorPanel.add(lblAutosaveIntervalLabel, gbc_autosaveIntervalLabel);
+			lblAutosaveIntervalLabel.setToolTipText(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_TOOLTIP));
+			lblAutosaveIntervalLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			lblAutosaveIntervalLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			
 			autosaveIntervalField = new JIntegerField(gui.getSettingsAutosaveInterval());
-			autosaveIntervalLabel.setLabelFor(autosaveIntervalField);
+			lblAutosaveIntervalLabel.setLabelFor(autosaveIntervalField);
 			GridBagConstraints gbc_autosaveIntervalField = new GridBagConstraints();
 			gbc_autosaveIntervalField.fill = GridBagConstraints.HORIZONTAL;
 			gbc_autosaveIntervalField.gridx = 1;
@@ -245,7 +274,7 @@ public class BobRustSettingsDialog {
 			editorPanel.setAlignmentY(Component.TOP_ALIGNMENT);
 			editorPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 			editorPanel.setOpaque(false);
-			tabbedPane.addTab("Editor", editorPanel);
+			tabbedPane.addTab(RustUI.getString(Type.EDITOR_TAB_EDITOR), editorPanel);
 			GridBagLayout gbl_editorPanel = new GridBagLayout();
 			gbl_editorPanel.columnWidths = new int[] {140, 0, 0};
 			gbl_editorPanel.rowHeights = new int[] {20, 20, 20, 20, 0, 0, 0};
@@ -253,7 +282,7 @@ public class BobRustSettingsDialog {
 			gbl_editorPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0};
 			editorPanel.setLayout(gbl_editorPanel);
 			
-			JLabel lblBorderColor = new JLabel(RustUI.getString(Type.EDITOR_BORDERCOLOR_LABEL));
+			lblBorderColor = new JLabel(RustUI.getString(Type.EDITOR_BORDERCOLOR_LABEL));
 			lblBorderColor.setToolTipText(RustUI.getString(Type.EDITOR_BORDERCOLOR_TOOLTIP));
 			GridBagConstraints gbc_lblBorderColor = new GridBagConstraints();
 			gbc_lblBorderColor.anchor = GridBagConstraints.WEST;
@@ -262,7 +291,7 @@ public class BobRustSettingsDialog {
 			gbc_lblBorderColor.gridy = 0;
 			editorPanel.add(lblBorderColor, gbc_lblBorderColor);
 			
-			JButton btnBorderColor = new JButton(RustUI.getString(Type.EDITOR_BORDERCOLOR_BUTTON));
+			btnBorderColor = new JButton(RustUI.getString(Type.EDITOR_BORDERCOLOR_BUTTON));
 			lblBorderColor.setLabelFor(btnBorderColor);
 			btnBorderColor.setPreferredSize(buttonSize);
 			btnBorderColor.setMinimumSize(buttonSize);
@@ -281,7 +310,7 @@ public class BobRustSettingsDialog {
 			gbc_btnBorderColor.gridy = 0;
 			editorPanel.add(btnBorderColor, gbc_btnBorderColor);
 			
-			JLabel lblToolbarColor = new JLabel(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_LABEL));
+			lblToolbarColor = new JLabel(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_LABEL));
 			GridBagConstraints gbc_lblToolbarColor = new GridBagConstraints();
 			gbc_lblToolbarColor.anchor = GridBagConstraints.WEST;
 			gbc_lblToolbarColor.insets = new Insets(0, 0, 5, 5);
@@ -290,7 +319,7 @@ public class BobRustSettingsDialog {
 			editorPanel.add(lblToolbarColor, gbc_lblToolbarColor);
 			lblToolbarColor.setToolTipText(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_TOOLTIP));
 			
-			JButton btnToolbarColor = new JButton(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_BUTTON));
+			btnToolbarColor = new JButton(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_BUTTON));
 			lblToolbarColor.setLabelFor(btnToolbarColor);
 			GridBagConstraints gbc_btnToolbarColor = new GridBagConstraints();
 			gbc_btnToolbarColor.fill = GridBagConstraints.HORIZONTAL;
@@ -309,7 +338,7 @@ public class BobRustSettingsDialog {
 				}
 			});
 			
-			JLabel lblLabelColor = new JLabel(RustUI.getString(Type.EDITOR_LABELCOLOR_LABEL));
+			lblLabelColor = new JLabel(RustUI.getString(Type.EDITOR_LABELCOLOR_LABEL));
 			GridBagConstraints gbc_lblLabelColor = new GridBagConstraints();
 			gbc_lblLabelColor.anchor = GridBagConstraints.WEST;
 			gbc_lblLabelColor.insets = new Insets(0, 0, 5, 5);
@@ -318,7 +347,7 @@ public class BobRustSettingsDialog {
 			editorPanel.add(lblLabelColor, gbc_lblLabelColor);
 			lblLabelColor.setToolTipText(RustUI.getString(Type.EDITOR_LABELCOLOR_TOOLTIP));
 			
-			JButton btnLabelColor = new JButton(RustUI.getString(Type.EDITOR_LABELCOLOR_BUTTON));
+			btnLabelColor = new JButton(RustUI.getString(Type.EDITOR_LABELCOLOR_BUTTON));
 			GridBagConstraints gbc_btnLabelColor = new GridBagConstraints();
 			gbc_btnLabelColor.fill = GridBagConstraints.HORIZONTAL;
 			gbc_btnLabelColor.insets = new Insets(0, 0, 5, 0);
@@ -336,19 +365,19 @@ public class BobRustSettingsDialog {
 				}
 			});
 			
-			JLabel callbackLabel = new JLabel(RustUI.getString(Type.EDITOR_CALLBACKINTERVAL_LABEL));
-			GridBagConstraints gbc_callbackLabel = new GridBagConstraints();
-			gbc_callbackLabel.anchor = GridBagConstraints.WEST;
-			gbc_callbackLabel.insets = new Insets(0, 0, 5, 5);
-			gbc_callbackLabel.gridx = 0;
-			gbc_callbackLabel.gridy = 3;
-			editorPanel.add(callbackLabel, gbc_callbackLabel);
-			callbackLabel.setToolTipText(RustUI.getString(Type.EDITOR_CALLBACKINTERVAL_TOOLTIP));
-			callbackLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			callbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			lblCallbackLabel = new JLabel(RustUI.getString(Type.EDITOR_CALLBACKINTERVAL_LABEL));
+			GridBagConstraints gbc_lblCallbackLabel = new GridBagConstraints();
+			gbc_lblCallbackLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblCallbackLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblCallbackLabel.gridx = 0;
+			gbc_lblCallbackLabel.gridy = 3;
+			editorPanel.add(lblCallbackLabel, gbc_lblCallbackLabel);
+			lblCallbackLabel.setToolTipText(RustUI.getString(Type.EDITOR_CALLBACKINTERVAL_TOOLTIP));
+			lblCallbackLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			lblCallbackLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			
 			callbackIntervalField = new JIntegerField(gui.getEditorCallbackInterval());
-			callbackLabel.setLabelFor(callbackIntervalField);
+			lblCallbackLabel.setLabelFor(callbackIntervalField);
 			GridBagConstraints gbc_callbackIntervalField = new GridBagConstraints();
 			gbc_callbackIntervalField.fill = GridBagConstraints.HORIZONTAL;
 			gbc_callbackIntervalField.insets = new Insets(0, 0, 5, 0);
@@ -359,7 +388,7 @@ public class BobRustSettingsDialog {
 			callbackIntervalField.setFocusable(true);
 			callbackIntervalField.setMaximumSize(new Dimension(116, 20));
 			
-			JLabel lblResetEditor = new JLabel(RustUI.getString(Type.EDITOR_RESETEDITOR_LABEL));
+			lblResetEditor = new JLabel(RustUI.getString(Type.EDITOR_RESETEDITOR_LABEL));
 			GridBagConstraints gbc_lblResetEditor = new GridBagConstraints();
 			gbc_lblResetEditor.anchor = GridBagConstraints.WEST;
 			gbc_lblResetEditor.insets = new Insets(0, 0, 5, 5);
@@ -368,7 +397,7 @@ public class BobRustSettingsDialog {
 			editorPanel.add(lblResetEditor, gbc_lblResetEditor);
 			lblResetEditor.setToolTipText(RustUI.getString(Type.EDITOR_RESETEDITOR_TOOLTIP));
 			
-			JButton btnResetEditor = new JButton(RustUI.getString(Type.EDITOR_RESETEDITOR_BUTTON));
+			btnResetEditor = new JButton(RustUI.getString(Type.EDITOR_RESETEDITOR_BUTTON));
 			GridBagConstraints gbc_btnResetEditor = new GridBagConstraints();
 			gbc_btnResetEditor.insets = new Insets(0, 0, 5, 0);
 			gbc_btnResetEditor.fill = GridBagConstraints.HORIZONTAL;
@@ -390,8 +419,102 @@ public class BobRustSettingsDialog {
 					gui.setEditorToolbarColor(null);
 					gui.setEditorLabelColor(null);
 					gui.setEditorCallbackInterval(null);
+					
+					// Update fields.
+					callbackIntervalField.setText(Integer.toString(gui.getEditorCallbackInterval()));
 				}
 			});
+		}
+		
+		{
+			JPanel debugPanel = new JPanel();
+			debugPanel.setFocusable(false);
+			debugPanel.setAlignmentY(Component.TOP_ALIGNMENT);
+			debugPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+			debugPanel.setOpaque(false);
+			tabbedPane.addTab(RustUI.getString(Type.EDITOR_TAB_DEBUGGING), debugPanel);
+			GridBagLayout gbl_editorPanel = new GridBagLayout();
+			gbl_editorPanel.columnWidths = new int[] {140, 0, 0};
+			gbl_editorPanel.rowHeights = new int[] {20, 20, 20, 20, 0, 0, 0};
+			gbl_editorPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+			gbl_editorPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0};
+			debugPanel.setLayout(gbl_editorPanel);
+			
+			JLabel lblOpenConfigLabel = new JLabel(RustUI.getString(Type.DEBUG_OPENCONFIGDIRECTORY_LABEL));
+			GridBagConstraints gbc_lblOpenConfigLabel = new GridBagConstraints();
+			gbc_lblOpenConfigLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblOpenConfigLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblOpenConfigLabel.gridx = 0;
+			gbc_lblOpenConfigLabel.gridy = 0;
+			debugPanel.add(lblOpenConfigLabel, gbc_lblOpenConfigLabel);
+			
+			JButton btnOpenConfig = new JButton(RustUI.getString(Type.DEBUG_OPENCONFIGDIRECTORY_BUTTON));
+			lblOpenConfigLabel.setLabelFor(btnOpenConfig);
+			btnOpenConfig.addActionListener((event) -> {
+				UrlUtils.openDirectory(new File("").getAbsoluteFile());
+			});
+			btnOpenConfig.setFocusable(false);
+			GridBagConstraints gbc_btnOpenConfig = new GridBagConstraints();
+			btnOpenConfig.setPreferredSize(buttonSize);
+			btnOpenConfig.setMinimumSize(buttonSize);
+			btnOpenConfig.setMaximumSize(buttonSize);
+			gbc_btnOpenConfig.insets = new Insets(0, 0, 5, 0);
+			gbc_btnOpenConfig.gridx = 1;
+			gbc_btnOpenConfig.gridy = 0;
+			debugPanel.add(btnOpenConfig, gbc_btnOpenConfig);
+		}
+	}
+	
+	/**
+	 * This method will update the language of all elements in this component.
+	 */
+	public void updateLanguage() {
+		LOGGER.warn("Runtime Language changes for the settings dialog is only partially supported!");
+		dialog.setTitle(RustUI.getString(Type.EDITOR_SETTINGSDIALOG_TITLE));
+		
+		{
+			tabbedPane.setTitleAt(0, RustUI.getString(Type.EDITOR_TAB_GENERATOR));
+			
+			lblBackgroundColor.setText(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_LABEL));
+			lblBackgroundColor.setToolTipText(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_TOOLTIP));
+			btnBackgroundColor.setText(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_BUTTON));
+			lblSignType.setText(RustUI.getString(Type.SETTINGS_SIGNTYPE_LABEL));
+			lblSignType.setToolTipText(RustUI.getString(Type.SETTINGS_SIGNTYPE_TOOLTIP));
+			btnSignType.setText(RustUI.getString(Type.SETTINGS_SIGNTYPE_BUTTON));
+			lblAlphaIndex.setText(RustUI.getString(Type.SETTINGS_ALPHAINDEX_LABEL));
+			lblAlphaIndex.setToolTipText(RustUI.getString(Type.SETTINGS_ALPHAINDEX_TOOLTIP));
+			lblScalingLabel.setText(RustUI.getString(Type.SETTINGS_SCALINGTYPE_LABEL));
+			lblScalingLabel.setToolTipText(RustUI.getString(Type.SETTINGS_SCALINGTYPE_TOOLTIP));
+			lblShapesLabel.setText(RustUI.getString(Type.SETTINGS_MAXSHAPES_LABEL));
+			lblShapesLabel.setToolTipText(RustUI.getString(Type.SETTINGS_MAXSHAPES_TOOLTIP));
+			lblClickIntervalLabel.setText(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_LABEL));
+			lblClickIntervalLabel.setToolTipText(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_TOOLTIP));
+			lblAutosaveIntervalLabel.setText(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_LABEL));
+			lblAutosaveIntervalLabel.setToolTipText(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_TOOLTIP));
+		}
+		
+		{
+			tabbedPane.setTitleAt(1, RustUI.getString(Type.EDITOR_TAB_EDITOR));
+			
+			lblBorderColor.setText(RustUI.getString(Type.EDITOR_BORDERCOLOR_LABEL));
+			lblBorderColor.setToolTipText(RustUI.getString(Type.EDITOR_BORDERCOLOR_TOOLTIP));
+			btnBorderColor.setText(RustUI.getString(Type.EDITOR_BORDERCOLOR_BUTTON));
+			lblToolbarColor.setText(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_LABEL));
+			lblToolbarColor.setToolTipText(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_TOOLTIP));
+			btnToolbarColor.setText(RustUI.getString(Type.EDITOR_TOOLBARCOLOR_BUTTON));
+			lblLabelColor.setText(RustUI.getString(Type.EDITOR_LABELCOLOR_LABEL));
+			lblLabelColor.setToolTipText(RustUI.getString(Type.EDITOR_LABELCOLOR_TOOLTIP));
+			btnLabelColor.setText(RustUI.getString(Type.EDITOR_LABELCOLOR_BUTTON));
+			lblCallbackLabel.setText(RustUI.getString(Type.EDITOR_CALLBACKINTERVAL_LABEL));
+			lblCallbackLabel.setToolTipText(RustUI.getString(Type.EDITOR_CALLBACKINTERVAL_TOOLTIP));
+			lblResetEditor.setText(RustUI.getString(Type.EDITOR_RESETEDITOR_LABEL));
+			lblResetEditor.setToolTipText(RustUI.getString(Type.EDITOR_RESETEDITOR_TOOLTIP));
+			btnResetEditor.setText(RustUI.getString(Type.EDITOR_RESETEDITOR_BUTTON));
+		}
+		
+		{
+			tabbedPane.setTitleAt(2, RustUI.getString(Type.EDITOR_TAB_DEBUGGING));
+			
 		}
 	}
 	

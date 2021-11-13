@@ -22,7 +22,6 @@ import com.bobrust.generator.Model;
 import com.bobrust.gui.dialog.BobRustDrawDialog;
 import com.bobrust.gui.dialog.BobRustMonitorPicker;
 import com.bobrust.gui.dialog.BobRustSettingsDialog;
-import com.bobrust.lang.RustTranslator;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
 import com.bobrust.robot.BobRustPalette;
@@ -41,11 +40,11 @@ public class BobRustDesktopOverlay extends JPanel {
 	private static final Dimension DEFAULT_DIALOG_SIZE = new Dimension(146, 364);
 	private static final int RECTANGLE_SELECTION_SIZE = 10;
 	private static final int SHAPE_CACHE_INTERVAL = 500;
-	private static final int ESTIMATE_DELAY_OFFSET = 14;
 	private static final int BORDER_SIZE = 3;
 	private static final Logger LOGGER = LogManager.getLogger(BobRustDesktopOverlay.class);
 	
 	private final BobRustEditor gui;
+	private final JDialog dialog;
 	
 	private final Rectangle canvasRegion = new Rectangle(0, 0, 0, 0);
 	private final Rectangle imageRegion = new Rectangle(0, 0, 0, 0);
@@ -59,11 +58,9 @@ public class BobRustDesktopOverlay extends JPanel {
 	private final BobRustDrawDialog drawDialog;
 	private final BobRustShapeRender shapeRender;
 	
-	private final JLabel generationLabel;
-	private final JLabel generationInfo;
-	private final JPanel topBarPanel;
-	
+	// Components.
 	private final OverlayActionPanel actionBarPanel;
+	private final OverlayTopPanel topBarPanel;
 	
 	private ResizeOption resizeOption = ResizeOption.NONE;
 	private OverlayType action = OverlayType.NONE;
@@ -73,9 +70,8 @@ public class BobRustDesktopOverlay extends JPanel {
 	private boolean isFullscreen;
 	private BorstData lastData;
 	
-	// TODO: Access these values trough method calls.
+	// TODO: Access this value with a method call.
 	public final Point colorRegion = new Point(0, 0);
-	public final JDialog dialog;
 	
 	private final MouseAdapter mouseAdapter = new MouseAdapter() {
 		private Point originPoint = new Point(0, 0);
@@ -223,6 +219,7 @@ public class BobRustDesktopOverlay extends JPanel {
 		drawDialog = new BobRustDrawDialog(gui, this, dialog);
 		shapeRender = new BobRustShapeRender(SHAPE_CACHE_INTERVAL);
 		actionBarPanel = new OverlayActionPanel(dialog, gui, this);
+		topBarPanel = new OverlayTopPanel(gui);
 		
 		dialog.addMouseListener(mouseAdapter);
 		dialog.addMouseMotionListener(mouseAdapter);
@@ -232,33 +229,8 @@ public class BobRustDesktopOverlay extends JPanel {
 		this.setLayout(null);
 
 		add(actionBarPanel);
+		add(topBarPanel);
 		
-		{
-			topBarPanel = new JPanel();
-			topBarPanel.setBounds(150, 5, 10, 10);
-			topBarPanel.setBackground(new Color(0x7f000000, true));
-			topBarPanel.setLayout(null);
-			add(topBarPanel);
-			
-			generationLabel = new JLabel("No active generation");
-			generationLabel.setHorizontalAlignment(SwingConstants.CENTER);
-			generationLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-			generationLabel.setForeground(Color.lightGray);
-			generationLabel.setFont(generationLabel.getFont().deriveFont(18.0f));
-			generationLabel.setBounds(0, 0, 380, 25);
-			generationLabel.setBackground(Color.blue);
-			topBarPanel.add(generationLabel);
-			
-			generationInfo = new JLabel("");
-			generationInfo.setHorizontalAlignment(SwingConstants.CENTER);
-			generationInfo.setHorizontalTextPosition(SwingConstants.CENTER);
-			generationInfo.setForeground(Color.WHITE);
-			generationInfo.setFont(generationInfo.getFont().deriveFont(Font.BOLD, 16.0f));
-			generationInfo.setBounds(0, 20, 440, 20);
-			generationInfo.setBackground(Color.red);
-			topBarPanel.add(generationInfo);
-		}
-
 		updateEditor();
 	}
 	
@@ -318,7 +290,6 @@ public class BobRustDesktopOverlay extends JPanel {
 	
 	public void openSettings(Point location) {
 		settingsGui.openDialog(location);
-		actionBarPanel.updateButtons();
 	}
 	
 	public void openImage() {
@@ -421,10 +392,6 @@ public class BobRustDesktopOverlay extends JPanel {
 		// Update the desktop overlay.
 		setBorder(isFullscreen ? new LineBorder(gui.getEditorBorderColor(), BORDER_SIZE):null);
 		
-		// Update the top bar.
-		generationLabel.setLocation((topBarPanel.getWidth() - generationLabel.getWidth()) / 2, generationLabel.getY());
-		generationInfo.setLocation((topBarPanel.getWidth() - generationInfo.getWidth()) / 2, generationInfo.getY());
-		
 		BorstData lastData = this.lastData;
 		setEstimatedGenerationLabel(lastData != null ? lastData.getIndex():0, gui.getSettingsMaxShapes());
 		
@@ -433,6 +400,10 @@ public class BobRustDesktopOverlay extends JPanel {
 		} else {
 			actionBarPanel.btnPauseGenerate.setText(RustUI.getString(Type.ACTION_PAUSEGENERATE_ON));
 		}
+	}
+	
+	public JDialog getDialog() {
+		return dialog;
 	}
 	
 	public Rectangle getCanvasArea() {
@@ -444,18 +415,15 @@ public class BobRustDesktopOverlay extends JPanel {
 	}
 	
 	public void setEstimatedGenerationLabel(int index, int maxShapes) {
-		generationLabel.setText("%d/%d shapes generated".formatted(index, maxShapes));
-		long time = (long)(index * 1.1 * (ESTIMATE_DELAY_OFFSET + 1000.0 / (double)gui.getSettingsClickInterval()));
-		generationInfo.setText("Estimated %s".formatted(RustTranslator.getTimeMinutesMessage(time)));
+		topBarPanel.setEstimatedGenerationLabel(index, maxShapes);
 	}
 	
 	public void setExactGenerationLabel(long time) {
-		generationInfo.setText("Time %s".formatted(RustTranslator.getTimeMinutesMessage(time)));
+		topBarPanel.setExactGenerationLabel(time);
 	}
 	
 	public void setRemainingTime(int index, int maxShapes, long timeLeft) {
-		generationLabel.setText("%d/%d shapes drawn".formatted(index, maxShapes));
-		generationInfo.setText("Time left %s".formatted(RustTranslator.getTimeMinutesMessage(timeLeft)));
+		topBarPanel.setRemainingTime(index, maxShapes, timeLeft);
 	}
 	
 	public void toggleFullscreen() {
@@ -480,7 +448,8 @@ public class BobRustDesktopOverlay extends JPanel {
 		}
 		
 		actionBarPanel.setSize(actionBarPanel.getWidth(), dialog.getHeight() - BORDER_SIZE * 2);
-		topBarPanel.setBounds(BORDER_SIZE + (dialog.getWidth() - 440) / 2, isFullscreen ? BORDER_SIZE:-50, 440, 40);
+		topBarPanel.setBounds((dialog.getWidth() - 440) / 2, isFullscreen ? BORDER_SIZE:-50, 440, 40);
+		
 		updateEditor();
 		dialog.setVisible(true);
 	}
@@ -499,6 +468,15 @@ public class BobRustDesktopOverlay extends JPanel {
 		if(data.isDone()) {
 			actionBarPanel.btnPauseGenerate.setText(RustUI.getString(Type.ACTION_PAUSEGENERATE_ON));
 		}
+	}
+	
+	/**
+	 * This method will update the language of all elements in this component.
+	 */
+	public void updateLanguage() {
+		settingsGui.updateLanguage();
+		actionBarPanel.updateLanguage();
+		topBarPanel.updateLanguage();
 	}
 	
 	private boolean doRenderShapes = false;

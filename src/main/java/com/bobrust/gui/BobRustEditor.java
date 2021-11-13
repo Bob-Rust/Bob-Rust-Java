@@ -9,18 +9,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.bobrust.generator.BorstGenerator;
 import com.bobrust.generator.BorstGenerator.BorstData;
 import com.bobrust.generator.BorstGenerator.BorstGeneratorBuilder;
 import com.bobrust.gui.dialog.RustFileDialog;
 import com.bobrust.settings.RustSettingsImpl;
-import com.bobrust.settings.Settings;
 
 public class BobRustEditor extends RustSettingsImpl {
-	private static final Logger LOGGER = LogManager.getLogger(BobRustEditor.class);
 	private BobRustDesktopOverlay overlayDialog;
 	
 	private RustFileDialog fileChooser;
@@ -37,7 +32,6 @@ public class BobRustEditor extends RustSettingsImpl {
 			.create();
 		this.loadSettings();
 		
-		LOGGER.info("Starting application");
 		SwingUtilities.invokeLater(this::setup);
 	}
 	
@@ -53,7 +47,7 @@ public class BobRustEditor extends RustSettingsImpl {
 		filterPresets = new FileNameExtensionFilter("Preset Files", "borst");
 		
 		overlayDialog = new BobRustDesktopOverlay(this);
-		overlayDialog.dialog.setVisible(true);
+		overlayDialog.getDialog().setVisible(true);
 	}
 	
 	public File openImageFileChooser(JDialog dialog) {
@@ -75,9 +69,7 @@ public class BobRustEditor extends RustSettingsImpl {
 	}
 	
 	@Override
-	protected void setProperty(Settings key, Object value) {
-		super.setProperty(key, value);
-		
+	protected void postSetProperty() {
 		if(overlayDialog != null) {
 			overlayDialog.updateEditor();
 		}

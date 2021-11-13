@@ -84,7 +84,7 @@ public class BobRustShapeRender {
 			g.fillOval(circle.x - cd / 2, circle.y - cd / 2, cd, cd);
 			
 			// Cache every 'cacheInterval' shapes.
-			if((i % cacheInterval) == 499) {
+			if((i % cacheInterval) == cacheInterval - 1) {
 				list.add(canvasPixels.clone());
 			}
 		}

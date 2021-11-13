@@ -34,6 +34,7 @@ public class BobRustDrawDialog {
 	private final BobRustPainter rustPainter;
 	
 	private final JDialog dialog;
+	private final JDialog parentDialog;
 	
 	private final JPanel panel;
 	private final JIntegerField maxShapesField;
@@ -45,8 +46,9 @@ public class BobRustDrawDialog {
 	private final JButton btnStartDrawing;
 	
 	public BobRustDrawDialog(BobRustEditor gui, BobRustDesktopOverlay overlay, JDialog parent) {
-		this.gui = gui;
+		this.parentDialog = parent;
 		this.overlay = overlay;
+		this.gui = gui;
 		this.rustPalette = new BobRustPalette();
 		this.rustPainter = new BobRustPainter(gui, overlay, rustPalette);
 		
@@ -171,7 +173,7 @@ public class BobRustDrawDialog {
 			
 			Thread thread = new Thread(() -> {
 				try {
-					Point p = overlay.dialog.getLocation();
+					Point p = parentDialog.getLocation();
 					dialog.setLocation(p.x, p.y);
 					dialog.setSize(MINIMIZED);
 					overlay.setHideRegions(true);
@@ -217,7 +219,7 @@ public class BobRustDrawDialog {
 	
 	private boolean findColorPalette() {
 		// The bounds of the screen.
-		Rectangle screenBounds = overlay.dialog.getBounds();
+		Rectangle screenBounds = parentDialog.getBounds();
 		
 		// Check for bright red on the edge of the screen.
 		try {

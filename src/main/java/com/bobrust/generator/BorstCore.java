@@ -49,7 +49,7 @@ class BorstCore {
 		return BorstUtils.getClosestColor((alpha << 24) | (r << 16) | (g << 8) | (b));
 	}
 
-	static void copyLines_replaceRegion(BorstImage dst, BorstImage src, Scanline[] lines) {
+	static void copyLinesReplaceRegion(BorstImage dst, BorstImage src, Scanline[] lines) {
 		int w = dst.width;
 		int len = lines.length;
 		for(int i = 0; i < len; i++) {

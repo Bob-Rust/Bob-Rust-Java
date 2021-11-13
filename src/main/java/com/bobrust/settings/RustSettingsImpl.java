@@ -23,7 +23,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 	private String presetPath;
 	
 	// Generator configuration
-	private Color settingsBackground = RustConstants.CANVAS_AVERAGE;
+	private Color settingsBackground = RustConstants.WOODEN_AVERAGE;
 	private Sign settingsSign;
 	private int clickInterval;
 	private int autosaveInterval;
@@ -65,7 +65,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 		setEditorLabelColor(getSettingsColor(Settings.LABEL_COLOR));
 		setEditorImageDirectory(getSettingsProperty(Settings.IMAGE_PATH));
 		setEditorPresetDirectory(getSettingsProperty(Settings.PRESET_PATH));
-		setEditorCallbackInterval(getSettingInteger(Settings.SETTINGS_CALLBACK_INTERVAL));
+		setEditorCallbackInterval(getSettingInteger(Settings.CALLBACK_INTERVAL));
 		
 		setSettingsAlpha(getSettingInteger(Settings.SETTINGS_ALPHA));
 		setSettingsScaling(getSettingInteger(Settings.SETTINGS_SCALING));
@@ -88,8 +88,16 @@ public abstract class RustSettingsImpl implements RustSettings {
 	}
 	
 	private Color getSettingsColor(Settings key) {
-		Integer rgb = getSettingInteger(key);
-		return rgb == null ? null:new Color(rgb);
+		String string = getSettingsProperty(key);
+		if(string == null) {
+			return null;
+		}
+		
+		try {
+			return new Color(Integer.parseInt(string, 16) & 0xffffff);
+		} catch(NumberFormatException ignored) {
+			return null;
+		}
 	}
 	
 	private String getSettingsProperty(Settings key) {
@@ -108,10 +116,17 @@ public abstract class RustSettingsImpl implements RustSettings {
 		}
 	}
 	
-	protected void setProperty(Settings key, Object value) {
+	private void setColorProperty(Settings key, Color color) {
+		setProperty(key, color == null ? null:"%06x".formatted(color.getRGB() & 0xffffff));
+	}
+	
+	private void setProperty(Settings key, Object value) {
 		properties.setProperty(key.id, Objects.toString(value));
 		saveSettings();
+		postSetProperty();
 	}
+	
+	protected abstract void postSetProperty();
 	
 	public BorstSettings getBorstSettings() {
 		return borstSettings;
@@ -120,19 +135,19 @@ public abstract class RustSettingsImpl implements RustSettings {
 	@Override
 	public void setEditorBorderColor(Color color) {
 		borderColor = color == null ? new Color(0xff3333):color;
-		setProperty(Settings.BORDER_COLOR, borderColor.getRGB());
+		setColorProperty(Settings.BORDER_COLOR, borderColor);
 	}
 
 	@Override
 	public void setEditorToolbarColor(Color color) {
 		toolbarColor = color == null ? new Color(0x333333):color;
-		setProperty(Settings.TOOLBAR_COLOR, toolbarColor.getRGB());
+		setColorProperty(Settings.TOOLBAR_COLOR, toolbarColor);
 	}
 
 	@Override
 	public void setEditorLabelColor(Color color) {
 		labelColor = color == null ? Color.white:color;
-		setProperty(Settings.LABEL_COLOR, labelColor.getRGB());
+		setColorProperty(Settings.LABEL_COLOR, labelColor);
 	}
 
 	@Override
@@ -151,7 +166,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 	public void setEditorCallbackInterval(Integer interval) {
 		interval = interval == null ? 20:RustUtil.clamp(interval, 1, 99999);
 		borstSettings.CallbackInterval = interval;
-		setProperty(Settings.SETTINGS_CALLBACK_INTERVAL, interval);
+		setProperty(Settings.CALLBACK_INTERVAL, interval);
 	}
 
 	@Override
@@ -184,7 +199,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 	@Override
 	public void setSettingsBackground(Color color) {
 		settingsBackground = color;
-		setProperty(Settings.SETTINGS_BACKGROUND, color == null ? null:color.getRGB());
+		setColorProperty(Settings.SETTINGS_BACKGROUND, color);
 	}
 
 	@Override

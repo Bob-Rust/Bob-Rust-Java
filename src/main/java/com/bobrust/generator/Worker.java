@@ -23,20 +23,20 @@ class Worker {
 		this.alpha = alpha;
 	}
 
-	public void Init(BorstImage current, float score) {
+	public void init(BorstImage current, float score) {
 		this.current = current;
 		this.score = score;
 		this.counter = 0;
 	}
 	
-	public float Energy(Scanline[] lines) {
+	public float getEnergy(Scanline[] lines) {
 		this.counter++;
 		
 		// Because this is called in parallel we could mess up the buffer? by writing to it twice?
 		BorstColor color = BorstCore.computeColor(target, current, lines, alpha);
 
 		// Set the buffers region on the lines to the current image
-		BorstCore.copyLines_replaceRegion(buffer, current, lines);
+		BorstCore.copyLinesReplaceRegion(buffer, current, lines);
 
 		// Draw the lines with the new color to the buffer
 		BorstCore.drawLines(buffer, color, lines, alpha);

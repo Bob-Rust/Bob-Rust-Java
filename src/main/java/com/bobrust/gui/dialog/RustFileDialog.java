@@ -13,7 +13,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 /**
- * 
  * <pre>
  *   This file dialog has been created in order to fix some common issue with
  *   trying to use the system file viewer.
@@ -41,14 +40,19 @@ public class RustFileDialog {
 		boolean hasLwjgl;
 		try {
 			Class.forName("org.lwjgl.util.tinyfd.TinyFileDialogs");
-			
 			hasLwjgl = true;
 		} catch(Throwable ignore) {
-			// If we caught an exception that means that we did not
-			// load the library.
+			// If we caught an exception that means that we did not load the library.
 			hasLwjgl = false;
 		}
 		HAS_LWJGL = hasLwjgl;
+	}
+	
+	/**
+	 * Returns if LWJGL has been successfully loaded.
+	 */
+	public static boolean hasLwjgl() {
+		return HAS_LWJGL;
 	}
 
 	private JFileChooser fileChooser;
@@ -68,7 +72,7 @@ public class RustFileDialog {
 					}
 					filters.flip();
 					
-					String result = TinyFileDialogs.tinyfd_openFileDialog(title, directory + "/", filters, fileFilter.getDescription(), false);
+					String result = TinyFileDialogs.tinyfd_openFileDialog(title, directory + File.separatorChar, filters, fileFilter.getDescription(), false);
 					
 					if(result != null) {
 						return new File(result).getAbsoluteFile();
