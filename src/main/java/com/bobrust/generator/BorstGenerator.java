@@ -3,9 +3,13 @@ package com.bobrust.generator;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import com.bobrust.logging.LogUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.bobrust.util.RustConstants;
 
 public class BorstGenerator {
+	private static final Logger LOGGER = LogManager.getLogger(BorstGenerator.class);
 	private final Consumer<BorstData> callback;
 	private final BorstSettings settings;
 	private volatile Thread thread;
@@ -30,7 +34,7 @@ public class BorstGenerator {
 	 */
 	public synchronized boolean start() {
 		if(thread != null) {
-			LogUtils.warn("BorstGenerator has already been started! Restarting generator");
+			LOGGER.warn("BorstGenerator has already been started! Restarting generator");
 			try {
 				stop();
 			} catch(InterruptedException e) {
@@ -39,7 +43,7 @@ public class BorstGenerator {
 		}
 		
 		if(settings.DirectImage == null) {
-			LogUtils.error("Failed to load borst image");
+			LOGGER.error("Failed to load borst image");
 			return false;
 		}
 		
@@ -52,13 +56,12 @@ public class BorstGenerator {
 		try {
 			alpha = BorstUtils.ALPHAS[settings.Alpha];
 		} catch(Exception e) {
-			LogUtils.error("Failed to set alpha value. '%s' is not a valid alpha index.", settings.Alpha);
+			LOGGER.error("Failed to set alpha value. '%s' is not a valid alpha index.", settings.Alpha);
 			return false;
 		}
 		
 		isPaused = false;
 		
-		@SuppressWarnings("unused")
 		Thread thread = new Thread(() -> {
 			this.index = 0;
 			
@@ -96,7 +99,15 @@ public class BorstGenerator {
 						
 						double time = (end - begin) / 1000000000.0;
 						double sps = i / time;
-						//LogUtils.info("%5d: t=%.3f s, score=%.6f, n=%d, s/s=%.2f", i, time, model.score, n, sps);
+						if(RustConstants.DEBUG_GENERATOR) {
+							LOGGER.debug("{}: t={} s, score={}, n={}, s/s={}",
+								"%5d".formatted(i),
+								"%.3f".formatted(time),
+								"%.6f".formatted(model.score),
+								n,
+								"%.2f".formatted(sps)
+							);
+						}
 					}
 				}
 			} finally {

@@ -40,7 +40,7 @@ public class Model {
 	private void addShape(Circle shape) {
 		beforeImage.draw(current);
 
-		Scanline[] lines = shape.Rasterize();
+		Scanline[] lines = shape.getScanlines();
 		BorstColor color = BorstCore.computeColor(target, current, lines, alpha);
 		
 		BorstCore.drawLines(current, color, lines, alpha);
@@ -53,9 +53,9 @@ public class Model {
 		BorstCore.drawLines(context, color, lines, alpha);
 	}
 	
-	public synchronized int processStep() {
-		worker.Init(current, score);
-		State state = HillClimbGenerator.BestHillClimbState(worker, 1000, 100, 1);
+	public int processStep() {
+		worker.init(current, score);
+		State state = HillClimbGenerator.getBestHillClimbState(worker, 1000, 100, 1);
 		addShape(state.shape);
 
 		return worker.counter;

@@ -49,11 +49,12 @@ public class BobRustMonitorPicker {
 			}
 		}
 		
-		// Returns the default configuration.
+		// Returns the default configuration
 		return graphicsEnvironment.getDefaultScreenDevice().getDefaultConfiguration();
 	}
 	
 	public GraphicsConfiguration openDialog() {
+		// TODO: Use a better structure than a thread
 		Thread thread = new Thread(() -> {
 			try {
 				while(true) {
@@ -74,17 +75,21 @@ public class BobRustMonitorPicker {
 			GraphicsConfiguration gc = getGraphicsConfiguration(dialog.getLocation());
 			dialog.setBounds(gc.getBounds());
 			dialog.setVisible(true);
-			config = getGraphicsConfiguration(dialog.getLocation());
+			return updateConfiguration(dialog.getLocation());
 		} finally {
 			thread.interrupt();
 		}
-		
+	}
+	
+	public GraphicsConfiguration updateConfiguration(Point point) {
+		GraphicsConfiguration config = getGraphicsConfiguration(point);
+		this.config = config;
 		return config;
 	}
 	
 	public GraphicsConfiguration getMonitor() {
 		if(config == null) {
-			// If the config is null we use the default configuration.
+			// If the config is null we use the default configuration
 			config = getGraphicsConfiguration(null);
 		}
 		

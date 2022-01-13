@@ -6,10 +6,11 @@ public enum Settings {
 	LABEL_COLOR("editor.labelcolor"),
 	IMAGE_PATH("editor.imagepath"),
 	PRESET_PATH("editor.presetpath"),
+	CALLBACK_INTERVAL("editor.callbackinterval"),
+	
 	SETTINGS_ALPHA("settings.alpha"),
 	SETTINGS_SCALING("settings.scaling"),
 	SETTINGS_MAX_SHAPES("settings.maxshapes"),
-	SETTINGS_CALLBACK_INTERVAL("settings.callbackinterval"),
 	SETTINGS_SIGN_TYPE("settings.signtype"),
 	SETTINGS_BACKGROUND("settings.background"),
 	SETTINGS_CLICK_INTERVAL("settings.clickinterval"),

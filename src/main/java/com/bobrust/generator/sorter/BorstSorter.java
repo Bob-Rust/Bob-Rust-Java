@@ -49,8 +49,20 @@ public class BorstSorter {
 				return;
 			}
 			
-			int index = ((x + r >= hs) ? 0:1) | ((y + r >= hs) ? 0:2);
-			add_piece(piece, index);
+			boolean x_min = x - r <= hs;
+			boolean x_max = x + r >= hs;
+			boolean y_min = y - r <= hs;
+			boolean y_max = y + r >= hs;
+			
+			if(y_min) {
+				if(x_min) add_piece(piece, 0);
+				if(x_max) add_piece(piece, 1);
+			}
+			
+			if(y_max) {
+				if(x_min) add_piece(piece, 2);
+				if(x_max) add_piece(piece, 3);
+			}
 		}
 		
 		private void add_piece(Piece piece, int index) {
@@ -96,8 +108,20 @@ public class BorstSorter {
 				}
 			}
 			
-			int index = ((x + r >= hs) ? 0:1) | ((y + r >= hs) ? 0:2);
-			get_pieces(piece, index, set);
+			boolean x_min = x - r <= hs;
+			boolean x_max = x + r >= hs;
+			boolean y_min = y - r <= hs;
+			boolean y_max = y + r >= hs;
+			
+			if(y_min) {
+				if(x_min) get_pieces(piece, 0, set);
+				if(x_max) get_pieces(piece, 1, set);
+			}
+			
+			if(y_max) {
+				if(x_min) get_pieces(piece, 2, set);
+				if(x_max) get_pieces(piece, 3, set);
+			}
 		}
 		
 		private void get_pieces(Piece piece, int index, IntList set) {
@@ -110,6 +134,10 @@ public class BorstSorter {
 	
 	private static IntList[] map;
 	public static BlobList sort(BlobList data) {
+		return sort(data, 512);
+	}
+	
+	public static BlobList sort(BlobList data, int size) {
 		try {
 			Piece[] pieces = new Piece[data.size()];
 			map = new IntList[data.size()];
@@ -118,18 +146,18 @@ public class BorstSorter {
 				pieces[i] = new Piece(data.get(i), i);
 			}
 			
-			return new BlobList(Arrays.asList(sort0(pieces)));
+			return new BlobList(Arrays.asList(sort0(pieces, size)));
 		} finally {
 			map = null;
 		}
 	}
 	
-	private static Blob[] sort0(Piece[] array) {
+	private static Blob[] sort0(Piece[] array, int size) {
 		Blob[] out = new Blob[array.length];
 		out[0] = array[0].blob;
 		array[0] = null;
 		
-		QTree tree = new QTree(512, 512);
+		QTree tree = new QTree(size, size);
 		/* Calculate the intersections */ {
 			// Takes 36 ms for 60000 shapes
 			for(int i = 1; i < array.length; i++) {
@@ -246,7 +274,7 @@ public class BorstSorter {
 						break;
 					}
 					
-					cols.pop_last();
+					cols.popLast();
 				}
 				
 				if(!cols.isEmpty()) {

@@ -7,11 +7,11 @@ import java.util.Random;
 public class Circle {
 	private final Worker worker;
 	
-	// position
+	// Position
 	public int x;
 	public int y;
 	
-	// radius
+	// Radius
 	public int r;
 	
 	public Circle(Worker worker) {
@@ -29,24 +29,24 @@ public class Circle {
 		this.r = r;
 	}
 
-	public void Mutate() {
+	public void mutateShape() {
 		int w = worker.w - 1;
 		int h = worker.h - 1;
 		Random rnd = worker.rnd;
 		
 		if(rnd.nextInt(3) == 0) {
-			int a = x + (int)(rnd.nextGaussian() * 16); // NormFloat64
-			int b = y + (int)(rnd.nextGaussian() * 16); // NormFloat64
+			int a = x + (int)(rnd.nextGaussian() * 16);
+			int b = y + (int)(rnd.nextGaussian() * 16);
 			x = BorstUtils.clampInt(a, 0, w);
 			y = BorstUtils.clampInt(b, 0, h);
 		} else {
-			int c = BorstUtils.getClosestSize(r + (int)(rnd.nextGaussian() * 16)); // NormFloat64
+			int c = BorstUtils.getClosestSize(r + (int)(rnd.nextGaussian() * 16));
 			r = BorstUtils.clampInt(c, 1, w);
 		}
 	}
 	
 
-	public Scanline[] Rasterize() {
+	public Scanline[] getScanlines() {
 		int w = worker.w;
 		int h = worker.h;
 		

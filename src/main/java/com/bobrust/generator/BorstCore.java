@@ -1,7 +1,7 @@
 package com.bobrust.generator;
 
 class BorstCore {
-	public static BorstColor computeColor(BorstImage target, BorstImage current, Scanline[] lines, int alpha) {
+	static BorstColor computeColor(BorstImage target, BorstImage current, Scanline[] lines, int alpha) {
 		long rsum_1 = 0;
 		long gsum_1 = 0;
 		long bsum_1 = 0;
@@ -49,7 +49,7 @@ class BorstCore {
 		return BorstUtils.getClosestColor((alpha << 24) | (r << 16) | (g << 8) | (b));
 	}
 
-	public static void copyLines_replaceRegion(BorstImage dst, BorstImage src, Scanline[] lines) {
+	static void copyLinesReplaceRegion(BorstImage dst, BorstImage src, Scanline[] lines) {
 		int w = dst.width;
 		int len = lines.length;
 		for(int i = 0; i < len; i++) {
@@ -60,7 +60,7 @@ class BorstCore {
 		}
 	}
 
-	public static void drawLines(BorstImage im, BorstColor c, Scanline[] lines, int alpha) {
+	static void drawLines(BorstImage im, BorstColor c, Scanline[] lines, int alpha) {
 		int cr = c.r * alpha;
 		int cg = c.g * alpha;
 		int cb = c.b * alpha;
@@ -86,11 +86,10 @@ class BorstCore {
 			}
 		}
 	}
-
-	// [Only used once]
-	public static float differenceFull(BorstImage a, BorstImage b) {
-		int w = a.width;
-		int h = a.height;
+	
+	static float differenceFull(BorstImage a, BorstImage b) {
+		final int w = a.width;
+		final int h = a.height;
 		
 		long total = 0;
 		
@@ -120,7 +119,7 @@ class BorstCore {
 		return (float)(Math.sqrt(total / (w * h * 4.0)) / 255.0);
 	}
 	
-	public static float differencePartial(BorstImage target, BorstImage before, BorstImage after, float score, Scanline[] lines) {
+	static float differencePartial(BorstImage target, BorstImage before, BorstImage after, float score, Scanline[] lines) {
 		int w = target.width;
 		int h = target.height;
 		double denom = (w * h * 4.0);
@@ -166,6 +165,62 @@ class BorstCore {
 			}
 		}
 		
-		return (float)(Math.sqrt(total / denom) * 0.003921568627451);
+		return (float)(Math.sqrt(total / denom) / 255.0);
+	}
+	
+	static float differencePartialThread(BorstImage target, BorstImage before, float score, int alpha, Scanline[] lines) {
+		BorstColor color = BorstCore.computeColor(target, before, lines, alpha);
+		
+		final int len = lines.length;
+		final int h = target.height;
+		final int w = target.width;
+		
+		final double denom = (w * h * 4.0);
+		long total = (long)(Math.pow(score * 255, 2) * denom);
+		
+		final int cr = color.r * alpha;
+		final int cg = color.g * alpha;
+		final int cb = color.b * alpha;
+		final int pa = 255 - alpha;
+		
+		for(int i = 0; i < len; i++) {
+			Scanline line = lines[i];
+			int idx = line.y * w;
+			
+			for(int x = line.x1; x <= line.x2; x++) {
+				int tt = target.pixels[idx + x];
+				int bb = before.pixels[idx + x];
+				
+				int bb_a = (bb >>> 24) & 0xff;
+				int bb_r = (bb >>> 16) & 0xff;
+				int bb_g = (bb >>>  8) & 0xff;
+				int bb_b = (bb       ) & 0xff;
+				
+				int aa_r = (cr + (bb_r * pa)) >>> 8;
+				int aa_g = (cg + (bb_g * pa)) >>> 8;
+				int aa_b = (cb + (bb_b * pa)) >>> 8;
+				int aa_a = 255 - (((255 - bb_a) * pa) >>> 8);
+				
+				int tt_a = (tt >>> 24) & 0xff;
+				int tt_r = (tt >>> 16) & 0xff;
+				int tt_g = (tt >>>  8) & 0xff;
+				int tt_b = (tt       ) & 0xff;
+				
+				int da1 = tt_a - bb_a;
+				int dr1 = tt_r - bb_r;
+				int dg1 = tt_g - bb_g;
+				int db1 = tt_b - bb_b;
+				
+				int da2 = tt_a - aa_a;
+				int dr2 = tt_r - aa_r;
+				int dg2 = tt_g - aa_g;
+				int db2 = tt_b - aa_b;
+				
+				total -= (long)(dr1*dr1 + dg1*dg1 + db1*db1 + da1*da1);
+				total += (long)(dr2*dr2 + dg2*dg2 + db2*db2 + da2*da2);
+			}
+		}
+		
+		return (float)(Math.sqrt(total / denom) / 255.0);
 	}
 }

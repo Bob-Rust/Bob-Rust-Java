@@ -8,6 +8,9 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Check different ways to convert colors
  * 
@@ -20,6 +23,7 @@ import javax.imageio.ImageIO;
  * @author HardCoded
  */
 public class RustImageUtil {
+	private static final Logger LOGGER = LogManager.getLogger(RustImageUtil.class);
 	private static final int[] iccCmykLut;
 	private static final int bits;
 	
@@ -32,6 +36,8 @@ public class RustImageUtil {
 			lut = new int[w * h];
 			cmykLut.getRGB(0, 0, w, h, lut, 0, w);
 		} catch(IOException e) {
+			LOGGER.error("Error loading cmyk lut: {}", e);
+			LOGGER.throwing(e);
 			e.printStackTrace();
 		}
 		
@@ -40,7 +46,7 @@ public class RustImageUtil {
 	}
 	
 	public static BufferedImage applyFilters(BufferedImage scaled) {
-		// Create a new Image that has a backing int buffer.
+		// Create a new Image that has a backing int buffer
 		BufferedImage image = new BufferedImage(scaled.getWidth(), scaled.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
 		g.drawImage(scaled, 0, 0, null);

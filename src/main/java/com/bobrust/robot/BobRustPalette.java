@@ -8,16 +8,20 @@ import java.util.Map;
 
 import javax.swing.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.bobrust.generator.BorstColor;
 import com.bobrust.generator.BorstUtils;
-import com.bobrust.logging.LogUtils;
 
 /**
  * Used to analyse the gui of rust to get information about the game
  * @author HardCoded
  */
 public class BobRustPalette {
+	private static final Logger LOGGER = LogManager.getLogger(BobRustPalette.class);
 	private final Map<BorstColor, Point> colorMap;
+	private Map<BorstColor, Point> colorMapCopy;
 	private Point panel_offset;
 	private Point preview_middle;
 	
@@ -63,7 +67,7 @@ public class BobRustPalette {
 	}
 	
 	public synchronized boolean analyse(JDialog dialog, BufferedImage bi, Rectangle screenBounds, Point screenOffset) {
-		this.panel_offset = new Point(screenOffset.x, screenOffset.y - 152); // Point screenLocation, 
+		this.panel_offset = new Point(screenOffset.x, screenOffset.y - 152);
 		// (-215, -67) from screen corner
 		this.preview_middle = new Point(screenBounds.x + screenBounds.width - 215, screenBounds.y + screenBounds.height - 67);
 		this.colorMap.clear();
@@ -90,47 +94,28 @@ public class BobRustPalette {
 		
 		for(BorstColor color : BorstUtils.COLORS) {
 			if(!colorMap.containsKey(color)) {
-				LogUtils.warn("Could not find all colors in the color palette. Found %d/20 colors", colorMap.size());
+				LOGGER.warn("Could not find all colors in the color palette. Found {}/20 colors", colorMap.size());
 				return false;
 			}
 		}
+		this.colorMapCopy = Map.copyOf(colorMap);
 		
 		int dialogResult = JOptionPane.showConfirmDialog(dialog, new JLabel(new ImageIcon(image)), "Is this the color palette?", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 		if(dialogResult == JOptionPane.YES_OPTION) {
-			// We got the color palette.
+			// We got the color palette
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	protected String dumpMap() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("const colors = [\n");
-		for(Map.Entry<BorstColor, Point> entry : colorMap.entrySet()) {
-			BorstColor color = entry.getKey();
-			Point point = entry.getValue();
-			
-			sb.append("    { x: %d, y: %d, color: [ %d, %d, %d ] },\n".formatted(
-				point.x - panel_offset.x,
-				point.y - panel_offset.y,
-				
-				color.r,
-				color.g,
-				color.b
-			));
-		}
-		sb.append("]");
-		
-		return sb.toString();
-	}
-	
-	public synchronized Map<BorstColor, Point> getColorMap() {
-		return Map.copyOf(colorMap);
+	public Map<BorstColor, Point> getColorMap() {
+		return colorMapCopy;
 	}
 	
 	public void reset() {
 		colorMap.clear();
+		colorMapCopy = null;
 		preview_middle = null;
 		panel_offset = null;
 		opacityButtons = null;
@@ -154,7 +139,7 @@ public class BobRustPalette {
 		return new Point(panel_offset.x + x, panel_offset.y + y);
 	}
 	
-	// Returns a spot were the bot can press without changing any state of the game.
+	// Returns a spot were the bot can press without changing any state of the game
 	private Point focusPoint;
 	public Point getFocusPoint() {
 		if(focusPoint == null) {

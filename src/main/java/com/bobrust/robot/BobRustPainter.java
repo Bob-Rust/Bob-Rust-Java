@@ -4,27 +4,30 @@ import java.awt.*;
 import java.awt.event.InputEvent;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.bobrust.generator.BorstUtils;
 import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.gui.BobRustEditor;
-import com.bobrust.gui.BobRustOverlay;
-import com.bobrust.logging.LogUtils;
+import com.bobrust.gui.BobRustDesktopOverlay;
 import com.bobrust.util.RustUtil;
 import com.bobrust.util.Sign;
 
 public class BobRustPainter {
-	// This is the index of the circle shape.
+	private static final Logger LOGGER = LogManager.getLogger(BobRustPainter.class);
+	// This is the index of the circle shape
 	private static final int CIRCLE_SHAPE = 1;
-	// The maximum distance the mouse can be from the correct position.
+	// The maximum distance the mouse can be from the correct position
 	private static final double MAXIMUM_DISPLACEMENT = 10;
 	
 	private final BobRustEditor gui;
-	private final BobRustOverlay overlay;
+	private final BobRustDesktopOverlay overlay;
 	private final BobRustPalette palette;
 	private volatile int clickIndex;
 	
-	public BobRustPainter(BobRustEditor gui, BobRustOverlay overlay, BobRustPalette palette) {
+	public BobRustPainter(BobRustEditor gui, BobRustDesktopOverlay overlay, BobRustPalette palette) {
 		this.gui = gui;
 		this.overlay = overlay;
 		this.palette = palette;
@@ -48,23 +51,23 @@ public class BobRustPainter {
 		
 		this.clickIndex = 0;
 		
-		// Configure the robot.
+		// Configure the robot
 		robot.setAutoDelay(0);
 		List<Blob> blobList = list.getList();
 		int count = blobList.size();
 		
-		// Calculate the total amount of presses needed.
-		// For each autosave press there is one more click.
+		// Calculate the total amount of presses needed
+		// For each autosave press there is one more click
 		int score = RustUtil.getScore(list) + count + (count / (autosaveInterval < 1 ? 1:autosaveInterval));
 		
 		{
-			// Make sure that we have selected the game.
+			// Make sure that we have selected the game
 			clickPoint(robot, palette.getFocusPoint(), 4, 50);
 			
-			// Make sure that we have selected the correct alpha.
+			// Make sure that we have selected the correct alpha
 			clickPoint(robot, palette.getAlphaButton(alphaSetting), 4, 50);
 			
-			// Make sure that we have selected the correct shape.
+			// Make sure that we have selected the correct shape
 			clickPoint(robot, palette.getShapeButton(shapeSetting), 4, 50);
 		}
 		
@@ -79,7 +82,7 @@ public class BobRustPainter {
 				try {
 					Thread.sleep(50);
 				} catch(InterruptedException e) {
-					// Make sure we keep the interupted status.
+					// Make sure we keep the interupted status
 					Thread.currentThread().interrupt();
 					break;
 				}
@@ -97,7 +100,7 @@ public class BobRustPainter {
 		guiUpdateThread.start();
 		
 		try {
-			// Last fields.
+			// Last fields
 			Point lastPoint = new Point(0, 0);
 			int lastColor = -1;
 			int lastSize = -1;
@@ -105,7 +108,7 @@ public class BobRustPainter {
 			{
 				Blob first = blobList.get(0);
 				
-				// Select first color to prevent exception.
+				// Select first color to prevent exception
 				clickPoint(robot, palette.getColorButton(BorstUtils.getClosestColor(first.color)), 4, 50);
 				lastColor = first.colorIndex;
 			}
@@ -113,17 +116,17 @@ public class BobRustPainter {
 			for(int i = 0, l = 1; i < count; i++, l++) {
 				Blob blob = blobList.get(i);
 				
-				// Change the size.
+				// Change the size
 				if(lastSize != blob.sizeIndex) {
 					clickSize(robot, palette.getSizeButton(blob.sizeIndex), 20, autoDelay);
 					lastSize = blob.sizeIndex;
 					l++;
 				}
 				
-				// Change the color.
+				// Change the color
 				if(lastColor != blob.colorIndex) {
 					if(!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 20, autoDelay)) {
-						LogUtils.warn("Potentially failed to change color! Will still keep try drawing");
+						LOGGER.warn("Potentially failed to change color! Will still keep try drawing");
 					}
 					
 					lastColor = blob.colorIndex;
@@ -150,16 +153,16 @@ public class BobRustPainter {
 
 			this.clickIndex = score;
 			
-			// Make sure that we save the painting.
+			// Make sure that we save the painting
 			{
 				clickPoint(robot, palette.getSaveButton(), 4, autoDelay);
 			}
 		} finally {
-			// Interupt the update thread and join.
+			// Interupt the update thread and join
 			guiUpdateThread.interrupt();
 			guiUpdateThread.join();
 			
-			// Make sure we update the remaining time.
+			// Make sure we update the remaining time
 			overlay.setRemainingTime(clickIndex, score, 0);
 			overlay.repaint();
 		}
@@ -222,7 +225,6 @@ public class BobRustPainter {
 			}
 		}
 		
-//		throw new IllegalStateException("Failed to select color");
 		return false;
 	}
 	

@@ -53,10 +53,10 @@ public class BobRustShapeRender {
 	public synchronized BufferedImage getImage(Model model, int shapes) {
 		int cacheIndex = shapes / cacheInterval;
 		
-		// The pixel buffer of the closest image.
+		// The pixel buffer of the closest image
 		int[] pixelBuffer;
 		int startIndex;
-		// If we do not have cached values up to this point.
+		// If we do not have cached values up to this point
 		if(list.size() > cacheIndex) {
 			startIndex = cacheIndex * cacheInterval;
 			pixelBuffer = list.get(cacheIndex);
@@ -65,11 +65,11 @@ public class BobRustShapeRender {
 			pixelBuffer = list.get(list.size() - 1);
 		}
 		
-		// Copy the closest pixel buffer to the canvas.
+		// Copy the closest pixel buffer to the canvas
 		System.arraycopy(pixelBuffer, 0, canvasPixels, 0, canvasPixels.length);
 		
 		if(startIndex == shapes) {
-			// If the start index was the same as the cachedIndex we return.
+			// If the start index was the same as the cachedIndex we return
 			return canvas;
 		}
 		
@@ -84,7 +84,7 @@ public class BobRustShapeRender {
 			g.fillOval(circle.x - cd / 2, circle.y - cd / 2, cd, cd);
 			
 			// Cache every 'cacheInterval' shapes.
-			if((i % cacheInterval) == 499) {
+			if((i % cacheInterval) == cacheInterval - 1) {
 				list.add(canvasPixels.clone());
 			}
 		}

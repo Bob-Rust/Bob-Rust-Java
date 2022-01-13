@@ -54,7 +54,7 @@ class IntList {
 		Arrays.sort(array, 0, size);
 	}
 	
-	public void pop_last() {
+	public void popLast() {
 		size--;
 	}
 	

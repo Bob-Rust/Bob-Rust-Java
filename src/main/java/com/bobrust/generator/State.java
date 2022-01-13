@@ -20,8 +20,7 @@ class State {
 	
 	public float getEnergy() {
 		if(score < 0) {
-			// This is not thread safe!
-			score = worker.Energy(shape.Rasterize());
+			score = worker.getEnergy(shape.getScanlines());
 		}
 
 		return score;
@@ -29,7 +28,7 @@ class State {
 
 	public State doMove() {
 		State oldState = getCopy();
-		shape.Mutate();
+		shape.mutateShape();
 
 		score = -1;
 		return oldState;

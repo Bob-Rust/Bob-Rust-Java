@@ -4,23 +4,24 @@ import java.awt.Color;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.bobrust.generator.BorstGenerator;
 import com.bobrust.generator.BorstGenerator.BorstData;
 import com.bobrust.generator.BorstGenerator.BorstGeneratorBuilder;
+import com.bobrust.gui.dialog.RustFileDialog;
 import com.bobrust.settings.RustSettingsImpl;
-import com.bobrust.settings.Settings;
 
 public class BobRustEditor extends RustSettingsImpl {
-	private BobRustOverlay overlayDialog;
+	private BobRustDesktopOverlay overlayDialog;
 	
-	private JFileChooser fileChooser;
-	private FileFilter filterImages;
+	private RustFileDialog fileChooser;
+	private FileNameExtensionFilter filterImages;
 	@SuppressWarnings("unused")
-	private FileFilter filterPresets;
+	private FileNameExtensionFilter filterPresets;
 	
 	final BorstGenerator borstGenerator;
 	
@@ -30,36 +31,30 @@ public class BobRustEditor extends RustSettingsImpl {
 			.setSettings(getBorstSettings())
 			.create();
 		this.loadSettings();
+		
 		SwingUtilities.invokeLater(this::setup);
 	}
 	
 	private void setup() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch(Exception e) {
+		} catch(Exception ignore) {
 			// Do nothing
 		}
 		
-		fileChooser = new JFileChooser();
-		fileChooser.setMultiSelectionEnabled(false);
-		fileChooser.setCurrentDirectory(new File(getEditorImageDirectory()));
+		fileChooser = new RustFileDialog();
 		filterImages = new FileNameExtensionFilter("Image Files", ImageIO.getReaderFileSuffixes());
 		filterPresets = new FileNameExtensionFilter("Preset Files", "borst");
 		
-		overlayDialog = new BobRustOverlay(this);
-		overlayDialog.dialog.setVisible(true);
+		overlayDialog = new BobRustDesktopOverlay(this);
+		overlayDialog.getDialog().setVisible(true);
 	}
 	
 	public File openImageFileChooser(JDialog dialog) {
-		fileChooser.resetChoosableFileFilters();
-		fileChooser.addChoosableFileFilter(filterImages);
-		fileChooser.setCurrentDirectory(new File(getEditorImageDirectory()));
-		fileChooser.setFileFilter(filterImages);
-		int status = fileChooser.showOpenDialog(dialog);
-		
-		if(status == JFileChooser.APPROVE_OPTION) {
-			setEditorImageDirectory(fileChooser.getCurrentDirectory().getAbsolutePath());
-			return fileChooser.getSelectedFile();
+		File file = fileChooser.open(dialog, filterImages, "Open Image", getEditorImageDirectory());
+		if(file != null) {
+			setEditorImageDirectory(file.getParentFile().getAbsolutePath());
+			return file;
 		}
 		
 		return null;
@@ -74,9 +69,7 @@ public class BobRustEditor extends RustSettingsImpl {
 	}
 	
 	@Override
-	protected void setProperty(Settings key, Object value) {
-		super.setProperty(key, value);
-		
+	protected void postSetProperty() {
 		if(overlayDialog != null) {
 			overlayDialog.updateEditor();
 		}

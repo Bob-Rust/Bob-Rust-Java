@@ -16,6 +16,8 @@ public class JIntegerField extends JFormattedTextField {
 		NumberFormat format = NumberFormat.getIntegerInstance(Locale.US);
 		format.setGroupingUsed(false);
 		
+		// TODO: Make so that if someone types a value that would be greater
+		//       than the maximum it converts the value to the max.
 		formatter = new NumberFormatter(format);
 		formatter.setValueClass(Integer.class);
 		formatter.setMinimum(0);

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%t/%level]: %msg%n"/>
+    </Console>
+    <RollingFile name="RollingFile" fileName="logs/log.log"
+                                    filePattern="logs/log-%d{MM-dd-yyyy}-%i.log.gz">
+      <Policies>
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+	  <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%t/%level]: %msg%n"/>
+    </RollingFile>
+  </Appenders>
+  <Loggers>
+    <Root level="all">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="RollingFile"/>
+    </Root>
+  </Loggers>
+</Configuration>
