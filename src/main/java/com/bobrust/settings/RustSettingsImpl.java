@@ -5,6 +5,8 @@ import java.io.*;
 import java.util.Objects;
 import java.util.Properties;
 
+import javax.swing.JOptionPane;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -76,7 +78,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 		setSettingsAutosaveInterval(getSettingInteger(Settings.SETTINGS_AUTOSAVE_INTERVAL));
 		
 		allowSaving = true;
-		saveSettings();
+		saveSettings(true);
 	}
 	
 	private Integer getSettingInteger(Settings key) {
@@ -105,11 +107,25 @@ public abstract class RustSettingsImpl implements RustSettings {
 	}
 	
 	private void saveSettings() {
+		saveSettings(false);
+	}
+	
+	private void saveSettings(boolean giveMessage) {
 		if(!allowSaving) return;
 		
 		try(FileOutputStream stream = new FileOutputStream(CONFIG_FILE)) {
 			properties.store(stream, "");
 		} catch(IOException e) {
+			if (giveMessage) {
+				JOptionPane.showMessageDialog(
+					null,
+					"This tool does not have the permission to update the config file\n" +
+					"Try run the application as an Administrator if you want to fix this",
+					"Importaint",
+					JOptionPane.WARNING_MESSAGE
+				);
+			}
+			
 			LOGGER.error("Error saving config file: {}", e);
 			LOGGER.throwing(e);
 			e.printStackTrace();

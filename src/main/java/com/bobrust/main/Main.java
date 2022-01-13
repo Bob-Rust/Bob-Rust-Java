@@ -25,6 +25,7 @@ public class Main {
 		LOGGER.info("  Lwjgl       : {}", hasLwjgl);
 		LOGGER.info("");
 		
+		// TODO: Make sure logs and properties can be saved without admin rights.
 		// TODO: Do not draw outside the image region +- the radius of the largest shape.
 		// TODO: Maybe remove the monitor button and only make it choose the screen you
 		//       expanded the window on?
