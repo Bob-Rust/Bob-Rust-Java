@@ -59,23 +59,17 @@ public class RustUI {
 		ACTION_OPTIONS_BUTTON("Options"),
 		
 		ACTION_REGIONS_LABEL("Regions"),
-		ACTION_SHOWREGIONS_ON("Show Regions"),
-		ACTION_SHOWREGIONS_OFF("Hide Regions"),
 		ACTION_CANVASREGION_BUTTON("Canvas Region"),
 		ACTION_IMAGEREGION_BUTTON("Image Region"),
 		
 		ACTION_PREVIEWACTIONS_LABEL("Preview Actions"),
 		ACTION_STARTGENERATE_BUTTON("Start Generate"),
-		ACTION_PAUSEGENERATE_ON("Pause Generate"),
-		ACTION_PAUSEGENERATE_OFF("Resume Generate"),
 		ACTION_RESETGENERATE_BUTTON("Reset Generate"),
+		ACTION_DRAWIMAGE_BUTTON("Draw Image"),
 		ACTION_CLOSE_BUTTON("Close"),
 		
 		ACTION_CLOSEDIALOG_TITLE("Warning"),
 		ACTION_CLOSEDIALOG_MESSAGE("Do you want to close the application?"),
-
-		ACTION_DRAW_LABEL("Draw"),
-		ACTION_DRAWIMAGE_BUTTON("Draw Image"),
 
 		ACTION_HELP_LABEL("Help"),
 		ACTION_REPORTISSUE_BUTTON("Report Issue"),
@@ -104,7 +98,7 @@ public class RustUI {
 	}
 	
 	public static String getString(Type type) {
-		// TODO: Create language files.
+		// TODO: Create language files
 		return type.defaultValue;
 	}
 }

@@ -30,20 +30,14 @@ public class OverlayActionPanel extends JRandomPanel {
 	
 	final JPanel regionPanel;
 	final JLabel regionPanelLabel;
-	final JStyledToggleButton btnHideRegions;
 	final JStyledToggleButton btnSelectCanvasRegion;
 	final JStyledToggleButton btnSelectImageRegion;
 	
 	final JPanel previewPanel;
 	final JLabel previewPanelLabel;
 	final JStyledButton btnStartGenerate;
-	final JStyledButton btnPauseGenerate;
-	final JStyledButton btnResetGenerate;
-	final JStyledButton btnClose;
-	
-	final JPanel painterPanel;
-	final JLabel painterPanelLabel;
 	final JStyledButton btnDrawImage;
+	final JStyledButton btnClose;
 	
 	final JPanel helpPanel;
 	final JLabel helpPanelLabel;
@@ -105,12 +99,6 @@ public class OverlayActionPanel extends JRandomPanel {
 			regionPanelLabel.setBorder(new EmptyBorder(10, 0, 0, 0));
 			regionPanel.add(regionPanelLabel);
 			
-			btnHideRegions = new JStyledToggleButton(RustUI.getString(Type.ACTION_SHOWREGIONS_ON));
-			btnHideRegions.setMaximumSize(buttonSize);
-			btnHideRegions.setSelected(true);
-			btnHideRegions.addActionListener(this::performHideRegions);
-			regionPanel.add(btnHideRegions);
-			
 			btnSelectCanvasRegion = new JStyledToggleButton(RustUI.getString(Type.ACTION_CANVASREGION_BUTTON));
 			btnSelectCanvasRegion.setMaximumSize(buttonSize);
 			btnSelectCanvasRegion.setEnabled(false);
@@ -140,43 +128,18 @@ public class OverlayActionPanel extends JRandomPanel {
 			btnStartGenerate.setEnabled(false);
 			btnStartGenerate.addActionListener(this::performStartGeneration);
 			previewPanel.add(btnStartGenerate);
-	
-			btnPauseGenerate = new JStyledButton(RustUI.getString(Type.ACTION_PAUSEGENERATE_ON));
-			btnPauseGenerate.setMaximumSize(buttonSize);
-			btnPauseGenerate.setEnabled(false);
-			btnPauseGenerate.addActionListener(this::performPauseGeneration);
-			previewPanel.add(btnPauseGenerate);
 			
-			btnResetGenerate = new JStyledButton(RustUI.getString(Type.ACTION_RESETGENERATE_BUTTON));
-			btnResetGenerate.setMaximumSize(buttonSize);
-			btnResetGenerate.setEnabled(false);
-			btnResetGenerate.addActionListener(this::performResetGeneration);
-			previewPanel.add(btnResetGenerate);
+			btnDrawImage = new JStyledButton(RustUI.getString(Type.ACTION_DRAWIMAGE_BUTTON));
+			btnDrawImage.setMaximumSize(buttonSize);
+			btnDrawImage.setEnabled(false);
+			btnDrawImage.addActionListener(this::performDrawImage);
+			previewPanel.add(btnDrawImage);
 			
 			btnClose = new JStyledButton(RustUI.getString(Type.ACTION_CLOSE_BUTTON));
 			btnClose.setVisible(false);
 			btnClose.setMaximumSize(buttonSize);
 			btnClose.addActionListener(this::performCloseApplication);
 			previewPanel.add(btnClose);
-		}
-		
-		{
-			painterPanel = new JPanel();
-			painterPanel.setOpaque(false);
-			painterPanel.setVisible(false);
-			painterPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-			this.add(painterPanel);
-			painterPanel.setLayout(new BoxLayout(painterPanel, BoxLayout.Y_AXIS));
-			
-			painterPanelLabel = new JLabel(RustUI.getString(Type.ACTION_DRAW_LABEL));
-			painterPanelLabel.setBorder(new EmptyBorder(10, 0, 0, 0));
-			painterPanel.add(painterPanelLabel);
-			
-			btnDrawImage = new JStyledButton(RustUI.getString(Type.ACTION_DRAWIMAGE_BUTTON));
-			btnDrawImage.setMaximumSize(buttonSize);
-			btnDrawImage.setEnabled(false);
-			btnDrawImage.addActionListener(this::performDrawImage);
-			painterPanel.add(btnDrawImage);
 		}
 		
 		{
@@ -224,26 +187,17 @@ public class OverlayActionPanel extends JRandomPanel {
 		
 		// Region Panel
 		regionPanelLabel.setText(RustUI.getString(Type.ACTION_REGIONS_LABEL));
-		btnHideRegions.setText(btnHideRegions.isSelected()
-			? RustUI.getString(Type.ACTION_SHOWREGIONS_OFF)
-			: RustUI.getString(Type.ACTION_SHOWREGIONS_ON)
-		);
 		btnSelectCanvasRegion.setText(RustUI.getString(Type.ACTION_CANVASREGION_BUTTON));
 		btnSelectImageRegion.setText(RustUI.getString(Type.ACTION_IMAGEREGION_BUTTON));
 		
 		// Preview Panel
 		previewPanelLabel.setText(RustUI.getString(Type.ACTION_PREVIEWACTIONS_LABEL));
-		btnStartGenerate.setText(RustUI.getString(Type.ACTION_STARTGENERATE_BUTTON));
-		btnPauseGenerate.setText(desktopOverlay.isGeneratorPaused()
-			? RustUI.getString(Type.ACTION_PAUSEGENERATE_OFF)
-			: RustUI.getString(Type.ACTION_PAUSEGENERATE_ON)
+		btnStartGenerate.setText(!desktopOverlay.isGeneratorRunning()
+			? RustUI.getString(Type.ACTION_STARTGENERATE_BUTTON)
+			: RustUI.getString(Type.ACTION_RESETGENERATE_BUTTON)
 		);
-		btnResetGenerate.setText(RustUI.getString(Type.ACTION_RESETGENERATE_BUTTON));
-		btnClose.setText(RustUI.getString(Type.ACTION_CLOSE_BUTTON));
-		
-		// Painter Panel
-		painterPanelLabel.setText(RustUI.getString(Type.ACTION_DRAW_LABEL));
 		btnDrawImage.setText(RustUI.getString(Type.ACTION_DRAWIMAGE_BUTTON));
+		btnClose.setText(RustUI.getString(Type.ACTION_CLOSE_BUTTON));
 		
 		// Help Panel
 		helpPanelLabel.setText(RustUI.getString(Type.ACTION_HELP_LABEL));
@@ -259,7 +213,6 @@ public class OverlayActionPanel extends JRandomPanel {
 		optionsPanelLabel.setForeground(foreground);
 		regionPanelLabel.setForeground(foreground);
 		previewPanelLabel.setForeground(foreground);
-		painterPanelLabel.setForeground(foreground);
 		helpPanelLabel.setForeground(foreground);
 	}
 	
@@ -268,29 +221,22 @@ public class OverlayActionPanel extends JRandomPanel {
 	 */
 	public void updateButtons() {
 		boolean isFullscreen = desktopOverlay.isFullscreen();
-		boolean isGeneratorPaused = desktopOverlay.isGeneratorPaused();
 		boolean isGeneratorRunning = desktopOverlay.isGeneratorRunning();
 		boolean hasImage = desktopOverlay.hasImage();
 		OverlayType action = desktopOverlay.getOverlayType();
 		
 		boolean defaultAction = action == OverlayType.NONE;
-		boolean isPaused = isGeneratorRunning && isGeneratorPaused;
 		
-		// You should only be able to pick monitor the screen is enabled.
-		btnSelectMonitor.setEnabled(defaultAction || isPaused);
+		// You should only be able to pick monitor the screen is enabled
+		btnSelectMonitor.setEnabled(defaultAction || isGeneratorRunning);
 		regionPanel.setVisible(isFullscreen);
-		painterPanel.setVisible(isFullscreen);
 		
-		btnHideRegions.setEnabled(defaultAction || isPaused);
-		boolean defaultRegion = !btnHideRegions.isSelected() && defaultAction;
-		btnSelectCanvasRegion.setEnabled(defaultRegion || action == OverlayType.SELECT_CANVAS_REGION);
-		btnSelectImageRegion.setEnabled(defaultRegion && hasImage || action == OverlayType.SELECT_IMAGE_REGION);
+		btnSelectCanvasRegion.setEnabled(defaultAction || action == OverlayType.SELECT_CANVAS_REGION);
+		btnSelectImageRegion.setEnabled(defaultAction && hasImage || action == OverlayType.SELECT_IMAGE_REGION);
 		
 		btnOpenImage.setEnabled(defaultAction);
-		btnStartGenerate.setEnabled(isFullscreen && defaultAction && hasImage && !isGeneratorRunning);
-		btnPauseGenerate.setEnabled(isFullscreen && isGeneratorRunning);
-		btnResetGenerate.setEnabled(isPaused);
-		btnDrawImage.setEnabled(isPaused);
+		btnStartGenerate.setEnabled(isFullscreen && hasImage);
+		btnDrawImage.setEnabled(isFullscreen && isGeneratorRunning);
 	}
 	
 	// Action events
@@ -318,17 +264,6 @@ public class OverlayActionPanel extends JRandomPanel {
 		desktopOverlay.openSettings(btnOptions.getLocationOnScreen());
 	}
 	
-	private void performHideRegions(ActionEvent event) {
-		boolean isSelected = btnHideRegions.isSelected();
-		btnSelectCanvasRegion.setEnabled(isSelected);
-		btnSelectImageRegion.setEnabled(isSelected);
-		btnHideRegions.setText(isSelected
-			? RustUI.getString(Type.ACTION_SHOWREGIONS_ON)
-			: RustUI.getString(Type.ACTION_SHOWREGIONS_OFF)
-		);
-		desktopOverlay.setHideRegions(isSelected);
-	}
-	
 	private void performSelectCanvasRegion(ActionEvent event) {
 		desktopOverlay.startSelectCanvasRegion(btnSelectCanvasRegion.isSelected());
 	}
@@ -338,21 +273,16 @@ public class OverlayActionPanel extends JRandomPanel {
 	}
 	
 	private void performStartGeneration(ActionEvent event) {
-		desktopOverlay.startGeneration();
-	}
-	
-	private void performPauseGeneration(ActionEvent event) {
-		boolean isSelected = desktopOverlay.isGeneratorPaused();
-		btnPauseGenerate.setText(isSelected
-			? RustUI.getString(Type.ACTION_PAUSEGENERATE_ON)
-			: RustUI.getString(Type.ACTION_PAUSEGENERATE_OFF)
+		btnStartGenerate.setText(desktopOverlay.isGeneratorRunning()
+			? RustUI.getString(Type.ACTION_STARTGENERATE_BUTTON)
+			: RustUI.getString(Type.ACTION_RESETGENERATE_BUTTON)
 		);
 		
-		desktopOverlay.pauseGeneration(isSelected);
-	}
-	
-	private void performResetGeneration(ActionEvent event) {
-		desktopOverlay.resetGeneration();
+		if(!desktopOverlay.isGeneratorRunning()) {
+			desktopOverlay.startGeneration();
+		} else {
+			desktopOverlay.resetGeneration();
+		}
 	}
 	
 	private void performDrawImage(ActionEvent event) {

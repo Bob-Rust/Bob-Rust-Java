@@ -42,7 +42,7 @@ public class RustFileDialog {
 			Class.forName("org.lwjgl.util.tinyfd.TinyFileDialogs");
 			hasLwjgl = true;
 		} catch(Throwable ignore) {
-			// If we caught an exception that means that we did not load the library.
+			// If we caught an exception that means that we did not load the library
 			hasLwjgl = false;
 		}
 		HAS_LWJGL = hasLwjgl;

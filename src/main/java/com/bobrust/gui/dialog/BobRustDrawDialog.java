@@ -45,6 +45,8 @@ public class BobRustDrawDialog {
 	private final JButton btnSelectColorPalette;
 	private final JButton btnStartDrawing;
 	
+	private boolean isPainting;
+	
 	public BobRustDrawDialog(BobRustEditor gui, BobRustDesktopOverlay overlay, JDialog parent) {
 		this.parentDialog = parent;
 		this.overlay = overlay;
@@ -170,13 +172,14 @@ public class BobRustDrawDialog {
 		btnStartDrawing.addActionListener((event) -> {
 			Point previous_location = dialog.getLocation();
 			btnStartDrawing.setEnabled(false);
+			isPainting = true;
 			
 			Thread thread = new Thread(() -> {
 				try {
 					Point p = parentDialog.getLocation();
 					dialog.setLocation(p.x, p.y);
 					dialog.setSize(MINIMIZED);
-					overlay.setHideRegions(true);
+					overlay.setHideRegions();
 					
 					int count = maxShapesField.getNumberValue();
 					BlobList list = BorstSorter.sort(RustUtil.convertToList(overlay.getBorstData().getModel(), count));
@@ -185,14 +188,16 @@ public class BobRustDrawDialog {
 					}
 				} catch(IllegalStateException e) {
 					LOGGER.warn("The user stoped the drawing process early");
+					LOGGER.warn("Message: {}", e.getMessage());
 				} catch(Exception e) {
-					e.printStackTrace();
+					LOGGER.throwing(e);
 				} finally {
+					isPainting = false;
 					btnStartDrawing.setEnabled(true);
 					dialog.setLocation(previous_location);
 					dialog.setSize(REGULAR);
 				}
-			});
+			}, "BobRustDrawing Thread");
 			thread.setDaemon(true);
 			thread.start();
 		});
@@ -218,10 +223,10 @@ public class BobRustDrawDialog {
 	}
 	
 	private boolean findColorPalette() {
-		// The bounds of the screen.
+		// The bounds of the screen
 		Rectangle screenBounds = parentDialog.getBounds();
 		
-		// Check for bright red on the edge of the screen.
+		// Check for bright red on the edge of the screen
 		try {
 			BufferedImage screenshot = new Robot().createScreenCapture(screenBounds);
 			Point paletteLocation = rustPalette.findPalette(screenshot);
@@ -231,7 +236,7 @@ public class BobRustDrawDialog {
 				Point paletteScreenLocation = new Point(screenBounds.x + paletteLocation.x, screenBounds.y + paletteLocation.y);
 				
 				if(rustPalette.analyse(dialog, screenshot, screenBounds, paletteScreenLocation)) {
-					// Found the palette.
+					// Found the palette
 					LOGGER.info("Found the color palette ({}, {})", paletteScreenLocation.x, paletteScreenLocation.y);
 					overlay.repaint();
 					return true;
@@ -245,12 +250,20 @@ public class BobRustDrawDialog {
 		return false;
 	}
 	
+	public boolean isVisible() {
+		return dialog.isVisible();
+	}
+
+	public boolean isPainting() {
+		return isPainting;
+	}
+	
 	public void openDialog(Point point) {
-		// Force the user to reset the palette.
+		// Force the user to reset the palette
 		btnStartDrawing.setEnabled(false);
 		rustPalette.reset();
 		
-		// Clear the overlay.
+		// Clear the overlay
 		overlay.repaint();
 		
 		int value = overlay.getBorstData().getIndex();

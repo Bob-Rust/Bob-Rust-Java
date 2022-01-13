@@ -19,18 +19,18 @@ import com.bobrust.gui.BobRustDesktopOverlay;
 public class RustConstants {
 	private static final Logger LOGGER = LogManager.getLogger(RustConstants.class);
 	
-	// Used by JRandomPanel.
+	// Used by JRandomPanel
 	public static final boolean ENABLE_RANDOM_BACKGROUND = false;
 	
-	// Used by BorstGenerator.
+	// Used by BorstGenerator
 	public static final boolean DEBUG_GENERATOR = false;
 	
-	// Used for image scaling.
+	// Used for image scaling
 	public static final int IMAGE_SCALING_NEAREST = 0;
 	public static final int IMAGE_SCALING_BILINEAR = 1;
 	public static final int IMAGE_SCALING_BICUBIC = 2;
 	
-	// TODO: Approximate these.
+	// TODO: Approximate these
 	public static final Color CANVAS_AVERAGE = new Color(0x8f887c);
 	public static final Color WOODEN_AVERAGE = new Color(0x6d5033);
 	public static final Color TOWN_POST_AVERAGE = new Color(0x94624d);

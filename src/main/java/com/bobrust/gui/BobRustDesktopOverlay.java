@@ -22,8 +22,6 @@ import com.bobrust.generator.Model;
 import com.bobrust.gui.dialog.BobRustDrawDialog;
 import com.bobrust.gui.dialog.BobRustMonitorPicker;
 import com.bobrust.gui.dialog.BobRustSettingsDialog;
-import com.bobrust.lang.RustUI;
-import com.bobrust.lang.RustUI.Type;
 import com.bobrust.robot.BobRustPalette;
 import com.bobrust.util.RustConstants;
 import com.bobrust.util.RustImageUtil;
@@ -37,7 +35,7 @@ import com.bobrust.util.Sign;
  */
 @SuppressWarnings("serial")
 public class BobRustDesktopOverlay extends JPanel {
-	private static final Dimension DEFAULT_DIALOG_SIZE = new Dimension(146, 364);
+	private static final Dimension DEFAULT_DIALOG_SIZE = new Dimension(146, 364 - 28);
 	private static final int RECTANGLE_SELECTION_SIZE = 10;
 	private static final int SHAPE_CACHE_INTERVAL = 500;
 	private static final int BORDER_SIZE = 3;
@@ -49,7 +47,7 @@ public class BobRustDesktopOverlay extends JPanel {
 	private final Rectangle canvasRegion = new Rectangle(0, 0, 0, 0);
 	private final Rectangle imageRegion = new Rectangle(0, 0, 0, 0);
 	
-	// Used when drawing the selection box.
+	// Used when drawing the selection box
 	private final Point dragStart = new Point(0, 0);
 	private final Point dragEnd = new Point(0, 0);
 	
@@ -58,7 +56,7 @@ public class BobRustDesktopOverlay extends JPanel {
 	private final BobRustDrawDialog drawDialog;
 	private final BobRustShapeRender shapeRender;
 	
-	// Components.
+	// Components
 	private final OverlayActionPanel actionBarPanel;
 	private final OverlayTopPanel topBarPanel;
 	
@@ -70,7 +68,7 @@ public class BobRustDesktopOverlay extends JPanel {
 	private boolean isFullscreen;
 	private BorstData lastData;
 	
-	// TODO: Access this value with a method call.
+	// TODO: Access this value with a method call
 	public final Point colorRegion = new Point(0, 0);
 	
 	private final MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -104,11 +102,11 @@ public class BobRustDesktopOverlay extends JPanel {
 			} else if(action == OverlayType.SELECT_IMAGE_REGION) {
 				rectangle = imageRegion;
 			} else {
-				// Return if the action was not canvas or image.
+				// Return if the action was not canvas or image
 				return;
 			}
 			
-			// Keep a copy of the original.
+			// Keep a copy of the original
 			original.setBounds(rectangle);
 			
 			Rectangle larger = new Rectangle(rectangle);
@@ -204,13 +202,24 @@ public class BobRustDesktopOverlay extends JPanel {
 		dialog.setSize(DEFAULT_DIALOG_SIZE);
 		dialog.setResizable(false);
 		dialog.setLocationRelativeTo(null);
-		dialog.setFocusable(false);
+		dialog.setFocusable(true);
 		dialog.setFocusableWindowState(true);
 		dialog.setContentPane(this);
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				System.exit(0);
+			}
+		});
+		dialog.addFocusListener(new FocusListener() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				dialog.repaint();
+			}
+			
+			@Override
+			public void focusGained(FocusEvent e) {
+				dialog.repaint();
 			}
 		});
 		
@@ -231,15 +240,16 @@ public class BobRustDesktopOverlay extends JPanel {
 		add(actionBarPanel);
 		add(topBarPanel);
 		
+		if(RustConstants.DEBUG_GENERATOR) {
+			canvasRegion.setBounds(167, 160, 1389, 694);
+			imageRegion.setBounds(167, 160, 1389, 694);
+		}
+		
 		updateEditor();
 	}
 	
 	public boolean isFullscreen() {
 		return isFullscreen;
-	}
-	
-	public boolean isGeneratorPaused() {
-		return gui.borstGenerator.isPaused();
 	}
 	
 	public boolean isGeneratorRunning() {
@@ -331,7 +341,7 @@ public class BobRustDesktopOverlay extends JPanel {
 					gui.getSettingsScaling()
 				);
 				
-				// Apply the ICC cmyk lut filter.
+				// Apply the ICC cmyk lut filter
 				scaled = RustImageUtil.applyFilters(scaled);
 				
 				BorstSettings settings = gui.getBorstSettings();
@@ -348,16 +358,6 @@ public class BobRustDesktopOverlay extends JPanel {
 			
 			repaint();
 		}
-	}
-	
-	public void pauseGeneration(boolean enable) {
-		if(enable) {
-			gui.borstGenerator.resume();
-		} else {
-			gui.borstGenerator.pause();
-		}
-		
-		actionBarPanel.updateButtons();
 	}
 	
 	public void resetGeneration() {
@@ -379,27 +379,21 @@ public class BobRustDesktopOverlay extends JPanel {
 		}
 	}
 	
-	public void setHideRegions(boolean enable) {
-		actionBarPanel.updateButtons();
+	@Deprecated(forRemoval = true)
+	public void setHideRegions() {
 		repaint();
 	}
 	
 	public void updateEditor() {
-		// Update the action bar.
+		// Update the action bar
 		actionBarPanel.setBackground(gui.getEditorToolbarColor());
 		actionBarPanel.updateLabelForeground(gui.getEditorLabelColor());
 		
-		// Update the desktop overlay.
+		// Update the desktop overlay
 		setBorder(isFullscreen ? new LineBorder(gui.getEditorBorderColor(), BORDER_SIZE):null);
 		
 		BorstData lastData = this.lastData;
 		setEstimatedGenerationLabel(lastData != null ? lastData.getIndex():0, gui.getSettingsMaxShapes());
-		
-		if(gui.borstGenerator.isPaused()) {
-			actionBarPanel.btnPauseGenerate.setText(RustUI.getString(Type.ACTION_PAUSEGENERATE_OFF));
-		} else {
-			actionBarPanel.btnPauseGenerate.setText(RustUI.getString(Type.ACTION_PAUSEGENERATE_ON));
-		}
 	}
 	
 	public JDialog getDialog() {
@@ -428,14 +422,10 @@ public class BobRustDesktopOverlay extends JPanel {
 	
 	public void toggleFullscreen() {
 		isFullscreen = !isFullscreen;
-		actionBarPanel.setLocation(isFullscreen ? BORDER_SIZE:0, isFullscreen ? BORDER_SIZE:0);
 		
 		dialog.setVisible(false);
 		dialog.dispose();
 		
-		actionBarPanel.updateButtons();
-		
-		dialog.setAlwaysOnTop(isFullscreen);
 		if(!isFullscreen) {
 			dialog.setBackground(Color.lightGray);
 			dialog.setUndecorated(false);
@@ -443,14 +433,18 @@ public class BobRustDesktopOverlay extends JPanel {
 		} else {
 			dialog.setUndecorated(true);
 			dialog.setBackground(new Color(0, true));
-			GraphicsConfiguration gc = monitorPicker.getMonitor();
+			GraphicsConfiguration gc = monitorPicker.updateConfiguration(dialog.getLocation());
 			dialog.setBounds(gc.getBounds());
 		}
 		
-		actionBarPanel.setSize(actionBarPanel.getWidth(), dialog.getHeight() - BORDER_SIZE * 2);
+		int borderSize = isFullscreen ? BORDER_SIZE:0;
+		
+		actionBarPanel.setBounds(borderSize, borderSize, actionBarPanel.getWidth(), dialog.getHeight() - BORDER_SIZE * 2);
+		actionBarPanel.updateButtons();
 		topBarPanel.setBounds((dialog.getWidth() - 440) / 2, isFullscreen ? BORDER_SIZE:-50, 440, 40);
 		
 		updateEditor();
+		dialog.setAlwaysOnTop(isFullscreen);
 		dialog.setVisible(true);
 	}
 	
@@ -462,11 +456,9 @@ public class BobRustDesktopOverlay extends JPanel {
 		modelImage = data.getModel().current.image;
 		lastData = data;
 		
-		setEstimatedGenerationLabel(data.getIndex(), gui.getSettingsMaxShapes());
-		repaint();
-		
-		if(data.isDone()) {
-			actionBarPanel.btnPauseGenerate.setText(RustUI.getString(Type.ACTION_PAUSEGENERATE_ON));
+		if (!drawDialog.isVisible()) {
+			setEstimatedGenerationLabel(data.getIndex(), gui.getSettingsMaxShapes());
+			repaint();
 		}
 	}
 	
@@ -505,12 +497,15 @@ public class BobRustDesktopOverlay extends JPanel {
 //			g.setStroke(old_stroke);
 //		}
 		
-		if(!actionBarPanel.btnHideRegions.isSelected()) {
+		// Only show if the current window is focused
+		if(dialog.hasFocus()
+		|| (actionBarPanel.btnSelectImageRegion.isSelected()
+		|| actionBarPanel.btnSelectCanvasRegion.isSelected())) {
 			// TODO: Cache this color.
 			g.setColor(new Color(0x30000000, true));
 			g.fillRect(0, 0, getWidth() - 150, getHeight());
 			
-			// Draw region outline.
+			// Draw region outline
 			{
 				Stroke old_stroke = g.getStroke();
 				g.setStroke(new BasicStroke(5.0f));
@@ -541,65 +536,68 @@ public class BobRustDesktopOverlay extends JPanel {
 			}
 		}
 		
-		if(!actionBarPanel.btnHideRegions.isSelected()) {
-			// Draw model image.
-			{
-				BufferedImage image = modelImage;
-				if(image != null) {
-					g.setColor(new Color(gui.getBorstSettings().Background));
-					g.fillRect(canvasRegion.x, canvasRegion.y, canvasRegion.width, canvasRegion.height);
-					g.drawImage(image, canvasRegion.x, canvasRegion.y, canvasRegion.width, canvasRegion.height, null);
-				}
-			}
-			
-			// Draw Custom Shapes.
-			if(doRenderShapes) {
-				BorstData data = lastData;
-				if(data != null) {
-					Model model = data.getModel();
-					
-					if(shapeRender.hasCanvas()) {
-						int len = Math.min(model.colors.size(), renderShapesAmount);
-						BufferedImage image = shapeRender.getImage(model, len);
+		if (!drawDialog.isPainting()) {
+			if(!(actionBarPanel.btnSelectImageRegion.isSelected()
+			|| actionBarPanel.btnSelectCanvasRegion.isSelected())) {
+				// Draw model image
+				{
+					BufferedImage image = modelImage;
+					if(image != null) {
+						g.setColor(new Color(gui.getBorstSettings().Background));
+						g.fillRect(canvasRegion.x, canvasRegion.y, canvasRegion.width, canvasRegion.height);
 						g.drawImage(image, canvasRegion.x, canvasRegion.y, canvasRegion.width, canvasRegion.height, null);
 					}
 				}
-			}
-			
-			// Draw palette information.
-			{
-				BobRustPalette palette = drawDialog.getPalette();
-				Map<BorstColor, Point> map = palette.getColorMap();
-				if(palette.hasPalette() && map != null) {
-					g.setColor(Color.white);
-					Point screen = dialog.getLocationOnScreen();
-					for(Map.Entry<BorstColor, Point> entry : map.entrySet()) {
-						Point point = entry.getValue();
-						Point sc = new Point(point.x - screen.x, point.y - screen.y);
-						g.drawOval(sc.x - 15, sc.y - 15, 30, 29);
+				
+				// Draw Custom Shapes
+				if(doRenderShapes) {
+					BorstData data = lastData;
+					if(data != null) {
+						Model model = data.getModel();
+						
+						if(shapeRender.hasCanvas()) {
+							int len = Math.min(model.colors.size(), renderShapesAmount);
+							BufferedImage image = shapeRender.getImage(model, len);
+							g.drawImage(image, canvasRegion.x, canvasRegion.y, canvasRegion.width, canvasRegion.height, null);
+						}
 					}
-					
-					// TODO: Find a better way to draw these than crashing the application. xd
-					try {
-						for(int i = 0; i < 6; i++) {
-							Point point = palette.getAlphaButton(i);
-							Point sc = new Point(point.x - screen.x, point.y - screen.y);
-							g.drawOval(sc.x - 10, sc.y - 10, 20, 20);
-						}
-						
-						for(int i = 0; i < 6; i++) {
-							Point point = palette.getSizeButton(i);
-							Point sc = new Point(point.x - screen.x, point.y - screen.y);
-							g.drawOval(sc.x - 10, sc.y - 10, 20, 20);
-						}
-						
-						for(int i = 0; i < 4; i++) {
-							Point point = palette.getShapeButton(i);
+				}
+				
+				// Draw palette information
+				{
+					BobRustPalette palette = drawDialog.getPalette();
+					Map<BorstColor, Point> map = palette.getColorMap();
+					if(palette.hasPalette() && map != null) {
+						g.setColor(Color.white);
+						Point screen = dialog.getLocationOnScreen();
+						for(Map.Entry<BorstColor, Point> entry : map.entrySet()) {
+							Point point = entry.getValue();
 							Point sc = new Point(point.x - screen.x, point.y - screen.y);
 							g.drawOval(sc.x - 15, sc.y - 15, 30, 29);
 						}
-					} catch(Exception e) {
-						e.printStackTrace();
+						
+						// TODO: Find a better way to draw these than crashing the application. xd
+						try {
+							for(int i = 0; i < 6; i++) {
+								Point point = palette.getAlphaButton(i);
+								Point sc = new Point(point.x - screen.x, point.y - screen.y);
+								g.drawOval(sc.x - 10, sc.y - 10, 20, 20);
+							}
+							
+							for(int i = 0; i < 6; i++) {
+								Point point = palette.getSizeButton(i);
+								Point sc = new Point(point.x - screen.x, point.y - screen.y);
+								g.drawOval(sc.x - 10, sc.y - 10, 20, 20);
+							}
+							
+							for(int i = 0; i < 4; i++) {
+								Point point = palette.getShapeButton(i);
+								Point sc = new Point(point.x - screen.x, point.y - screen.y);
+								g.drawOval(sc.x - 15, sc.y - 15, 30, 29);
+							}
+						} catch(Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}

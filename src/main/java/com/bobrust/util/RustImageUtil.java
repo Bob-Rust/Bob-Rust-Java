@@ -46,7 +46,7 @@ public class RustImageUtil {
 	}
 	
 	public static BufferedImage applyFilters(BufferedImage scaled) {
-		// Create a new Image that has a backing int buffer.
+		// Create a new Image that has a backing int buffer
 		BufferedImage image = new BufferedImage(scaled.getWidth(), scaled.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
 		g.drawImage(scaled, 0, 0, null);

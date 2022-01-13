@@ -20,7 +20,6 @@ class State {
 	
 	public float getEnergy() {
 		if(score < 0) {
-			// This is not thread safe!
 			score = worker.getEnergy(shape.getScanlines());
 		}
 

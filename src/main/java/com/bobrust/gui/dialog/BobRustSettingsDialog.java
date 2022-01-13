@@ -55,8 +55,6 @@ public class BobRustSettingsDialog {
 	final JLabel lblResetEditor;
 	final JButton btnResetEditor;
 	
-	// Debug
-	
 	public BobRustSettingsDialog(BobRustEditor gui, JDialog parent) {
 		this.gui = gui;
 		this.dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SETTINGSDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
@@ -474,7 +472,6 @@ public class BobRustSettingsDialog {
 		
 		{
 			tabbedPane.setTitleAt(0, RustUI.getString(Type.EDITOR_TAB_GENERATOR));
-			
 			lblBackgroundColor.setText(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_LABEL));
 			lblBackgroundColor.setToolTipText(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_TOOLTIP));
 			btnBackgroundColor.setText(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_BUTTON));
@@ -495,7 +492,6 @@ public class BobRustSettingsDialog {
 		
 		{
 			tabbedPane.setTitleAt(1, RustUI.getString(Type.EDITOR_TAB_EDITOR));
-			
 			lblBorderColor.setText(RustUI.getString(Type.EDITOR_BORDERCOLOR_LABEL));
 			lblBorderColor.setToolTipText(RustUI.getString(Type.EDITOR_BORDERCOLOR_TOOLTIP));
 			btnBorderColor.setText(RustUI.getString(Type.EDITOR_BORDERCOLOR_BUTTON));
@@ -514,7 +510,6 @@ public class BobRustSettingsDialog {
 		
 		{
 			tabbedPane.setTitleAt(2, RustUI.getString(Type.EDITOR_TAB_DEBUGGING));
-			
 		}
 	}
 	

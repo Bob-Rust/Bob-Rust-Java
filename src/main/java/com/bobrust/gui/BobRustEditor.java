@@ -38,7 +38,7 @@ public class BobRustEditor extends RustSettingsImpl {
 	private void setup() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch(Exception e) {
+		} catch(Exception ignore) {
 			// Do nothing
 		}
 		
