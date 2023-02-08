@@ -71,10 +71,13 @@ public class BobRustMonitorPicker {
 		thread.start();
 		
 		try {
-			// Make it possible to select another monitor.
+			// Make it possible to select another monitor
 			GraphicsConfiguration gc = getGraphicsConfiguration(dialog.getLocation());
 			dialog.setBounds(gc.getBounds());
 			dialog.setVisible(true);
+			
+			// TODO: Use getScreenResolution() to calculate the correct screen size
+			// Toolkit.getDefaultToolkit().getScreenResolution();
 			return updateConfiguration(dialog.getLocation());
 		} finally {
 			thread.interrupt();

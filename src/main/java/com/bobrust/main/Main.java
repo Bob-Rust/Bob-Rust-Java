@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.dialog.RustFileDialog;
+import com.bobrust.util.RustConstants;
 
 public class Main {
 	private static final Logger LOGGER = LogManager.getLogger(Main.class);
@@ -23,6 +24,7 @@ public class Main {
 		LOGGER.info("  JavaVersion : {}", System.getProperty("java.version"));
 		LOGGER.info("  Threads     : {}", Runtime.getRuntime().availableProcessors());
 		LOGGER.info("  Lwjgl       : {}", hasLwjgl);
+		LOGGER.info("  AppVersion  : {}", RustConstants.VERSION);
 		LOGGER.info("");
 		
 		// TODO: Make sure logs and properties can be saved without admin rights.

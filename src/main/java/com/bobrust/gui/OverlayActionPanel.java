@@ -295,6 +295,7 @@ public class OverlayActionPanel extends JRandomPanel {
 			RustUI.getString(Type.ACTION_CLOSEDIALOG_TITLE),
 			JOptionPane.YES_NO_OPTION
 		);
+		
 		if(dialogResult == JOptionPane.YES_OPTION) {
 			System.exit(0);
 		}
@@ -309,17 +310,10 @@ public class OverlayActionPanel extends JRandomPanel {
 	}
 	
 	private void performShowAboutDialog(ActionEvent event) {
-		String message =
-			"Created by HardCoded & Sekwah41\n" +
-			"\n" +
-			"HardCoded\n" +
-			"- Design\n" +
-			"- Sorting algorithm\n" +
-			"- Optimized generation\n" +
-			"\n" +
-			"Sekwah41\n" +
-			"- Initial generation";
-
-		JOptionPane.showMessageDialog(dialog, message, "About me", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(dialog,
+			RustUI.getString(Type.ACTION_ABOUTME_MESSAGE),
+			RustUI.getString(Type.ACTION_ABOUTME_TITLE),
+			JOptionPane.INFORMATION_MESSAGE
+		);
 	}
 }

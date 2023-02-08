@@ -1,7 +1,6 @@
 package com.bobrust.robot;
 
 import java.awt.*;
-import java.awt.event.InputEvent;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +16,7 @@ import com.bobrust.util.Sign;
 
 public class BobRustPainter {
 	private static final Logger LOGGER = LogManager.getLogger(BobRustPainter.class);
+	
 	// This is the index of the circle shape
 	private static final int CIRCLE_SHAPE = 1;
 	// The maximum distance the mouse can be from the correct position
@@ -26,6 +26,10 @@ public class BobRustPainter {
 	private final BobRustDesktopOverlay overlay;
 	private final BobRustPalette palette;
 	private volatile int clickIndex;
+	private int displayX;
+	private int displayY;
+	private double widthDelta;
+	private double heightDelta;
 	
 	public BobRustPainter(BobRustEditor gui, BobRustDesktopOverlay overlay, BobRustPalette palette) {
 		this.gui = gui;
@@ -33,13 +37,27 @@ public class BobRustPainter {
 		this.palette = palette;
 	}
 	
+	// TODO: All points should be described as an percentage of the screen
+	
 	public boolean startDrawing(BlobList list) throws Exception {
 		if(list.size() < 1) return true;
+
+		GraphicsConfiguration gc = overlay.getMonitorConfiguration();
+//		ScreenDevice device = new ScreenDevice(gc);
 		
-		Robot robot = new Robot();
+		{
+			GraphicsDevice gd = gc.getDevice();
+			Rectangle bounds = gc.getBounds();
+			
+			displayX = bounds.x;
+			displayY = bounds.y;
+			widthDelta = bounds.getWidth() / (double)gd.getDisplayMode().getWidth();
+			heightDelta = bounds.getHeight() / (double)gd.getDisplayMode().getHeight();
+		}
+		Robot robot = new Robot(gc.getDevice());
 		
 		Rectangle canvas = overlay.getCanvasArea();
-		Rectangle screen = overlay.getScreenLocation();
+//		Rectangle screen = overlay.getScreenLocation();
 		Sign signType = gui.getSettingsSign();
 		
 		int clickInterval = gui.getSettingsClickInterval();
@@ -137,11 +155,11 @@ public class BobRustPainter {
 				double dy = blob.y / (double)signType.height;
 				double tx = dx * canvas.width + canvas.x;
 				double ty = dy * canvas.height + canvas.y;
-				int sx = (int)tx + screen.x;
-				int sy = (int)ty + screen.y;
+				int sx = (int)tx + displayX;
+				int sy = (int)ty + displayY;
 				
 				lastPoint.setLocation(sx, sy);
-				clickPoint(robot, lastPoint, autoDelay);
+				clickPointExperimental(robot, lastPoint, autoDelay);
 				
 				if((i % autosaveInterval) == 0) {
 					clickPoint(robot, palette.getSaveButton(), autoDelay);
@@ -170,23 +188,53 @@ public class BobRustPainter {
 		return true;
 	}
 	
+	private Point transformPoint(Point point) {
+		return new Point(
+			displayX + (int)((point.x - displayX) * widthDelta),
+			displayY + (int)((point.y - displayY) * heightDelta)
+		);
+	}
+	
 	private void clickPoint(Robot robot, Point point, int times, double delay) {
 		for(int i = 0; i < times; i++) {
 			clickPoint(robot, point, delay);
 		}
 	}
 	
-	private void clickPoint(Robot robot, Point point, double delay) {
+	private void clickPointExperimental(Robot robot, Point point, double delay) {
 		double time = System.nanoTime() / 1000000.0;
 		
 		robot.mouseMove(point.x, point.y);
 		addTimeDelay(time + delay);
 		
-		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-		addTimeDelay(time + delay * 2.0);
+//		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+//		addTimeDelay(time + delay * 2.0);
+//		
+//		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+//		addTimeDelay(time + delay * 3.0);
 		
-		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-		addTimeDelay(time + delay * 3.0);
+		double distance = point.distance(MouseInfo.getPointerInfo().getLocation());
+		if(distance > MAXIMUM_DISPLACEMENT) {
+			throw new IllegalStateException("Mouse moved during the operation");
+		}
+		
+		//time = (System.nanoTime() / 1000000.0) - time;
+		//System.out.printf("Time: took %.4f, wanted: %.4f\n", time, delay * 3.0);
+	}
+	
+	private void clickPoint(Robot robot, Point point, double delay) {
+		point = transformPoint(point);
+		
+		double time = System.nanoTime() / 1000000.0;
+		
+		robot.mouseMove(point.x, point.y);
+		addTimeDelay(time + delay);
+		
+//		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+//		addTimeDelay(time + delay * 2.0);
+//		
+//		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+//		addTimeDelay(time + delay * 3.0);
 		
 		double distance = point.distance(MouseInfo.getPointerInfo().getLocation());
 		if(distance > MAXIMUM_DISPLACEMENT) {
@@ -208,7 +256,7 @@ public class BobRustPainter {
 			}
 		}
 		
-		throw new IllegalStateException("Failed to select size");
+		//throw new IllegalStateException("Failed to select size");
 	}
 	
 	private boolean clickColor(Robot robot, Point point, int maxAttempts, double delay) {

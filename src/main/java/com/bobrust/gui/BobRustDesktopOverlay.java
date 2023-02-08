@@ -279,6 +279,7 @@ public class BobRustDesktopOverlay extends JPanel {
 		
 		Rectangle bounds = gc.getBounds();
 		String idString = gc.getDevice().getIDstring();
+		updateTopBar();
 		LOGGER.info("Selected Monitor: { id: '{}', x: {}, y: {}, width: {}, height: {} }", idString, bounds.x, bounds.y, bounds.width, bounds.height);
 	}
 	
@@ -408,6 +409,10 @@ public class BobRustDesktopOverlay extends JPanel {
 		return monitorPicker.getMonitor().getBounds();
 	}
 	
+	public GraphicsConfiguration getMonitorConfiguration() {
+		return monitorPicker.getMonitor();
+	}
+	
 	public void setEstimatedGenerationLabel(int index, int maxShapes) {
 		topBarPanel.setEstimatedGenerationLabel(index, maxShapes);
 	}
@@ -418,6 +423,14 @@ public class BobRustDesktopOverlay extends JPanel {
 	
 	public void setRemainingTime(int index, int maxShapes, long timeLeft) {
 		topBarPanel.setRemainingTime(index, maxShapes, timeLeft);
+	}
+	
+	private void updateTopBar() {
+		int borderSize = isFullscreen ? BORDER_SIZE:0;
+		
+		actionBarPanel.setBounds(borderSize, borderSize, actionBarPanel.getWidth(), dialog.getHeight() - BORDER_SIZE * 2);
+		actionBarPanel.updateButtons();
+		topBarPanel.setBounds((dialog.getWidth() - 440) / 2, isFullscreen ? BORDER_SIZE:-50, 440, 40);
 	}
 	
 	public void toggleFullscreen() {
@@ -437,12 +450,7 @@ public class BobRustDesktopOverlay extends JPanel {
 			dialog.setBounds(gc.getBounds());
 		}
 		
-		int borderSize = isFullscreen ? BORDER_SIZE:0;
-		
-		actionBarPanel.setBounds(borderSize, borderSize, actionBarPanel.getWidth(), dialog.getHeight() - BORDER_SIZE * 2);
-		actionBarPanel.updateButtons();
-		topBarPanel.setBounds((dialog.getWidth() - 440) / 2, isFullscreen ? BORDER_SIZE:-50, 440, 40);
-		
+		updateTopBar();
 		updateEditor();
 		dialog.setAlwaysOnTop(isFullscreen);
 		dialog.setVisible(true);

@@ -18,14 +18,14 @@ import com.bobrust.generator.BorstUtils;
  * Used to analyse the gui of rust to get information about the game
  * @author HardCoded
  */
-public class BobRustPalette {
-	private static final Logger LOGGER = LogManager.getLogger(BobRustPalette.class);
+public class BobRustPaletteBck {
+	private static final Logger LOGGER = LogManager.getLogger(BobRustPaletteBck.class);
 	private final Map<BorstColor, Point> colorMap;
 	private Map<BorstColor, Point> colorMapCopy;
 	private Point panel_offset;
 	private Point preview_middle;
 	
-	public BobRustPalette() {
+	public BobRustPaletteBck() {
 		colorMap = new HashMap<>();
 	}
 	
@@ -136,7 +136,6 @@ public class BobRustPalette {
 	}
 	
 	private Point point(int x, int y) {
-		// TODO: Use non screen relative points.
 		return new Point(panel_offset.x + x, panel_offset.y + y);
 	}
 	
@@ -221,7 +220,7 @@ public class BobRustPalette {
 		}
 		return sizeButtons;
 	}
-	
+
 	private Point[] shapeButtons;
 	private Point[] getShapeButtons() {
 		if(shapeButtons == null) {

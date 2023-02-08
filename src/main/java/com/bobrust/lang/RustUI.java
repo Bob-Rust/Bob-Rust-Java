@@ -2,6 +2,25 @@ package com.bobrust.lang;
 
 public class RustUI {
 	public enum Type {
+		WARNING_CONFIGPERMISSION_TITLE("Important"),
+		WARNING_CONFIGPERMISSION_MESSAGE(
+			"This tool does not have the permission to update the config file\n" +
+			"Try run the application as an Administrator if you want to fix this"
+		),
+		
+		ACTION_ABOUTME_TITLE("About me"),
+		ACTION_ABOUTME_MESSAGE(
+			"Created by HardCoded & Sekwah41\n" +
+			"\n" +
+			"HardCoded\n" +
+			"- Design\n" +
+			"- Sorting algorithm\n" +
+			"- Optimized generation\n" +
+			"\n" +
+			"Sekwah41\n" +
+			"- Initial generation"
+		),
+		
 		SETTINGS_CLICKINTERVAL_LABEL("Clicks per second"),
 		SETTINGS_CLICKINTERVAL_TOOLTIP("The amount of clicks per second"),
 		SETTINGS_AUTOSAVEINTERVAL_LABEL("Autosave Interval"),

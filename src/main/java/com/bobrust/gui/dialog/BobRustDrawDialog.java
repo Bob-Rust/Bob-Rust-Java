@@ -21,6 +21,7 @@ import com.bobrust.lang.RustUI.Type;
 import com.bobrust.robot.BobRustPainter;
 import com.bobrust.robot.BobRustPalette;
 import com.bobrust.util.RustUtil;
+import com.bobrust.util.RustWindowUtil;
 import com.bobrust.util.UrlUtils;
 
 public class BobRustDrawDialog {
@@ -228,7 +229,8 @@ public class BobRustDrawDialog {
 		
 		// Check for bright red on the edge of the screen
 		try {
-			BufferedImage screenshot = new Robot().createScreenCapture(screenBounds);
+			// TODO: Get the true size of the screen
+			BufferedImage screenshot = RustWindowUtil.captureScreenshot(overlay.getMonitorConfiguration());
 			Point paletteLocation = rustPalette.findPalette(screenshot);
 			
 			if(paletteLocation != null) {

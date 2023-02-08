@@ -5,12 +5,12 @@ import java.io.*;
 import java.util.Objects;
 import java.util.Properties;
 
-import javax.swing.JOptionPane;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.bobrust.generator.BorstSettings;
+import com.bobrust.lang.RustUI;
+import com.bobrust.lang.RustUI.Type;
 import com.bobrust.util.*;
 
 public abstract class RustSettingsImpl implements RustSettings {
@@ -117,12 +117,9 @@ public abstract class RustSettingsImpl implements RustSettings {
 			properties.store(stream, "");
 		} catch(IOException e) {
 			if (giveMessage) {
-				JOptionPane.showMessageDialog(
-					null,
-					"This tool does not have the permission to update the config file\n" +
-					"Try run the application as an Administrator if you want to fix this",
-					"Importaint",
-					JOptionPane.WARNING_MESSAGE
+				RustWindowUtil.showWarningMessage(
+					RustUI.getString(Type.WARNING_CONFIGPERMISSION_MESSAGE),
+					RustUI.getString(Type.WARNING_CONFIGPERMISSION_TITLE)
 				);
 			}
 			
