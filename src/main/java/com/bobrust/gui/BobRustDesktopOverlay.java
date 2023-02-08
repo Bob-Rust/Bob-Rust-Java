@@ -581,7 +581,7 @@ public class BobRustDesktopOverlay extends JPanel {
 						for(Map.Entry<BorstColor, Point> entry : map.entrySet()) {
 							Point point = entry.getValue();
 							Point sc = new Point(point.x - screen.x, point.y - screen.y);
-							g.drawOval(sc.x - 15, sc.y - 15, 30, 29);
+							g.drawOval(sc.x - 15, sc.y - 7, 30, 15);
 						}
 						
 						// TODO: Find a better way to draw these than crashing the application. xd

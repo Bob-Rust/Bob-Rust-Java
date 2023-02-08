@@ -1,10 +1,8 @@
 package com.bobrust.robot;
 
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import javax.swing.*;
 
@@ -39,31 +37,43 @@ public class BobRustPalette {
 		int screen_width = screenshot.getWidth();
 		int screen_height = screenshot.getHeight();
 		
-		int x = screen_width - 43;
+		int x = screen_width - 60;
 		
-		Point red_middle = null;
-		for(int i = 0, lastNonRed = 0; i < screen_height; i++) {
-			int red = (screenshot.getRGB(x, i) >> 16) & 0xff;
+		Point palette_marker = null;
+		for(int i = 0; i < screen_height - 45; i++) {
+			// 15 per box
 			
-			if(red < 220) {
-				lastNonRed = i;
-			}
-			
-			if(i - lastNonRed > 40) {
-				// We found the circle probably.
-				red_middle = new Point(x, i - 10);
+			if ((screenshot.getRGB(x, i) & 0xffffff) == 0xc0c0c0
+			&& (screenshot.getRGB(x, i + 15) & 0xffffff) == 0xff8634
+			&& (screenshot.getRGB(x, i + 30) & 0xffffff) == 0xffd734) {
+				palette_marker = new Point(x, i);
 				break;
 			}
 		}
 		
-		if(red_middle != null) {
-			// 150x264
+		if(palette_marker != null) {
 			int point_x = screen_width - 150;
-			int point_y = red_middle.y - 163;
+			int point_y = palette_marker.y - 15;
 			return new Point(point_x, point_y);
 		}
 		
 		return null;
+	}
+	
+	@SuppressWarnings("unused")
+	private void debugGenerateColorMap(Set<Integer> colors) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("public static final BorstColor[] COLORS = {\n");
+		for (int rgb : colors) {
+			int r = (rgb >> 16) & 0xff;
+			int g = (rgb >>  8) & 0xff;
+			int b = (rgb      ) & 0xff;
+			sb.append("    new BorstColor(").append(r)
+			  	.append(", ").append(g).append(", ").append(b)
+				.append("),\n");
+		}
+		sb.append("};");
+		LOGGER.info(sb);
 	}
 	
 	public synchronized boolean analyse(JDialog dialog, BufferedImage bi, Rectangle screenBounds, Point screenOffset) {
@@ -73,7 +83,7 @@ public class BobRustPalette {
 		this.colorMap.clear();
 		
 		Point screenLocation = screenBounds.getLocation();
-		Rectangle rect = new Rectangle(panel_offset.x - screenLocation.x, panel_offset.y - screenLocation.y, 150, 525);
+		Rectangle rect = new Rectangle(panel_offset.x - screenLocation.x, panel_offset.y - screenLocation.y, 150, 570);
 		BufferedImage image;
 		try {
 			image = bi.getSubimage(rect.x, rect.y, rect.width, rect.height);
@@ -81,20 +91,39 @@ public class BobRustPalette {
 			return false;
 		}
 		
+		// 128x240   (4x16 colors)
+		// tiles (16 x 32)
+		// Set<Integer> colors = new LinkedHashSet<>();
 		for(int x = 0; x < 4; x++) {
-			for(int y = 0; y < 8; y++) {
+			for(int y = 0; y < 16; y++) {
 				int x_pos = 27 + x * 32;
-				int y_pos = 180 + y * 30;
+				int y_pos = 172 + y * 15;
 				
 				int rgb = image.getRGB(x_pos, y_pos);
+				// colors.add(rgb);
 				BorstColor color = BorstUtils.getClosestColor(rgb);
 				colorMap.putIfAbsent(color, point(x_pos, y_pos));
 			}
 		}
+		// debugGenerateColorMap(colors);
+		
+		{
+			Point zero = point(0, 0);
+			Graphics2D g = image.createGraphics();
+			g.drawImage(image, 0, 0, null);
+			g.setColor(Color.white);
+			for(Map.Entry<BorstColor, Point> entry : colorMap.entrySet()) {
+				Point point = entry.getValue();
+				Point sc = new Point(point.x, point.y);
+				g.drawOval(sc.x - 15 - zero.x, sc.y - 7 - zero.y, 30, 15);
+			}
+			g.dispose();
+			// JOptionPane.showConfirmDialog(dialog, new JLabel(new ImageIcon(test)), "Debug Image Palette", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+		}
 		
 		for(BorstColor color : BorstUtils.COLORS) {
 			if(!colorMap.containsKey(color)) {
-				LOGGER.warn("Could not find all colors in the color palette. Found {}/20 colors", colorMap.size());
+				LOGGER.warn("Could not find all colors in the color palette. Found {}/{} colors", colorMap.size(), BorstUtils.COLORS.length);
 				return false;
 			}
 		}

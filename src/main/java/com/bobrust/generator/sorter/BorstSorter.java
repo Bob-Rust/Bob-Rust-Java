@@ -198,8 +198,10 @@ public class BorstSorter {
 	// Takes 36 ms for 60000 shapes
 	private static IntList[][] create_cache(Piece[] array) {
 		// 6 sizes * 20 colors
-		IntList[] list_all = new IntList[6 * 20];
-		IntList[] list_either = new IntList[6 * 20];
+		final int colorLen = BorstUtils.COLORS.length;
+		final int sizeLen = BorstUtils.SIZES.length;
+		IntList[] list_all = new IntList[sizeLen * colorLen];
+		IntList[] list_either = new IntList[sizeLen * colorLen];
 		
 		for(Piece piece : array) {
 			if(piece == null) continue;
@@ -217,8 +219,6 @@ public class BorstSorter {
 			}
 			
 			/* either */ {
-				final int colorLen = BorstUtils.COLORS.length;
-				final int sizeLen = BorstUtils.SIZES.length;
 				
 				for(int i = 0; i < colorLen; i++) {
 					// Colors is the X axis and has the upper value

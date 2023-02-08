@@ -279,6 +279,17 @@ public class OverlayActionPanel extends JRandomPanel {
 		);
 		
 		if(!desktopOverlay.isGeneratorRunning()) {
+			// Fix canvas region bug
+			if (btnSelectCanvasRegion.isSelected()) {
+				btnSelectCanvasRegion.setSelected(false);
+				desktopOverlay.startSelectCanvasRegion(false);
+			}
+			
+			if (btnSelectImageRegion.isSelected()) {
+				btnSelectImageRegion.setSelected(false);
+				desktopOverlay.startSelectImageRegion(false);
+			}
+			
 			desktopOverlay.startGeneration();
 		} else {
 			desktopOverlay.resetGeneration();

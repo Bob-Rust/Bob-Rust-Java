@@ -1,6 +1,7 @@
 package com.bobrust.robot;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -100,7 +101,7 @@ public class BobRustPainter {
 				try {
 					Thread.sleep(50);
 				} catch(InterruptedException e) {
-					// Make sure we keep the interupted status
+					// Make sure we keep the interrupted status
 					Thread.currentThread().interrupt();
 					break;
 				}
@@ -159,7 +160,7 @@ public class BobRustPainter {
 				int sy = (int)ty + displayY;
 				
 				lastPoint.setLocation(sx, sy);
-				clickPointExperimental(robot, lastPoint, autoDelay);
+				clickPointScaled(robot, lastPoint, autoDelay);
 				
 				if((i % autosaveInterval) == 0) {
 					clickPoint(robot, palette.getSaveButton(), autoDelay);
@@ -176,7 +177,7 @@ public class BobRustPainter {
 				clickPoint(robot, palette.getSaveButton(), 4, autoDelay);
 			}
 		} finally {
-			// Interupt the update thread and join
+			// Interrupt the update thread and join
 			guiUpdateThread.interrupt();
 			guiUpdateThread.join();
 			
@@ -201,17 +202,40 @@ public class BobRustPainter {
 		}
 	}
 	
-	private void clickPointExperimental(Robot robot, Point point, double delay) {
+	/**
+	 * Click a point on the screen with a scaled point
+	 */
+	private void clickPointScaled(Robot robot, Point point, double delay) {
 		double time = System.nanoTime() / 1000000.0;
 		
 		robot.mouseMove(point.x, point.y);
 		addTimeDelay(time + delay);
 		
-//		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-//		addTimeDelay(time + delay * 2.0);
-//		
-//		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-//		addTimeDelay(time + delay * 3.0);
+		Color before = robot.getPixelColor(point.x, point.y);
+		
+		int maxAttempts = 3;
+		do {
+			robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+			addTimeDelay(time + delay * 2.0);
+			
+			robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+			addTimeDelay(time + delay * 3.0);
+			
+			if (true) {
+				Color after = robot.getPixelColor(point.x, point.y);
+				if (!before.equals(after)) {
+					break;
+				}
+				
+				addTimeDelay(time + delay);
+			} else {
+				break;
+			}
+		} while(maxAttempts-- > 0);
+		
+		if (maxAttempts == 0) {
+			LOGGER.warn("Potentially failed to paint color! Will still keep try drawing");
+		}
 		
 		double distance = point.distance(MouseInfo.getPointerInfo().getLocation());
 		if(distance > MAXIMUM_DISPLACEMENT) {
@@ -230,11 +254,11 @@ public class BobRustPainter {
 		robot.mouseMove(point.x, point.y);
 		addTimeDelay(time + delay);
 		
-//		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-//		addTimeDelay(time + delay * 2.0);
-//		
-//		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-//		addTimeDelay(time + delay * 3.0);
+		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+		addTimeDelay(time + delay * 2.0);
+
+		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+		addTimeDelay(time + delay * 3.0);
 		
 		double distance = point.distance(MouseInfo.getPointerInfo().getLocation());
 		if(distance > MAXIMUM_DISPLACEMENT) {
@@ -266,6 +290,23 @@ public class BobRustPainter {
 		// Make sure that we press the size
 		while(maxAttempts-- > 0) {
 			clickPoint(robot, point, delay);
+			
+			Color after = robot.getPixelColor(colorPreview.x, colorPreview.y);
+			if(!before.equals(after)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	private boolean clickColorTest(Robot robot, Point point, int maxAttempts, double delay) {
+		Point colorPreview = palette.getColorPreview();
+		Color before = robot.getPixelColor(colorPreview.x, colorPreview.y);
+		
+		// Make sure that we press the size
+		while(maxAttempts-- > 0) {
+			clickPointScaled(robot, point, delay);
 			
 			Color after = robot.getPixelColor(colorPreview.x, colorPreview.y);
 			if(!before.equals(after)) {
