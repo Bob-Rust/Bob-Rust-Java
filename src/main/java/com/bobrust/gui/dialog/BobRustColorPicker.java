@@ -66,10 +66,10 @@ public class BobRustColorPicker {
 				int my = e.getY() - 12;
 				if(mx > 0 && mx < 128 && my > 0 && my < 240) {
 					int x = (mx * 4) / 127;
-					int y = (my * 8) / 240;
+					int y = (my * 16) / 240;
 					
-					int cx = x * 31 + 15 + 12;
-					int cy = y * 30 + 15 + 12;
+					int cx = x * 31 + 25 + 12;
+					int cy = y * 15 + 6 + 12;
 					selectedColor = new Color(BorstUtils.getClosestColor(RustConstants.COLOR_PALETTE.getRGB(cx, cy)).rgb);
 					colorLabel.setBackground(selectedColor);
 				}

@@ -235,7 +235,8 @@ public class OverlayActionPanel extends JRandomPanel {
 		btnSelectImageRegion.setEnabled(defaultAction && hasImage || action == OverlayType.SELECT_IMAGE_REGION);
 		
 		btnOpenImage.setEnabled(defaultAction);
-		btnStartGenerate.setEnabled(isFullscreen && hasImage);
+		boolean hasRegion = btnSelectCanvasRegion.isSelected() || btnSelectImageRegion.isSelected();
+		btnStartGenerate.setEnabled(isFullscreen && hasImage && desktopOverlay.canPerformGenerate() && !hasRegion);
 		btnDrawImage.setEnabled(isFullscreen && isGeneratorRunning);
 	}
 	
@@ -279,6 +280,17 @@ public class OverlayActionPanel extends JRandomPanel {
 		);
 		
 		if(!desktopOverlay.isGeneratorRunning()) {
+			// Fix canvas region bug
+			if (btnSelectCanvasRegion.isSelected()) {
+				btnSelectCanvasRegion.setSelected(false);
+				desktopOverlay.startSelectCanvasRegion(false);
+			}
+			
+			if (btnSelectImageRegion.isSelected()) {
+				btnSelectImageRegion.setSelected(false);
+				desktopOverlay.startSelectImageRegion(false);
+			}
+			
 			desktopOverlay.startGeneration();
 		} else {
 			desktopOverlay.resetGeneration();
@@ -295,6 +307,7 @@ public class OverlayActionPanel extends JRandomPanel {
 			RustUI.getString(Type.ACTION_CLOSEDIALOG_TITLE),
 			JOptionPane.YES_NO_OPTION
 		);
+		
 		if(dialogResult == JOptionPane.YES_OPTION) {
 			System.exit(0);
 		}
@@ -309,17 +322,10 @@ public class OverlayActionPanel extends JRandomPanel {
 	}
 	
 	private void performShowAboutDialog(ActionEvent event) {
-		String message =
-			"Created by HardCoded & Sekwah41\n" +
-			"\n" +
-			"HardCoded\n" +
-			"- Design\n" +
-			"- Sorting algorithm\n" +
-			"- Optimized generation\n" +
-			"\n" +
-			"Sekwah41\n" +
-			"- Initial generation";
-
-		JOptionPane.showMessageDialog(dialog, message, "About me", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(dialog,
+			RustUI.getString(Type.ACTION_ABOUTME_MESSAGE),
+			RustUI.getString(Type.ACTION_ABOUTME_TITLE),
+			JOptionPane.INFORMATION_MESSAGE
+		);
 	}
 }

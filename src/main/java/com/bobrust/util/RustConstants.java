@@ -14,8 +14,6 @@ import javax.imageio.ImageIO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.bobrust.gui.BobRustDesktopOverlay;
-
 public class RustConstants {
 	private static final Logger LOGGER = LogManager.getLogger(RustConstants.class);
 	
@@ -45,17 +43,26 @@ public class RustConstants {
 	
 	public static final BufferedImage COLOR_PALETTE;
 	public static final Image DIALOG_ICON;
+	public static final String VERSION;
 	
 	static {
 		BufferedImage bi = null;
-		try(InputStream stream = BobRustDesktopOverlay.class.getResourceAsStream("/mapping/color_palette.png")) {
+		try(InputStream stream = RustConstants.class.getResourceAsStream("/mapping/color_palette_new.png")) {
 			bi = ImageIO.read(stream);
 		} catch(IOException e) {
 			LOGGER.throwing(e);
 			e.printStackTrace();
 		}
-		
 		COLOR_PALETTE = bi;
+		
+		String version = "error";
+		try(InputStream stream = RustConstants.class.getResourceAsStream("/version")) {
+			version = new String(stream.readAllBytes());
+		} catch(IOException e) {
+			LOGGER.throwing(e);
+			e.printStackTrace();
+		}
+		VERSION = version;
 		
 		Image dialogIcon = null;
 		try {
