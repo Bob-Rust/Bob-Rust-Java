@@ -308,7 +308,9 @@ public class BobRustDesktopOverlay extends JPanel {
 		if(file != null) {
 			try {
 				BufferedImage selectedImage = ImageIO.read(file);
-				selectedImage = RustImageUtil.applyFilters(selectedImage);
+				if (gui.getSettingsUseICCConversion() == 1) {
+					selectedImage = RustImageUtil.applyFilters(selectedImage);
+				}
 				
 				LOGGER.info("Loaded image '{}'", file);
 				image = selectedImage;
@@ -323,42 +325,53 @@ public class BobRustDesktopOverlay extends JPanel {
 		}
 	}
 	
-	public void startGeneration() {
-		if(!gui.borstGenerator.isRunning()) {
-			Rectangle rect = canvasRegion.createIntersection(imageRegion).getBounds();
+	public boolean canPerformGenerate() {
+		Rectangle rect = canvasRegion.createIntersection(imageRegion).getBounds();
+		return !rect.isEmpty();
+	}
+	
+	public boolean startGeneration() {
+		if(gui.borstGenerator.isRunning()) {
+			return false;
+		}
+		
+		Rectangle rect = canvasRegion.createIntersection(imageRegion).getBounds();
 			
-			if(!rect.isEmpty()) {
-				Sign signType = gui.getSettingsSign();
-				Color bgColor = gui.getSettingsBackgroundCalculated();
-				
-				BufferedImage scaled;
-				scaled = RustImageUtil.getScaledInstance(
-					image,
-					canvasRegion,
-					imageRegion,
-					signType.width,
-					signType.height,
-					bgColor,
-					gui.getSettingsScaling()
-				);
-				
-				// Apply the ICC cmyk lut filter
+		if(!rect.isEmpty()) {
+			Sign signType = gui.getSettingsSign();
+			Color bgColor = gui.getSettingsBackgroundCalculated();
+			
+			BufferedImage scaled;
+			scaled = RustImageUtil.getScaledInstance(
+				image,
+				canvasRegion,
+				imageRegion,
+				signType.width,
+				signType.height,
+				bgColor,
+				gui.getSettingsScaling()
+			);
+			
+			// Apply the ICC cmyk lut filter
+			if (gui.getSettingsUseICCConversion() == 1) {
 				scaled = RustImageUtil.applyFilters(scaled);
-				
-				BorstSettings settings = gui.getBorstSettings();
-				settings.Background = bgColor.getRGB();
-				settings.DirectImage = scaled;
-				updateEditor();
-				if(gui.borstGenerator.start()) {
-					shapeRender.createCanvas(scaled.getWidth(), scaled.getHeight(), bgColor.getRGB());
-					
-					action = OverlayType.GENERATE_IMAGE;
-					actionBarPanel.updateButtons();
-				}
 			}
 			
-			repaint();
+			BorstSettings settings = gui.getBorstSettings();
+			settings.Background = bgColor.getRGB();
+			settings.DirectImage = scaled;
+			updateEditor();
+			
+			if(gui.borstGenerator.start()) {
+				shapeRender.createCanvas(scaled.getWidth(), scaled.getHeight(), bgColor.getRGB());
+				
+				action = OverlayType.GENERATE_IMAGE;
+				actionBarPanel.updateButtons();
+			}
 		}
+		
+		repaint();
+		return !rect.isEmpty();
 	}
 	
 	public void resetGeneration() {
@@ -510,7 +523,10 @@ public class BobRustDesktopOverlay extends JPanel {
 		|| (actionBarPanel.btnSelectImageRegion.isSelected()
 		|| actionBarPanel.btnSelectCanvasRegion.isSelected())) {
 			// TODO: Cache this color.
+			// g.setColor(Color.black);
+			// g.fillRect(0, 0, getWidth() - 150, getHeight());
 			g.setColor(new Color(0x30000000, true));
+			// g.clearRect(0, 0, getWidth() - 150, getHeight());
 			g.fillRect(0, 0, getWidth() - 150, getHeight());
 			
 			// Draw region outline

@@ -46,8 +46,6 @@ public class RustImageUtil {
 	}
 	
 	public static BufferedImage applyFilters(BufferedImage scaled) {
-		return scaled;
-		/*
 		// Create a new Image that has a backing int buffer
 		BufferedImage image = new BufferedImage(scaled.getWidth(), scaled.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
@@ -70,7 +68,6 @@ public class RustImageUtil {
 		}
 		
 		return image;
-		*/
 	}
 	
 	public static BufferedImage getScaledInstance(BufferedImage source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, int scalingType) {

@@ -18,6 +18,7 @@ public interface RustSettings {
 	void setSettingsBackground(Color color);
 	void setSettingsClickInterval(Integer interval);
 	void setSettingsAutosaveInterval(Integer interval);
+	void setSettingsUseICCConversion(Integer enabled);
 	
 	Color getEditorBorderColor();
 	Color getEditorToolbarColor();
@@ -38,6 +39,7 @@ public interface RustSettings {
 	int getSettingsScaling();
 	int getSettingsMaxShapes();
 	int getSettingsAutosaveInterval();
+	int getSettingsUseICCConversion();
 	Color getSettingsBackground();
 	Sign getSettingsSign();
 	int getSettingsClickInterval();

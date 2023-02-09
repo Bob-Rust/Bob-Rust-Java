@@ -14,7 +14,10 @@ public enum Settings {
 	SETTINGS_SIGN_TYPE("settings.signtype"),
 	SETTINGS_BACKGROUND("settings.background"),
 	SETTINGS_CLICK_INTERVAL("settings.clickinterval"),
-	SETTINGS_AUTOSAVE_INTERVAL("settings.autosaveinterval");
+	SETTINGS_AUTOSAVE_INTERVAL("settings.autosaveinterval"),
+	SETTINGS_USE_ICC_CONVERSION("settings.iccconversion"),
+	;
+	
 	
 	public final String id;
 	

@@ -29,6 +29,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 	private Sign settingsSign;
 	private int clickInterval;
 	private int autosaveInterval;
+	private int useIccConversion;
 	private int scalingType;
 	
 	// Properties
@@ -76,6 +77,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 		setSettingsBackground(getSettingsColor(Settings.SETTINGS_BACKGROUND));
 		setSettingsClickInterval(getSettingInteger(Settings.SETTINGS_CLICK_INTERVAL));
 		setSettingsAutosaveInterval(getSettingInteger(Settings.SETTINGS_AUTOSAVE_INTERVAL));
+		setSettingsUseICCConversion(getSettingInteger(Settings.SETTINGS_USE_ICC_CONVERSION));
 		
 		allowSaving = true;
 		saveSettings(true);
@@ -228,7 +230,14 @@ public abstract class RustSettingsImpl implements RustSettings {
 		autosaveInterval = interval;
 		setProperty(Settings.SETTINGS_AUTOSAVE_INTERVAL, interval);
 	}
-
+	
+	@Override
+	public void setSettingsUseICCConversion(Integer enabled) {
+		enabled = enabled == null ? 1 : RustUtil.clamp(enabled, 0, 1);
+		useIccConversion = enabled;
+		setProperty(Settings.SETTINGS_USE_ICC_CONVERSION, enabled);
+	}
+	
 	@Override
 	public Color getEditorBorderColor() {
 		return Objects.requireNonNull(borderColor);
@@ -278,7 +287,12 @@ public abstract class RustSettingsImpl implements RustSettings {
 	public int getSettingsAutosaveInterval() {
 		return autosaveInterval;
 	}
-
+	
+	@Override
+	public int getSettingsUseICCConversion() {
+		return useIccConversion;
+	}
+	
 	@Override
 	public Color getSettingsBackground() {
 		return settingsBackground;

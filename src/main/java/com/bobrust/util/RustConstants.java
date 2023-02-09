@@ -47,7 +47,7 @@ public class RustConstants {
 	
 	static {
 		BufferedImage bi = null;
-		try(InputStream stream = RustConstants.class.getResourceAsStream("/mapping/color_palette.png")) {
+		try(InputStream stream = RustConstants.class.getResourceAsStream("/mapping/color_palette_new.png")) {
 			bi = ImageIO.read(stream);
 		} catch(IOException e) {
 			LOGGER.throwing(e);

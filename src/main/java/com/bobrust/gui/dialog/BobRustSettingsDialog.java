@@ -39,9 +39,11 @@ public class BobRustSettingsDialog {
 	final JLabel lblShapesLabel;
 	final JIntegerField maxShapesField;
 	final JLabel lblClickIntervalLabel;
+	final JIntegerField clickIntervalField;
 	final JLabel lblAutosaveIntervalLabel;
 	final JIntegerField autosaveIntervalField;
-	final JIntegerField clickIntervalField;
+	final JLabel lblUseIccConversionLabel;
+	final JComboBox<String> useIccConversionCombobox;
 	
 	// Editor
 	final JLabel lblBorderColor;
@@ -82,9 +84,9 @@ public class BobRustSettingsDialog {
 			generatorPanel.setFocusable(false);
 			GridBagLayout gbl_generatorPanel = new GridBagLayout();
 			gbl_generatorPanel.columnWidths = new int[]{140, 0, 0};
-			gbl_generatorPanel.rowHeights = new int[] {20, 20, 20, 20, 20, 20, 20, 20, 0};
+			gbl_generatorPanel.rowHeights = new int[] {20, 20, 20, 20, 20, 20, 20, 20, 20, };
 			gbl_generatorPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-			gbl_generatorPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+			gbl_generatorPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 			generatorPanel.setLayout(gbl_generatorPanel);
 			
 			lblBackgroundColor = new JLabel(RustUI.getString(Type.SETTINGS_BACKGROUNDCOLOR_LABEL));
@@ -154,7 +156,7 @@ public class BobRustSettingsDialog {
 			lblAlphaIndex.setHorizontalTextPosition(SwingConstants.CENTER);
 			lblAlphaIndex.setHorizontalAlignment(SwingConstants.CENTER);
 			
-			alphaCombobox = new JComboBox<Integer>();
+			alphaCombobox = new JComboBox<>();
 			lblAlphaIndex.setLabelFor(alphaCombobox);
 			GridBagConstraints gbc_alphaCombobox = new GridBagConstraints();
 			gbc_alphaCombobox.fill = GridBagConstraints.HORIZONTAL;
@@ -165,7 +167,7 @@ public class BobRustSettingsDialog {
 			alphaCombobox.setAlignmentX(Component.LEFT_ALIGNMENT);
 			alphaCombobox.setFocusable(false);
 			alphaCombobox.setMaximumSize(new Dimension(116, 20));
-			alphaCombobox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 0, 1, 2, 3, 4, 5 }));
+			alphaCombobox.setModel(new DefaultComboBoxModel<>(new Integer[] { 0, 1, 2, 3, 4, 5 }));
 			alphaCombobox.setSelectedIndex(gui.getSettingsAlpha());
 			
 			lblScalingLabel = new JLabel(RustUI.getString(Type.SETTINGS_SCALINGTYPE_LABEL));
@@ -179,7 +181,7 @@ public class BobRustSettingsDialog {
 			lblScalingLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 			lblScalingLabel.setHorizontalAlignment(SwingConstants.CENTER);
 			
-			scalingCombobox = new JComboBox<String>();
+			scalingCombobox = new JComboBox<>();
 			lblScalingLabel.setLabelFor(scalingCombobox);
 			GridBagConstraints gbc_scalingCombobox = new GridBagConstraints();
 			gbc_scalingCombobox.fill = GridBagConstraints.HORIZONTAL;
@@ -190,7 +192,7 @@ public class BobRustSettingsDialog {
 			scalingCombobox.setAlignmentX(Component.LEFT_ALIGNMENT);
 			scalingCombobox.setFocusable(false);
 			scalingCombobox.setMaximumSize(new Dimension(116, 20));
-			scalingCombobox.setModel(new DefaultComboBoxModel<String>(new String[] { "Nearest", "Bilinear", "Bicubic" }));
+			scalingCombobox.setModel(new DefaultComboBoxModel<>(new String[] { "Nearest", "Bilinear", "Bicubic" }));
 			scalingCombobox.setSelectedIndex(gui.getSettingsScaling());
 			
 			lblShapesLabel = new JLabel(RustUI.getString(Type.SETTINGS_MAXSHAPES_LABEL));
@@ -244,7 +246,7 @@ public class BobRustSettingsDialog {
 			lblAutosaveIntervalLabel = new JLabel(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_LABEL));
 			GridBagConstraints gbc_autosaveIntervalLabel = new GridBagConstraints();
 			gbc_autosaveIntervalLabel.anchor = GridBagConstraints.WEST;
-			gbc_autosaveIntervalLabel.insets = new Insets(0, 0, 0, 5);
+			gbc_autosaveIntervalLabel.insets = new Insets(0, 0, 5, 5);
 			gbc_autosaveIntervalLabel.gridx = 0;
 			gbc_autosaveIntervalLabel.gridy = 6;
 			generatorPanel.add(lblAutosaveIntervalLabel, gbc_autosaveIntervalLabel);
@@ -256,6 +258,7 @@ public class BobRustSettingsDialog {
 			lblAutosaveIntervalLabel.setLabelFor(autosaveIntervalField);
 			GridBagConstraints gbc_autosaveIntervalField = new GridBagConstraints();
 			gbc_autosaveIntervalField.fill = GridBagConstraints.HORIZONTAL;
+			gbc_autosaveIntervalField.insets = new Insets(0, 0, 5, 0);
 			gbc_autosaveIntervalField.gridx = 1;
 			gbc_autosaveIntervalField.gridy = 6;
 			generatorPanel.add(autosaveIntervalField, gbc_autosaveIntervalField);
@@ -264,6 +267,31 @@ public class BobRustSettingsDialog {
 			autosaveIntervalField.setMinimum(1);
 			autosaveIntervalField.setMaximum(4000);
 			autosaveIntervalField.setMaximumSize(new Dimension(116, 20));
+			
+			
+			lblUseIccConversionLabel = new JLabel(RustUI.getString(Type.SETTINGS_USEICCCONVERSION_LABEL));
+			GridBagConstraints gbc_useIccConversionLabel = new GridBagConstraints();
+			gbc_useIccConversionLabel.anchor = GridBagConstraints.WEST;
+			gbc_useIccConversionLabel.insets = new Insets(0, 0, 0, 5);
+			gbc_useIccConversionLabel.gridx = 0;
+			gbc_useIccConversionLabel.gridy = 7;
+			generatorPanel.add(lblUseIccConversionLabel, gbc_useIccConversionLabel);
+			lblUseIccConversionLabel.setToolTipText(RustUI.getString(Type.SETTINGS_USEICCCONVERSION_TOOLTIP));
+			lblUseIccConversionLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+			lblUseIccConversionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			
+			useIccConversionCombobox = new JComboBox<>();
+			lblUseIccConversionLabel.setLabelFor(useIccConversionCombobox);
+			GridBagConstraints gbc_useIccConversionField = new GridBagConstraints();
+			gbc_useIccConversionField.fill = GridBagConstraints.HORIZONTAL;
+			gbc_useIccConversionField.gridx = 1;
+			gbc_useIccConversionField.gridy = 7;
+			generatorPanel.add(useIccConversionCombobox, gbc_useIccConversionField);
+			useIccConversionCombobox.setAlignmentX(Component.LEFT_ALIGNMENT);
+			useIccConversionCombobox.setFocusable(true);
+			useIccConversionCombobox.setMaximumSize(new Dimension(116, 20));
+			useIccConversionCombobox.setModel(new DefaultComboBoxModel<>(new String[] { "Off", "On" }));
+			useIccConversionCombobox.setSelectedIndex(gui.getSettingsUseICCConversion());
 		}
 		
 		{
@@ -488,6 +516,8 @@ public class BobRustSettingsDialog {
 			lblClickIntervalLabel.setToolTipText(RustUI.getString(Type.SETTINGS_CLICKINTERVAL_TOOLTIP));
 			lblAutosaveIntervalLabel.setText(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_LABEL));
 			lblAutosaveIntervalLabel.setToolTipText(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_TOOLTIP));
+			lblUseIccConversionLabel.setText(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_LABEL));
+			lblUseIccConversionLabel.setToolTipText(RustUI.getString(Type.SETTINGS_AUTOSAVEINTERVAL_TOOLTIP));
 		}
 		
 		{
@@ -521,6 +551,7 @@ public class BobRustSettingsDialog {
 		autosaveIntervalField.setText(Integer.toString(gui.getSettingsAutosaveInterval()));
 		alphaCombobox.setSelectedIndex(gui.getSettingsAlpha());
 		scalingCombobox.setSelectedIndex(gui.getSettingsScaling());
+		useIccConversionCombobox.setSelectedIndex(gui.getSettingsUseICCConversion());
 		
 		// Show the dialog.
 		dialog.setLocation(point);
@@ -555,6 +586,13 @@ public class BobRustSettingsDialog {
 		} catch(NumberFormatException e) {
 			LOGGER.warn("Invalid autosave interval '{}'", autosaveIntervalField.getText());
 			autosaveIntervalField.setText(Integer.toString(gui.getSettingsAutosaveInterval()));
+		}
+		
+		try {
+			gui.setSettingsUseICCConversion(useIccConversionCombobox.getSelectedIndex());
+		} catch(NumberFormatException e) {
+			LOGGER.warn("Invalid icc conversion interval '{}'", useIccConversionCombobox.getSelectedIndex());
+			useIccConversionCombobox.setSelectedIndex(gui.getSettingsUseICCConversion());
 		}
 		
 		gui.setSettingsSign(signPicker.getSelectedSign());

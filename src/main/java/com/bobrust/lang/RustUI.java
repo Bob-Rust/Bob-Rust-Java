@@ -25,6 +25,8 @@ public class RustUI {
 		SETTINGS_CLICKINTERVAL_TOOLTIP("The amount of clicks per second"),
 		SETTINGS_AUTOSAVEINTERVAL_LABEL("Autosave Interval"),
 		SETTINGS_AUTOSAVEINTERVAL_TOOLTIP("How many presses done between saves"),
+		SETTINGS_USEICCCONVERSION_LABEL("Use ICC colors"),
+		SETTINGS_USEICCCONVERSION_TOOLTIP("If ICC color conversion should be used"),
 		SETTINGS_ALPHAINDEX_LABEL("Alpha Index"),
 		SETTINGS_ALPHAINDEX_TOOLTIP("The alpha value used when drawing the image"),
 		SETTINGS_SCALINGTYPE_LABEL("Scaling Type"),

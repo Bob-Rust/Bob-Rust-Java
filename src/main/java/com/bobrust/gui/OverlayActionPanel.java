@@ -235,7 +235,8 @@ public class OverlayActionPanel extends JRandomPanel {
 		btnSelectImageRegion.setEnabled(defaultAction && hasImage || action == OverlayType.SELECT_IMAGE_REGION);
 		
 		btnOpenImage.setEnabled(defaultAction);
-		btnStartGenerate.setEnabled(isFullscreen && hasImage);
+		boolean hasRegion = btnSelectCanvasRegion.isSelected() || btnSelectImageRegion.isSelected();
+		btnStartGenerate.setEnabled(isFullscreen && hasImage && desktopOverlay.canPerformGenerate() && !hasRegion);
 		btnDrawImage.setEnabled(isFullscreen && isGeneratorRunning);
 	}
 	
