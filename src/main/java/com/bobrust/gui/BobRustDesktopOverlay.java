@@ -308,7 +308,7 @@ public class BobRustDesktopOverlay extends JPanel {
 		if(file != null) {
 			try {
 				BufferedImage selectedImage = ImageIO.read(file);
-				if (gui.getSettingsUseICCConversion() == 1) {
+				if (gui.SettingsUseICCConversion.get()) {
 					selectedImage = RustImageUtil.applyFilters(selectedImage);
 				}
 				
@@ -338,7 +338,7 @@ public class BobRustDesktopOverlay extends JPanel {
 		Rectangle rect = canvasRegion.createIntersection(imageRegion).getBounds();
 			
 		if(!rect.isEmpty()) {
-			Sign signType = gui.getSettingsSign();
+			Sign signType = gui.SettingsSign.get();
 			Color bgColor = gui.getSettingsBackgroundCalculated();
 			
 			BufferedImage scaled;
@@ -349,11 +349,11 @@ public class BobRustDesktopOverlay extends JPanel {
 				signType.width,
 				signType.height,
 				bgColor,
-				gui.getSettingsScaling()
+				gui.SettingsScaling.get()
 			);
 			
 			// Apply the ICC cmyk lut filter
-			if (gui.getSettingsUseICCConversion() == 1) {
+			if (gui.SettingsUseICCConversion.get()) {
 				scaled = RustImageUtil.applyFilters(scaled);
 			}
 			
@@ -400,14 +400,14 @@ public class BobRustDesktopOverlay extends JPanel {
 	
 	public void updateEditor() {
 		// Update the action bar
-		actionBarPanel.setBackground(gui.getEditorToolbarColor());
-		actionBarPanel.updateLabelForeground(gui.getEditorLabelColor());
+		actionBarPanel.setBackground(gui.EditorToolbarColor.get());
+		actionBarPanel.updateLabelForeground(gui.EditorLabelColor.get());
 		
 		// Update the desktop overlay
-		setBorder(isFullscreen ? new LineBorder(gui.getEditorBorderColor(), BORDER_SIZE):null);
+		setBorder(isFullscreen ? new LineBorder(gui.EditorBorderColor.get(), BORDER_SIZE):null);
 		
 		BorstData lastData = this.lastData;
-		setEstimatedGenerationLabel(lastData != null ? lastData.getIndex():0, gui.getSettingsMaxShapes());
+		setEstimatedGenerationLabel(lastData != null ? lastData.getIndex() : 0, gui.SettingsMaxShapes.get());
 	}
 	
 	public JDialog getDialog() {
@@ -478,7 +478,7 @@ public class BobRustDesktopOverlay extends JPanel {
 		lastData = data;
 		
 		if (!drawDialog.isVisible()) {
-			setEstimatedGenerationLabel(data.getIndex(), gui.getSettingsMaxShapes());
+			setEstimatedGenerationLabel(data.getIndex(), gui.SettingsMaxShapes.get());
 			repaint();
 		}
 	}

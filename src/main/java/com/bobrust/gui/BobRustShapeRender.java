@@ -56,8 +56,9 @@ public class BobRustShapeRender {
 		// The pixel buffer of the closest image
 		int[] pixelBuffer;
 		int startIndex;
+		
 		// If we do not have cached values up to this point
-		if(list.size() > cacheIndex) {
+		if (list.size() > cacheIndex) {
 			startIndex = cacheIndex * cacheInterval;
 			pixelBuffer = list.get(cacheIndex);
 		} else {
@@ -68,23 +69,23 @@ public class BobRustShapeRender {
 		// Copy the closest pixel buffer to the canvas
 		System.arraycopy(pixelBuffer, 0, canvasPixels, 0, canvasPixels.length);
 		
-		if(startIndex == shapes) {
+		if (startIndex == shapes) {
 			// If the start index was the same as the cachedIndex we return
 			return canvas;
 		}
 		
 		Graphics2D g = canvas.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		for(int i = startIndex; i < shapes; i++) {
+		for (int i = startIndex; i < shapes; i++) {
 			Circle circle = model.shapes.get(i);
 			BorstColor color = model.colors.get(i);
 			
 			g.setColor(new Color(color.rgb | (model.alpha << 24), true));
-			int cd = (circle.r - 1) * 2 + 1;
+			int cd = circle.r;
 			g.fillOval(circle.x - cd / 2, circle.y - cd / 2, cd, cd);
 			
 			// Cache every 'cacheInterval' shapes.
-			if((i % cacheInterval) == cacheInterval - 1) {
+			if ((i % cacheInterval) == cacheInterval - 1) {
 				list.add(canvasPixels.clone());
 			}
 		}

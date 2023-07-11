@@ -20,7 +20,7 @@ public class RustUtil {
 		final int len = Math.min(model.colors.size(), count);
 		
 		BlobList list = new BlobList();
-		for(int i = 0; i < len; i++) {
+		for (int i = 0; i < len; i++) {
 			Circle circle = model.shapes.get(i);
 			BorstColor color = model.colors.get(i);
 			list.add(Blob.get(circle.x, circle.y, circle.r, color.rgb));
@@ -37,7 +37,7 @@ public class RustUtil {
 		Blob last = null;
 		
 		int changes = 2;
-		for(Blob blob : blobList) {
+		for (Blob blob : blobList) {
 			if(last != null) {
 				changes += (last.size != blob.size) ? 1:0;
 				changes += (last.color != blob.color) ? 1:0;

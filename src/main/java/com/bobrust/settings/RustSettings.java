@@ -1,32 +1,20 @@
 package com.bobrust.settings;
 
-import java.awt.Color;
+import java.awt.*;
 
-import com.bobrust.util.Sign;
+import com.bobrust.settings.type.*;
+import com.bobrust.settings.type.parent.InternalSettings;
+import com.bobrust.util.RustConstants;
+import com.bobrust.util.RustSigns;
 
 public interface RustSettings {
-	void setEditorBorderColor(Color color);
-	void setEditorToolbarColor(Color color);
-	void setEditorLabelColor(Color color);
-	void setEditorImageDirectory(String pathname);
-	void setEditorPresetDirectory(String pathname);
-	void setEditorCallbackInterval(Integer callbackInterval);
-	void setSettingsAlpha(Integer alpha);
-	void setSettingsScaling(Integer index);
-	void setSettingsMaxShapes(Integer maxShapes);
-	void setSettingsSign(Sign sign);
-	void setSettingsBackground(Color color);
-	void setSettingsClickInterval(Integer interval);
-	void setSettingsAutosaveInterval(Integer interval);
-	void setSettingsUseICCConversion(Integer enabled);
-	
-	Color getEditorBorderColor();
-	Color getEditorToolbarColor();
-	Color getEditorLabelColor();
-	String getEditorImageDirectory();
-	String getEditorPresetDirectory();
-	int getEditorCallbackInterval();
-	int getSettingsAlpha();
+	ColorType  EditorBorderColor = new ColorType(new Color(0xff3333));
+	ColorType  EditorToolbarColor = new ColorType(new Color(0x333333));
+	ColorType  EditorLabelColor = new ColorType(Color.white);
+	StringType EditorImageDirectory = new StringType(System.getProperty("user.home"));
+	StringType EditorPresetDirectory = new StringType(System.getProperty("user.home"));
+	IntType    EditorCallbackInterval = new IntType(20, 1, 99999);
+	IntType    SettingsAlpha = new IntType(2, 0, 5);
 	
 	/**
 	 * Returns:
@@ -36,11 +24,18 @@ public interface RustSettings {
 	 * 2: Bicubic
 	 * </pre>
 	 */
-	int getSettingsScaling();
-	int getSettingsMaxShapes();
-	int getSettingsAutosaveInterval();
-	int getSettingsUseICCConversion();
-	Color getSettingsBackground();
-	Sign getSettingsSign();
-	int getSettingsClickInterval();
+	IntType    SettingsScaling = new IntType(RustConstants.IMAGE_SCALING_NEAREST, 0, 2);
+	IntType    SettingsMaxShapes = new IntType(99999, 0, 99999);
+	SignType   SettingsSign = new SignType(RustSigns.FIRST);
+	SizeType   SettingsSignDimension = new SizeType(
+		new Dimension(1, 1),
+		new Dimension(1, 1),
+		new Dimension(9999, 9999));
+	ColorType  SettingsBackground = new ColorType(null);
+	IntType    SettingsClickInterval = new IntType(30, 1, 99999);
+	IntType    SettingsAutosaveInterval = new IntType(1000, 1, 99999);
+	BoolType   SettingsUseICCConversion = new BoolType(true);
+	
+	// Used for internal save state
+	InternalSettings InternalSettings = new InternalSettings();
 }

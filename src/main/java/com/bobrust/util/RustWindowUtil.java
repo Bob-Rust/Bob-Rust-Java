@@ -21,7 +21,7 @@ public class RustWindowUtil {
 		
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch(Exception ignore) {
+		} catch (Exception ignore) {
 			// Do nothing
 		}
 	}
@@ -54,9 +54,9 @@ public class RustWindowUtil {
 		try {
 			Robot robot = new Robot(device);
 			
-			return (BufferedImage)robot.createMultiResolutionScreenCapture(gc.getBounds())
+			return (BufferedImage) robot.createMultiResolutionScreenCapture(gc.getBounds())
 				.getResolutionVariant(screenWidth, screenHeight);
-		} catch(AWTException e) {
+		} catch (AWTException e) {
 			e.printStackTrace();
 		}
 		

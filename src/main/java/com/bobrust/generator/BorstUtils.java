@@ -1,8 +1,10 @@
 package com.bobrust.generator;
 
+import java.util.stream.IntStream;
+
 public class BorstUtils {
 	public static final int[] ALPHAS = { 9, 18, 72, 136, 218, 255 };
-	public static final int[] SIZES = { 1, 2, 4, 6, 10, 13 };
+	public static final int[] SIZES = CircleCache.CIRCLE_CACHE_LENGTH; // { 1, 2, 4, 6, 10, 13 };
 	
 	public static final BorstColor[] COLORS = {
 		new BorstColor(0, 0, 0),
@@ -78,19 +80,19 @@ public class BorstUtils {
 	private static final int[] SIZE_VALUE_LOOKUP_TABLE;
 	
 	public static int getClosestAlpha(int alpha) {
-		return ALPHA_VALUE_LOOKUP_TABLE[alpha < 0 ? 0:(alpha > 255 ? 255:alpha)]; 
+		return ALPHA_VALUE_LOOKUP_TABLE[alpha < 0 ? 0: Math.min(alpha, ALPHA_VALUE_LOOKUP_TABLE.length - 1)]; 
 	}
 	
 	public static int getClosestAlphaIndex(int alpha) {
-		return ALPHA_INDEX_LOOKUP_TABLE[alpha < 0 ? 0:(alpha > 255 ? 255:alpha)]; 
+		return ALPHA_INDEX_LOOKUP_TABLE[alpha < 0 ? 0: Math.min(alpha, ALPHA_INDEX_LOOKUP_TABLE.length - 1)]; 
 	}
 	
 	public static int getClosestSize(int size) {
-		return SIZE_VALUE_LOOKUP_TABLE[size < 0 ? 0:(size > 13 ? 13:size)]; 
+		return SIZE_VALUE_LOOKUP_TABLE[size < 0 ? 0 : Math.min(size, SIZE_VALUE_LOOKUP_TABLE.length - 1)];
 	}
 	
 	public static int getClosestSizeIndex(int size) {
-		return SIZE_INDEX_LOOKUP_TABLE[size < 0 ? 0:(size > 13 ? 13:size)]; 
+		return SIZE_INDEX_LOOKUP_TABLE[size < 0 ? 0 : Math.min(size, SIZE_INDEX_LOOKUP_TABLE.length - 1)];
 	}
 	
 	public static BorstColor getClosestColor(int color) {
@@ -104,7 +106,7 @@ public class BorstUtils {
 		int b_r = (color >> 16) & 0xff;
 		int b_g = (color >>  8) & 0xff;
 		int b_b = (color      ) & 0xff;
-		for(int i = 0, len = COLORS.length; i < len; i++) {
+		for (int i = 0, len = COLORS.length; i < len; i++) {
 			BorstColor a = COLORS[i];
 			// Weighted
 			double rd = (a.r - b_r);
@@ -112,7 +114,7 @@ public class BorstUtils {
 			double bd = (a.b - b_b);
 			double diff = rd * rd + gd * gd + bd * bd;
 			
-			if(i == 0 || current_diff > diff) {
+			if (i == 0 || current_diff > diff) {
 				current_diff = diff;
 				result = i;
 			}
@@ -130,9 +132,9 @@ public class BorstUtils {
 		int current_diff = 65535;
 		int result = 0;
 		
-		for(int i = 0, len = ALPHAS.length; i < len; i++) {
+		for (int i = 0, len = ALPHAS.length; i < len; i++) {
 			int diff = Math.abs(ALPHAS[i] - alpha);
-			if(current_diff > diff) {
+			if (current_diff > diff) {
 				current_diff = diff;
 				result = i;
 			}
@@ -144,9 +146,9 @@ public class BorstUtils {
 	private static int getClosestSizeIndex0(int size) {
 		int current_diff = 65535;
 		int result = 0;
-		for(int i = 0, len = SIZES.length; i < len; i++) {
+		for (int i = 0, len = SIZES.length; i < len; i++) {
 			int diff = Math.abs(size - SIZES[i]);
-			if(current_diff > diff) {
+			if (current_diff > diff) {
 				current_diff = diff;
 				result = i;
 			}
@@ -157,15 +159,16 @@ public class BorstUtils {
 	
 	static {
 		ALPHA_INDEX_LOOKUP_TABLE = new int[256];
-		for(int i = 0; i < 256; i++) ALPHA_INDEX_LOOKUP_TABLE[i] = getClosestAlphaIndex0(i);
+		for (int i = 0; i < 256; i++) ALPHA_INDEX_LOOKUP_TABLE[i] = getClosestAlphaIndex0(i);
 		
 		ALPHA_VALUE_LOOKUP_TABLE = new int[256];
-		for(int i = 0; i < 256; i++) ALPHA_VALUE_LOOKUP_TABLE[i] = ALPHAS[getClosestAlphaIndex0(i)];
+		for (int i = 0; i < 256; i++) ALPHA_VALUE_LOOKUP_TABLE[i] = ALPHAS[getClosestAlphaIndex0(i)];
 		
-		SIZE_INDEX_LOOKUP_TABLE = new int[14];
-		for(int i = 0; i < 14; i++) SIZE_INDEX_LOOKUP_TABLE[i] = getClosestSizeIndex0(i);
+		int maxSize = IntStream.of(SIZES).max().orElseThrow();
+		SIZE_INDEX_LOOKUP_TABLE = new int[maxSize + 1];
+		for (int i = 0; i <= maxSize; i++) SIZE_INDEX_LOOKUP_TABLE[i] = getClosestSizeIndex0(i);
 		
-		SIZE_VALUE_LOOKUP_TABLE = new int[14];
-		for(int i = 0; i < 14; i++) SIZE_VALUE_LOOKUP_TABLE[i] = SIZES[getClosestSizeIndex0(i)];
+		SIZE_VALUE_LOOKUP_TABLE = new int[maxSize + 1];
+		for (int i = 0; i <= maxSize; i++) SIZE_VALUE_LOOKUP_TABLE[i] = SIZES[getClosestSizeIndex0(i)];
 	}
 }

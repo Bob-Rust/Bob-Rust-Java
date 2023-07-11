@@ -51,9 +51,9 @@ public class BobRustEditor extends RustSettingsImpl {
 	}
 	
 	public File openImageFileChooser(JDialog dialog) {
-		File file = fileChooser.open(dialog, filterImages, "Open Image", getEditorImageDirectory());
-		if(file != null) {
-			setEditorImageDirectory(file.getParentFile().getAbsolutePath());
+		File file = fileChooser.open(dialog, filterImages, "Open Image", EditorImageDirectory.get());
+		if (file != null) {
+			EditorImageDirectory.set(file.getParentFile().getAbsolutePath());
 			return file;
 		}
 		
@@ -70,13 +70,13 @@ public class BobRustEditor extends RustSettingsImpl {
 	
 	@Override
 	protected void postSetProperty() {
-		if(overlayDialog != null) {
+		if (overlayDialog != null) {
 			overlayDialog.updateEditor();
 		}
 	}
 	
 	protected Color getSettingsBackgroundCalculated() {
-		Color bgColor = getSettingsBackground();
-		return bgColor == null ? getSettingsSign().getAverageColor():bgColor;
+		Color bgColor = SettingsBackground.get();
+		return bgColor == null ? SettingsSign.get().getAverageColor() : bgColor;
 	}
 }

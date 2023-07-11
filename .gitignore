@@ -28,3 +28,5 @@ bin/
 # project
 logs/
 bobrust.properties
+.project
+.classpath

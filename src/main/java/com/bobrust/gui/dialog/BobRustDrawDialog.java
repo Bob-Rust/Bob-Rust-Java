@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 
+import com.bobrust.util.RustConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -85,7 +86,7 @@ public class BobRustDrawDialog {
 		maxShapesField.addActionListener((event) -> {
 			int value = maxShapesField.getNumberValue();
 			shapesSlider.setValue(value);
-			overlay.setEstimatedGenerationLabel(value, gui.getSettingsMaxShapes());
+			overlay.setEstimatedGenerationLabel(value, gui.SettingsMaxShapes.get());
 			overlay.setRenderPreviewShapes(value);
 			overlay.repaint();
 		});
@@ -102,7 +103,7 @@ public class BobRustDrawDialog {
 		shapesSlider.addChangeListener((event) -> {
 			int value = shapesSlider.getValue();
 			maxShapesField.setText(Integer.toString(value));
-			overlay.setEstimatedGenerationLabel(value, gui.getSettingsMaxShapes());
+			overlay.setEstimatedGenerationLabel(value, gui.SettingsMaxShapes.get());
 			overlay.setRenderPreviewShapes(value);
 			overlay.repaint();
 		});
@@ -122,7 +123,7 @@ public class BobRustDrawDialog {
 		panel_1.setLayout(new BoxLayout(panel_1, BoxLayout.X_AXIS));
 		
 		Dimension buttonSize2 = new Dimension(60, 20);
-		clickIntervalField = new JIntegerField(gui.getSettingsClickInterval());
+		clickIntervalField = new JIntegerField(gui.SettingsClickInterval.get());
 		clickIntervalField.setPreferredSize(buttonSize2);
 		clickIntervalField.setMaximumSize(buttonSize2);
 		clickIntervalField.setMinimumSize(buttonSize2);
@@ -131,8 +132,8 @@ public class BobRustDrawDialog {
 		clickIntervalField.setMaximum(60);
 		clickIntervalField.setAlignmentX(0.0f);
 		clickIntervalField.addActionListener((event) -> {
-			gui.setSettingsClickInterval(clickIntervalField.getNumberValue());
-			overlay.setEstimatedGenerationLabel(maxShapesField.getNumberValue(), gui.getSettingsMaxShapes());
+			gui.SettingsClickInterval.set(clickIntervalField.getNumberValue());
+			overlay.setEstimatedGenerationLabel(maxShapesField.getNumberValue(), gui.SettingsMaxShapes.get());
 			overlay.repaint();
 		});
 		panel_1.add(clickIntervalField);
@@ -148,7 +149,7 @@ public class BobRustDrawDialog {
 			
 			int totalClicks = after + count;
 			
-			int interval = (int)clickIntervalField.getNumberValue();
+			int interval = (int) clickIntervalField.getNumberValue();
 			overlay.setExactGenerationLabel((long)(totalClicks * (1000.0 / (double)interval)));
 			overlay.repaint();
 		});
@@ -160,7 +161,7 @@ public class BobRustDrawDialog {
 		btnSelectColorPalette.addActionListener((event) -> {
 			btnStartDrawing.setEnabled(false);
 			
-			if(findColorPalette()) {
+			if (findColorPalette()) {
 				btnStartDrawing.setEnabled(true);
 			} else {
 				showPaletteWarning();
@@ -183,14 +184,20 @@ public class BobRustDrawDialog {
 					overlay.setHideRegions();
 					
 					int count = maxShapesField.getNumberValue();
-					BlobList list = BorstSorter.sort(RustUtil.convertToList(overlay.getBorstData().getModel(), count));
-					if(!rustPainter.startDrawing(list)) {
-						LOGGER.warn("The user stoped the drawing process early");
+					BlobList list;
+					if (RustConstants.DEBUG_DRAWN_COLORS) {
+						list = rustPainter.generateDebugDrawList();
+					} else {
+						list = BorstSorter.sort(RustUtil.convertToList(overlay.getBorstData().getModel(), count));
 					}
-				} catch(IllegalStateException e) {
-					LOGGER.warn("The user stoped the drawing process early");
+					
+					if (!rustPainter.startDrawing(list)) {
+						LOGGER.warn("The user stopped the drawing process early");
+					}
+				} catch (IllegalStateException e) {
+					LOGGER.warn("The user stopped the drawing process early");
 					LOGGER.warn("Message: {}", e.getMessage());
-				} catch(Exception e) {
+				} catch (Exception e) {
 					LOGGER.throwing(e);
 				} finally {
 					isPainting = false;
@@ -233,18 +240,18 @@ public class BobRustDrawDialog {
 			BufferedImage screenshot = RustWindowUtil.captureScreenshot(overlay.getMonitorConfiguration());
 			Point paletteLocation = rustPalette.findPalette(screenshot);
 			
-			if(paletteLocation != null) {
+			if (paletteLocation != null) {
 				overlay.colorRegion.setLocation(paletteLocation.x, paletteLocation.y + 132 + 100);
 				Point paletteScreenLocation = new Point(screenBounds.x + paletteLocation.x, screenBounds.y + paletteLocation.y);
 				
-				if(rustPalette.analyse(dialog, screenshot, screenBounds, paletteScreenLocation)) {
+				if (rustPalette.analyse(dialog, screenshot, screenBounds, paletteScreenLocation)) {
 					// Found the palette
 					LOGGER.info("Found the color palette ({}, {})", paletteScreenLocation.x, paletteScreenLocation.y);
 					overlay.repaint();
 					return true;
 				}
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
@@ -279,10 +286,10 @@ public class BobRustDrawDialog {
 		rustPalette.reset();
 		
 		try {
-			gui.setSettingsClickInterval(Integer.parseInt(clickIntervalField.getText()));
+			gui.SettingsClickInterval.set(Integer.parseInt(clickIntervalField.getText()));
 		} catch(NumberFormatException e) {
 			LOGGER.warn("Invalid click interval '{}'", clickIntervalField.getText());
-			clickIntervalField.setText(Integer.toString(gui.getSettingsClickInterval()));
+			clickIntervalField.setText(Integer.toString(gui.SettingsClickInterval.get()));
 		}
 	}
 	

@@ -40,7 +40,7 @@ public class BobRustPalette {
 		int x = screen_width - 60;
 		
 		Point palette_marker = null;
-		for(int i = 0; i < screen_height - 45; i++) {
+		for (int i = 0; i < screen_height - 45; i++) {
 			// 15 per box
 			
 			if ((screenshot.getRGB(x, i) & 0xffffff) == 0xc0c0c0
@@ -51,7 +51,7 @@ public class BobRustPalette {
 			}
 		}
 		
-		if(palette_marker != null) {
+		if (palette_marker != null) {
 			int point_x = screen_width - 150;
 			int point_y = palette_marker.y - 15;
 			return new Point(point_x, point_y);
@@ -87,15 +87,15 @@ public class BobRustPalette {
 		BufferedImage image;
 		try {
 			image = bi.getSubimage(rect.x, rect.y, rect.width, rect.height);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 		
 		// 128x240   (4x16 colors)
 		// tiles (16 x 32)
 		// Set<Integer> colors = new LinkedHashSet<>();
-		for(int x = 0; x < 4; x++) {
-			for(int y = 0; y < 16; y++) {
+		for (int x = 0; x < 4; x++) {
+			for (int y = 0; y < 16; y++) {
 				int x_pos = 27 + x * 32;
 				int y_pos = 172 + y * 15;
 				
@@ -121,16 +121,17 @@ public class BobRustPalette {
 			// JOptionPane.showConfirmDialog(dialog, new JLabel(new ImageIcon(test)), "Debug Image Palette", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 		}
 		
-		for(BorstColor color : BorstUtils.COLORS) {
-			if(!colorMap.containsKey(color)) {
+		for (BorstColor color : BorstUtils.COLORS) {
+			if (!colorMap.containsKey(color)) {
 				LOGGER.warn("Could not find all colors in the color palette. Found {}/{} colors", colorMap.size(), BorstUtils.COLORS.length);
 				return false;
 			}
 		}
+		
 		this.colorMapCopy = Map.copyOf(colorMap);
 		
 		int dialogResult = JOptionPane.showConfirmDialog(dialog, new JLabel(new ImageIcon(image)), "Is this the color palette?", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
-		if(dialogResult == JOptionPane.YES_OPTION) {
+		if (dialogResult == JOptionPane.YES_OPTION) {
 			// We got the color palette
 			return true;
 		} else {
@@ -172,7 +173,7 @@ public class BobRustPalette {
 	// Returns a spot were the bot can press without changing any state of the game
 	private Point focusPoint;
 	public Point getFocusPoint() {
-		if(focusPoint == null) {
+		if (focusPoint == null) {
 			focusPoint = point(12, 24);
 		}
 		return focusPoint;
@@ -188,7 +189,7 @@ public class BobRustPalette {
 	
 	private Point saveButton;
 	public Point getSaveButton() {
-		if(saveButton == null) {
+		if (saveButton == null) {
 			saveButton = point(95, 24);
 		}
 		return saveButton;
@@ -223,7 +224,7 @@ public class BobRustPalette {
 	
 	private Point[] opacityButtons;
 	private Point[] getOpacityButtons() {
-		if(opacityButtons == null) {
+		if (opacityButtons == null) {
 			opacityButtons = new Point[] {
 				point( 22, 138),
 				point( 43, 138),
@@ -238,7 +239,7 @@ public class BobRustPalette {
 	
 	private Point[] sizeButtons;
 	private Point[] getSizeButtons() {
-		if(sizeButtons == null) {
+		if (sizeButtons == null) {
 			sizeButtons = new Point[] {
 				point( 25, 62),
 				point( 45, 62),
@@ -253,7 +254,7 @@ public class BobRustPalette {
 	
 	private Point[] shapeButtons;
 	private Point[] getShapeButtons() {
-		if(shapeButtons == null) {
+		if (shapeButtons == null) {
 			shapeButtons = new Point[] {
 				point( 27, 100), // Soft halo
 				point( 59, 100), // Circle

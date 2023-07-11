@@ -36,6 +36,8 @@ public class RustUI {
 		SETTINGS_SIGNTYPE_LABEL("Sign Type"),
 		SETTINGS_SIGNTYPE_BUTTON("Select Sign Type"),
 		SETTINGS_SIGNTYPE_TOOLTIP("The type of sign used when drawing"),
+		SETTINGS_CUSTOMSIGNDIMENSION_LABEL("Sign Size"),
+		SETTINGS_CUSTOMSIGNDIMENSION_TOOLTIP("Custom size of the sign"),
 		SETTINGS_BACKGROUNDCOLOR_LABEL("Background Color"),
 		SETTINGS_BACKGROUNDCOLOR_BUTTON("Background Color"),
 		SETTINGS_BACKGROUNDCOLOR_TOOLTIP("The background color of the canvas"),
@@ -67,6 +69,11 @@ public class RustUI {
 		EDITOR_RESETEDITOR_TOOLTIP("Reset the editor colors"),
 		EDITOR_RESETEDITORDIALOG_TITLE("Warning"),
 		EDITOR_RESETEDITORDIALOG_MESSAGE("Are you sure you want to reset the editor?"),
+		EDITOR_RESETSETTINGS_LABEL("Reset Settings"),
+		EDITOR_RESETSETTINGS_BUTTON("Reset Settings"),
+		EDITOR_RESETSETTINGS_TOOLTIP("Reset all the settings"),
+		EDITOR_RESETSETTINGSDIALOG_TITLE("Warning"),
+		EDITOR_RESETSETTINGSDIALOG_MESSAGE("Are you sure you want to reset all the settings?"),
 
 		EDITOR_COLORPICKER_BUTTON_DEFAULT("Default"),
 		EDITOR_COLORPICKER_BUTTON_CUSTOM("Custom"),
@@ -108,7 +115,8 @@ public class RustUI {
 		
 		private final String id;
 		private final String defaultValue;
-		private Type(String defaultValue) {
+		
+		Type(String defaultValue) {
 			this.id = name().replace('_', '.').toLowerCase();
 			this.defaultValue = defaultValue;
 		}

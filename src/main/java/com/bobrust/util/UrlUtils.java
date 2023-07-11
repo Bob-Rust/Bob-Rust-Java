@@ -15,11 +15,11 @@ public class UrlUtils {
 	
 	private static boolean openUrl(String url) {
 		Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-		if(desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+		if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
 			try {
 				desktop.browse(new URI(url));
 				return true;
-			} catch(Exception e) {
+			} catch (Exception e) {
 				LOGGER.error("Error opening url '{}', {}", url, e);
 				e.printStackTrace();
 			}
@@ -30,11 +30,11 @@ public class UrlUtils {
 	
 	private static boolean openFileDirectory(File directory) {
 		Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-		if(desktop != null && desktop.isSupported(Desktop.Action.OPEN)) {
+		if (desktop != null && desktop.isSupported(Desktop.Action.OPEN)) {
 			try {
 				desktop.open(directory);
 				return true;
-			} catch(Exception e) {
+			} catch (Exception e) {
 				LOGGER.error("Error opening directory '{}', {}", directory, e);
 				e.printStackTrace();
 			}
@@ -58,7 +58,7 @@ public class UrlUtils {
 	public static File getJarPath() {
 		try {
 			return new File(UrlUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-		} catch(URISyntaxException e) {
+		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			return null;
 		}

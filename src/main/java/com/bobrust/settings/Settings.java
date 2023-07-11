@@ -21,7 +21,7 @@ public enum Settings {
 	
 	public final String id;
 	
-	private Settings(String id) {
+	Settings(String id) {
 		this.id = id;
 	}
 }

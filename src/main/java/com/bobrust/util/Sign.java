@@ -30,7 +30,7 @@ public class Sign {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if(!(obj instanceof Sign)) return false;
+		if (!(obj instanceof Sign)) return false;
 		return hashCode() == obj.hashCode();
 	}
 	

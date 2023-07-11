@@ -25,7 +25,7 @@ public class BobRustColorPicker {
 	
 	public BobRustColorPicker(BobRustEditor gui, JDialog parent) {
 		this.gui = gui;
-		this.selectedColor = gui.getSettingsBackground();
+		this.selectedColor = gui.SettingsBackground.get();
 		
 		dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		dialog.setSize(165, 340);
@@ -53,7 +53,7 @@ public class BobRustColorPicker {
 		colorLabel.setBorder(new LineBorder(new Color(255, 255, 255)));
 		colorLabel.setHorizontalTextPosition(SwingConstants.LEFT);
 		colorLabel.setBounds(75, 264, 75, 16);
-		colorLabel.setBackground(gui.getSettingsBackground());
+		colorLabel.setBackground(gui.SettingsBackground.get());
 		panel.add(colorLabel);
 		
 		JLabel lblColorPaletteImage = new JLabel(new ImageIcon(RustConstants.COLOR_PALETTE));
@@ -96,7 +96,7 @@ public class BobRustColorPicker {
 		btnDefaultColor.setBounds(74, 279, 77, 23);
 		btnDefaultColor.addActionListener((event) -> {
 			selectedColor = null;
-			colorLabel.setBackground(gui.getSettingsSign().getAverageColor());
+			colorLabel.setBackground(gui.SettingsSign.get().getAverageColor());
 		});
 		panel.add(btnDefaultColor);
 		
@@ -104,8 +104,8 @@ public class BobRustColorPicker {
 	}
 
 	public Color openColorDialog(Point point) {
-		if(selectedColor == null) {
-			colorLabel.setBackground(gui.getSettingsSign().getAverageColor());
+		if (selectedColor == null) {
+			colorLabel.setBackground(gui.SettingsSign.get().getAverageColor());
 		}
 		
 		dialog.setLocation(point);

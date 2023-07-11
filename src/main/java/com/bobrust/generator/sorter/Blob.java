@@ -3,6 +3,7 @@ package com.bobrust.generator.sorter;
 import java.util.Objects;
 
 import com.bobrust.generator.BorstUtils;
+import com.bobrust.util.RustConstants;
 
 public class Blob {
 	public final int x;
@@ -13,11 +14,17 @@ public class Blob {
 	public final int sizeIndex;
 	private final int hash;
 	
-	protected Blob(int x, int y, int size, int color) {
+	// Debug
+	public final int shapeIndex;
+	public final int alphaIndex;
+	
+	protected Blob(int x, int y, int size, int color, int shapeIndex, int alphaIndex) {
 		this.x = x;
 		this.y = y;
 		this.colorIndex = BorstUtils.getClosestColorIndex(color);
 		this.sizeIndex = BorstUtils.getClosestSizeIndex(size);
+		this.shapeIndex = shapeIndex;
+		this.alphaIndex = alphaIndex;
 		this.size = BorstUtils.SIZES[this.sizeIndex];
 		this.color = BorstUtils.COLORS[this.colorIndex].rgb;
 		this.hash = Objects.hash(this.x, this.y, this.size, this.color, this.colorIndex, this.sizeIndex);
@@ -37,7 +44,11 @@ public class Blob {
 	}
 	
 	public static Blob get(int x, int y, int size, int color) {
-		return new Blob(x, y, size, color);
+		return new Blob(x, y, size, color, -1, -1);
+	}
+	
+	public static Blob get(int x, int y, int size, int color, int shape, int alpha) {
+		return new Blob(x, y, size, color, shape, alpha);
 	}
 	
 	@Override

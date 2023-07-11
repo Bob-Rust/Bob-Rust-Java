@@ -33,7 +33,7 @@ public class BorstGenerator {
 	 * Start the generator
 	 */
 	public synchronized boolean start() {
-		if(thread != null) {
+		if (thread != null) {
 			LOGGER.warn("BorstGenerator has already been started! Restarting generator");
 			try {
 				stop();
@@ -42,7 +42,7 @@ public class BorstGenerator {
 			}
 		}
 		
-		if(settings.DirectImage == null) {
+		if (settings.DirectImage == null) {
 			LOGGER.error("Failed to load borst image");
 			return false;
 		}
@@ -55,7 +55,7 @@ public class BorstGenerator {
 		
 		try {
 			alpha = BorstUtils.ALPHAS[settings.Alpha];
-		} catch(Exception e) {
+		} catch (Exception e) {
 			LOGGER.error("Failed to set alpha value. '%s' is not a valid alpha index.", settings.Alpha);
 			return false;
 		}
@@ -70,36 +70,37 @@ public class BorstGenerator {
 			
 			try {
 				long begin = System.nanoTime();
-				for(int i = 0; i <= length; i++) {
+				for (int i = 0; i <= length; i++) {
 					int n = model.processStep();
 					long end = System.nanoTime();
 					
-					if(isPaused) {
+					if (isPaused) {
 						try {
 							Thread.sleep(Long.MAX_VALUE);
-						} catch(InterruptedException e) {
-							// We unpaused or called stop()
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+							// We un-paused or called stop()
 						} finally {
 							// If we still are paused we called stop()
-							if(isPaused) {
+							if (isPaused) {
 								return;
 							}
 						}
 					}
 					
 					// Return if the current thread is interrupted.
-					if(Thread.currentThread().isInterrupted()) {
+					if (Thread.currentThread().isInterrupted()) {
 						return;
 					}
 					
 					this.index = i;
-					if((i == length) || (i % interval) == 0) {
+					if ((i == length) || (i % interval) == 0) {
 						data.index = i;
 						callback.accept(data);
 						
 						double time = (end - begin) / 1000000000.0;
 						double sps = i / time;
-						if(RustConstants.DEBUG_GENERATOR) {
+						if (RustConstants.DEBUG_GENERATOR) {
 							LOGGER.debug("{}: t={} s, score={}, n={}, s/s={}",
 								"%5d".formatted(i),
 								"%.3f".formatted(time),
@@ -128,7 +129,7 @@ public class BorstGenerator {
 	 * This method will wait until the thread is fully closed.
 	 */
 	public synchronized void stop() throws InterruptedException {
-		if(thread != null) {
+		if (thread != null) {
 			try {
 				// Interrupt the thread and join it to wait for it to close.
 				thread.interrupt();
@@ -146,13 +147,13 @@ public class BorstGenerator {
 	 * @throws InterruptedException
 	 */
 	public synchronized void join() throws InterruptedException {
-		if(thread != null) {
+		if (thread != null) {
 			thread.join();
 		}
 	}
 	
 	public synchronized void resume() {
-		if(thread != null && isPaused) {
+		if (thread != null && isPaused) {
 			isPaused = false;
 			thread.interrupt();
 		}
