@@ -9,14 +9,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 
 import com.bobrust.settings.Settings;
-import com.bobrust.util.RustConstants;
+import com.bobrust.util.data.RustConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.generator.sorter.BorstSorter;
 import com.bobrust.gui.BobRustDesktopOverlay;
-import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.comp.JIntegerField;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;

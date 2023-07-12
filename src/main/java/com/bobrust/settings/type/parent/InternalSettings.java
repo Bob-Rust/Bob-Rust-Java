@@ -17,10 +17,12 @@ import java.util.function.Consumer;
 public class InternalSettings {
 	private static final Logger LOGGER = LogManager.getLogger(RustSettingsImpl.class);
 	private final Map<String, SettingsType<?>> settings;
-	public final Properties properties;
+	private final Map<String, GuiElement> settingsMapping;
+	public final Properties properties; // TODO: Make private
 	private Consumer<SettingsType<?>> listener;
 	
 	public InternalSettings() {
+		settingsMapping = new LinkedHashMap<>();
 		settings = new LinkedHashMap<>();
 		properties = new Properties();
 		
@@ -35,6 +37,11 @@ public class InternalSettings {
 					element = (SettingsType<?>) field.get(null);
 				} catch (Exception e) {
 					throw new RuntimeException("Failed to initialize settings class", e);
+				}
+				
+				GuiElement annotation = field.getAnnotation(GuiElement.class);
+				if (annotation != null) {
+					settingsMapping.put(name, annotation);
 				}
 				
 				element.bind(this, name);
@@ -106,5 +113,13 @@ public class InternalSettings {
 		if (localListener != null) {
 			localListener.accept(null);
 		}
+	}
+	
+	public Map<String, GuiElement> getSettings() {
+		return settingsMapping;
+	}
+	
+	public SettingsType<?> getSetting(String key) {
+		return settings.get(key);
 	}
 }

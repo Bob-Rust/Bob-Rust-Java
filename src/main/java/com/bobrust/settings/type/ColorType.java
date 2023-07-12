@@ -11,7 +11,7 @@ public class ColorType extends SettingsType<Color> {
 	}
 	
 	@Override
-	public void load(String value) {
+	protected void load(String value) {
 		this.value = SettingParser.parseColor(value, defaultValue);
 	}
 	
@@ -28,6 +28,6 @@ public class ColorType extends SettingsType<Color> {
 			return null;
 		}
 		
-		return Integer.toString(local.getRGB() & 0xffffff);
+		return Integer.toString(local.getRGB() & 0xffffff, 16);
 	}
 }

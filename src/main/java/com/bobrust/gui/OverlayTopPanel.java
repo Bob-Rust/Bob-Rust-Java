@@ -8,17 +8,13 @@ import javax.swing.*;
 import com.bobrust.lang.RustTranslator;
 import com.bobrust.settings.Settings;
 
-@SuppressWarnings("serial")
 public class OverlayTopPanel extends JPanel {
 	private static final int ESTIMATE_DELAY_OFFSET = 14;
-	
-	private final BobRustEditor gui;
 	
 	final JLabel generationLabel;
 	final JLabel generationInfo;
 	
-	public OverlayTopPanel(BobRustEditor gui) {
-		this.gui = gui;
+	public OverlayTopPanel() {
 		this.setBounds(150, 5, 10, 10);
 		this.setBackground(new Color(0x7f000000, true));
 		this.setLayout(null);

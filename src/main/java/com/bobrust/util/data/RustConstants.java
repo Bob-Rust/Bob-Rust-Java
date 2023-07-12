@@ -1,24 +1,16 @@
-package com.bobrust.util;
+package com.bobrust.util.data;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.awt.image.BaseMultiResolutionImage;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.imageio.ImageIO;
-
+import com.bobrust.util.ResourceUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public interface RustConstants {
 	Logger LOGGER = LogManager.getLogger(RustConstants.class);
-	
-	// Used by BobRustPainter
-	String CUSTOM_SIGN_NAME = "bobrust.custom";
 	
 	// Used by JRandomPanel
 	boolean ENABLE_RANDOM_BACKGROUND = false;
@@ -29,12 +21,7 @@ public interface RustConstants {
 	// Used by BobRustPainter, BobRustDrawDialog
 	boolean DEBUG_DRAWN_COLORS = false;
 	
-	// Used for image scaling
-	int IMAGE_SCALING_NEAREST = 0;
-	int IMAGE_SCALING_BILINEAR = 1;
-	int IMAGE_SCALING_BICUBIC = 2;
-	
-	// TODO: Approximate these
+	// Average canvas colors. Used as default colors
 	Color CANVAS_AVERAGE = new Color(0xb3aba0); // 0x8f887c);
 	Color WOODEN_AVERAGE = new Color(0xa89383); // 0x6d5033);
 	Color TOWN_POST_AVERAGE = new Color(0x94624d);

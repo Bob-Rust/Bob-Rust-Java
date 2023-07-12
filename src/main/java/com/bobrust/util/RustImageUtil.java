@@ -8,6 +8,7 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import com.bobrust.settings.data.ScalingType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -70,16 +71,16 @@ public class RustImageUtil {
 		return image;
 	}
 	
-	public static BufferedImage getScaledInstance(BufferedImage source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, int scalingType) {
+	public static BufferedImage getScaledInstance(BufferedImage source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, ScalingType scalingType) {
 		Object hint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
 		switch (scalingType) {
-			case RustConstants.IMAGE_SCALING_NEAREST -> {
+			case Nearest -> {
 				hint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
 			}
-			case RustConstants.IMAGE_SCALING_BILINEAR -> {
+			case Bilinear -> {
 				hint = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
 			}
-			case RustConstants.IMAGE_SCALING_BICUBIC -> {
+			case Bicubic -> {
 				hint = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
 			}
 		}

@@ -1,6 +1,6 @@
 package com.bobrust.settings.type.parent;
 
-import com.bobrust.util.RustSigns;
+import com.bobrust.util.data.RustSigns;
 import com.bobrust.util.Sign;
 
 import java.awt.*;
@@ -27,7 +27,6 @@ public class SettingParser {
 			return defaultValue;
 		}
 		
-		// Escaping?
 		return value;
 	}
 	
@@ -74,6 +73,18 @@ public class SettingParser {
 			int height = Integer.parseInt(parts[1]);
 			return new Dimension(width, height);
 		} catch (NumberFormatException ignored) {
+			return defaultValue;
+		}
+	}
+	
+	public static <T extends Enum<T>> T parseEnum(String value, T defaultValue) {
+		if (value == null) {
+			return defaultValue;
+		}
+		
+		try {
+			return Enum.valueOf(defaultValue.getDeclaringClass(), value);
+		} catch (IllegalArgumentException e) {
 			return defaultValue;
 		}
 	}

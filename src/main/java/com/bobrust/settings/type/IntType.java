@@ -26,7 +26,7 @@ public class IntType extends SettingsType<Integer> {
 	}
 	
 	@Override
-	public void load(String value) {
+	protected void load(String value) {
 		int parsedValue = SettingParser.parseInteger(value, defaultValue);
 		if (useMinMax) {
 			this.value = RustUtil.clamp(parsedValue, min, max);
@@ -60,5 +60,17 @@ public class IntType extends SettingsType<Integer> {
 	@Override
 	public String stringValue() {
 		return Integer.toString(get());
+	}
+	
+	public boolean isRange() {
+		return useMinMax;
+	}
+	
+	public int getMin() {
+		return min;
+	}
+	
+	public int getMax() {
+		return max;
 	}
 }

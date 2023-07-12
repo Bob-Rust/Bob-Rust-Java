@@ -3,7 +3,6 @@ package com.bobrust.generator.sorter;
 import java.util.Objects;
 
 import com.bobrust.generator.BorstUtils;
-import com.bobrust.util.RustConstants;
 
 public class Blob {
 	public final int x;

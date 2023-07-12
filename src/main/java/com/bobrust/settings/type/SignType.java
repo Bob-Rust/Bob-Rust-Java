@@ -10,7 +10,7 @@ public class SignType extends SettingsType<Sign> {
 	}
 	
 	@Override
-	public void load(String value) {
+	protected void load(String value) {
 		this.value = SettingParser.parseSign(value, defaultValue);
 	}
 	
@@ -27,6 +27,6 @@ public class SignType extends SettingsType<Sign> {
 			return null;
 		}
 		
-		return local.name;
+		return local.getName();
 	}
 }

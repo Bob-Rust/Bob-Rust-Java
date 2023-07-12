@@ -1,23 +1,23 @@
 package com.bobrust.gui.dialog;
 
-import java.awt.*;
-import java.awt.Dialog.ModalityType;
-import java.io.File;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-
-import com.bobrust.gui.comp.JDimensionField;
+import com.bobrust.lang.RustUI;
+import com.bobrust.lang.RustUI.Type;
 import com.bobrust.settings.Settings;
+import com.bobrust.settings.type.*;
+import com.bobrust.settings.type.parent.GuiElement;
+import com.bobrust.settings.type.parent.SettingsType;
+import com.bobrust.util.UrlUtils;
+import com.bobrust.util.data.RustConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.bobrust.gui.BobRustEditor;
-import com.bobrust.gui.comp.JIntegerField;
-import com.bobrust.lang.RustUI;
-import com.bobrust.lang.RustUI.Type;
-import com.bobrust.util.RustConstants;
-import com.bobrust.util.UrlUtils;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.Dialog.ModalityType;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 	private static final Logger LOGGER = LogManager.getLogger(BobRustSettingsDialog.class);
@@ -28,26 +28,14 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 	// TabbedPane
 	final JTabbedPane tabbedPane;
 	
-	// Generator
-	final JButton btnBackgroundColor;
-	final JButton btnSignType;
-	final JDimensionField customSignDimension;
-	final JComboBox<Integer> alphaCombobox;
-	final JComboBox<String> scalingCombobox;
-	final JIntegerField maxShapesField;
-	final JIntegerField clickIntervalField;
-	final JIntegerField autosaveIntervalField;
-	final JComboBox<String> useIccConversionCombobox;
-	
 	// Editor
-	final JButton btnBorderColor;
-	final JButton btnToolbarColor;
-	final JButton btnLabelColor;
-	final JIntegerField callbackIntervalField;
 	final JButton btnResetEditor;
 	// final JButton btnResetSettings;
 	
-	public BobRustSettingsDialog(BobRustEditor gui, JDialog parent) {
+	private final java.util.List<IUpdateValue> applyEdits;
+	
+	public BobRustSettingsDialog(JDialog parent) {
+		this.applyEdits = new ArrayList<>();
 		this.dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SETTINGSDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		this.dialog.setIconImage(RustConstants.DIALOG_ICON);
 		this.dialog.setSize(300, 360);
@@ -62,192 +50,231 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 		tabbedPane.setFocusable(false);
 		dialog.getContentPane().add(tabbedPane);
 		
-		{
-			TabbedPane generatorPane = createPane(tabbedPane, Type.EDITOR_TAB_GENERATOR);
-			btnBackgroundColor = addButtonField(
-				generatorPane,
-				Type.SETTINGS_BACKGROUNDCOLOR_LABEL,
-				Type.SETTINGS_BACKGROUNDCOLOR_TOOLTIP,
-				Type.SETTINGS_BACKGROUNDCOLOR_BUTTON,
+		TabbedPane generatorPane = createPane(tabbedPane, Type.EDITOR_TAB_GENERATOR);
+		TabbedPane editorPane = createPane(tabbedPane, Type.EDITOR_TAB_EDITOR);
+		TabbedPane debugPane = createPane(tabbedPane, Type.EDITOR_TAB_DEBUGGING);
+		
+		var settings = Settings.InternalSettings.getSettings();
+		
+		// Automatically generate settings
+		for (var key : settings.keySet()) {
+			GuiElement annotation = settings.get(key);
+			SettingsType<?> setting = Settings.InternalSettings.getSetting(key);
+			
+			TabbedPane pane = switch (annotation.tab()) {
+				case Generator -> generatorPane;
+				case Editor -> editorPane;
+				case Debugging -> debugPane;
+			};
+			
+			IUpdateValue runnable = addSetting(annotation, setting, pane);
+			if (runnable != null) {
+				applyEdits.add(runnable);
+			}
+		}
+		
+		// Custom buttons
+		btnResetEditor = addButtonField(
+			editorPane,
+			Type.EDITOR_RESETEDITOR_LABEL,
+			Type.EDITOR_RESETEDITOR_TOOLTIP,
+			Type.EDITOR_RESETEDITOR_BUTTON,
+			e -> {
+				int dialogResult = JOptionPane.showConfirmDialog(dialog,
+					RustUI.getString(Type.EDITOR_RESETEDITORDIALOG_MESSAGE),
+					RustUI.getString(Type.EDITOR_RESETEDITORDIALOG_TITLE),
+					JOptionPane.YES_NO_OPTION
+				);
+				if (dialogResult == JOptionPane.YES_OPTION) {
+					Settings.EditorBorderColor.set(null);
+					Settings.EditorToolbarColor.set(null);
+					Settings.EditorLabelColor.set(null);
+					
+					// Update fields
+					updateComponentValues();
+				}
+			}
+		);
+		
+		/*
+		btnResetSettings = addButtonField(
+			editorPane,
+			Type.EDITOR_RESETSETTINGS_LABEL,
+			Type.EDITOR_RESETSETTINGS_TOOLTIP,
+			Type.EDITOR_RESETSETTINGS_BUTTON,
+			e -> {
+				int dialogResult = JOptionPane.showConfirmDialog(dialog,
+					RustUI.getString(Type.EDITOR_RESETSETTINGSDIALOG_MESSAGE),
+					RustUI.getString(Type.EDITOR_RESETSETTINGSDIALOG_TITLE),
+					JOptionPane.YES_NO_OPTION
+				);
+				if (dialogResult == JOptionPane.YES_OPTION) {
+					gui.InternalSettings.reset();
+				}
+			}
+		);
+		*/
+		
+		addButtonField(debugPane, Type.DEBUG_OPENCONFIGDIRECTORY_LABEL, null, Type.DEBUG_OPENCONFIGDIRECTORY_BUTTON, e -> {
+			UrlUtils.openDirectory(new File("").getAbsoluteFile());
+		});
+	}
+	
+	private IUpdateValue addSetting(GuiElement annotation, SettingsType<?> settingType, TabbedPane pane) {
+		// Custom options are always buttons
+		if (annotation.type() == GuiElement.Type.Custom) {
+			if (annotation.button() == Type.NONE) {
+				throw new RuntimeException("Setting '" + settingType.getId() + "' with 'button' NONE locale");
+			}
+			
+			addButtonField(
+				pane,
+				annotation.label(),
+				annotation.tooltip(),
+				annotation.button(),
+				e -> customAction(settingType)
+			);
+			return null;
+		}
+		
+		// Generated options
+		if (settingType instanceof ColorType setting) {
+			if (annotation.button() == Type.NONE) {
+				throw new RuntimeException("Setting '" + settingType.getId() + "' with 'button' NONE locale");
+			}
+			
+			addButtonField(
+				pane,
+				annotation.label(),
+				annotation.tooltip(),
+				annotation.button(),
 				e -> {
-					Point dialogLocation = new Point(dialog.getLocationOnScreen());
-					dialogLocation.x += 130;
-					colorPicker.openColorDialog(dialogLocation);
+					Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), setting.get(), false);
+					if (color != null) {
+						setting.set(color);
+					}
 				}
 			);
+		} else if (settingType instanceof EnumType<?> setting) {
+			Enum<?>[] values = setting.getEnumValues();
+			var element = addComboBoxField(
+				pane,
+				setting.getIndex(),
+				values,
+				annotation.label(),
+				annotation.tooltip()
+			);
 			
-			btnSignType = addButtonField(
-				generatorPane,
-				Type.SETTINGS_SIGNTYPE_LABEL,
-				Type.SETTINGS_SIGNTYPE_TOOLTIP,
-				Type.SETTINGS_SIGNTYPE_BUTTON,
-				e -> {
-					Point dialogLocation = new Point(dialog.getLocationOnScreen());
-					dialogLocation.x += 130;
-					signPicker.openSignDialog(dialogLocation);
-					Settings.SettingsSign.set(signPicker.getSelectedSign());
+			return save -> {
+				if (save) {
+					setting.setAbstract(element.getSelectedItem());
+				} else {
+					element.setSelectedIndex(setting.getIndex());
 				}
+			};
+		} else if (settingType instanceof IntType setting) {
+			if (annotation.type() == GuiElement.Type.Combo) {
+				if (!setting.isRange()) {
+					throw new RuntimeException("Cannot create a combo box from an Int field without range");
+				}
+				
+				Integer[] array = IntStream.rangeClosed(setting.getMin(), setting.getMax()).boxed().toArray(Integer[]::new);
+				var element = addComboBoxField(
+					pane,
+					setting.get() - setting.getMin(),
+					array,
+					annotation.label(),
+					annotation.tooltip()
+				);
+				
+				return save -> {
+					if (save) {
+						setting.set(element.getSelectedIndex() + setting.getMin());
+					} else {
+						element.setSelectedIndex(setting.get() - setting.getMin());
+					}
+				};
+			}
+			
+			var element = addIntegerField(
+				pane,
+				setting.get(),
+				setting.getMin(),
+				setting.getMax(),
+				annotation.label(),
+				annotation.tooltip()
 			);
 			
-			customSignDimension = addDimensionField(
-				generatorPane,
-				Settings.SettingsSignDimension.get(),
-				Settings.SettingsSignDimension.getMin(),
-				Settings.SettingsSignDimension.getMax(),
-				Type.SETTINGS_CUSTOMSIGNDIMENSION_LABEL,
-				Type.SETTINGS_CUSTOMSIGNDIMENSION_TOOLTIP
-			);
-			
-			alphaCombobox = addComboBoxField(
-				generatorPane,
-				Settings.SettingsAlpha.get(),
-				new Integer[] { 0, 1, 2, 3, 4, 5 },
-				Type.SETTINGS_ALPHAINDEX_LABEL,
-				Type.SETTINGS_ALPHAINDEX_TOOLTIP
-			);
-			
-			scalingCombobox = addComboBoxField(
-				generatorPane,
-				Settings.SettingsScaling.get(),
-				new String[] { "Nearest", "Bilinear", "Bicubic" },
-				Type.SETTINGS_SCALINGTYPE_LABEL,
-				Type.SETTINGS_SCALINGTYPE_TOOLTIP
-			);
-			
-			maxShapesField = addIntegerField(
-				generatorPane,
-				Settings.SettingsMaxShapes.get(),
-				0,
-				99999,
-				Type.SETTINGS_MAXSHAPES_LABEL,
-				Type.SETTINGS_MAXSHAPES_TOOLTIP
-			);
-			
-			clickIntervalField = addIntegerField(
-				generatorPane,
-				Settings.SettingsClickInterval.get(),
-				1,
-				60,
-				Type.SETTINGS_CLICKINTERVAL_LABEL,
-				Type.SETTINGS_CLICKINTERVAL_TOOLTIP
-			);
-			
-			autosaveIntervalField = addIntegerField(
-				generatorPane,
-				Settings.SettingsAutosaveInterval.get(),
-				1,
-				4000,
-				Type.SETTINGS_AUTOSAVEINTERVAL_LABEL,
-				Type.SETTINGS_AUTOSAVEINTERVAL_TOOLTIP
-			);
-			
-			useIccConversionCombobox = addComboBoxField(
-				generatorPane,
-				Settings.SettingsUseICCConversion.get() ? 1 : 0,
+			return save -> {
+				if (save) {
+					try {
+						setting.set(element.getNumberValue());
+					} catch (NumberFormatException e) {
+						setting.setDefault();
+					}
+				} else {
+					element.setValue(setting.get());
+				}
+			};
+		} else if (settingType instanceof BoolType setting) {
+			var element = addComboBoxField(
+				pane,
+				setting.get() ? 1 : 0,
 				new String[] { "Off", "On" },
-				Type.SETTINGS_USEICCCONVERSION_LABEL,
-				Type.SETTINGS_USEICCCONVERSION_TOOLTIP
+				annotation.label(),
+				annotation.tooltip()
 			);
+			
+			return save -> {
+				if (save) {
+					setting.set(element.getSelectedIndex() == 1);
+				} else {
+					element.setSelectedIndex(setting.get() ? 1 : 0);
+				}
+			};
+		} else if (settingType instanceof SizeType setting) {
+			if (!setting.isRange()) {
+				throw new RuntimeException("Cannot create a dimension box without range");
+			}
+			
+			var element = addDimensionField(
+				pane,
+				setting.get(),
+				setting.getMin(),
+				setting.getMax(),
+				annotation.label(),
+				annotation.tooltip()
+			);
+			
+			return save -> {
+				if (save) {
+					setting.set(element.getDimensionValue());
+				} else {
+					element.setValue(element.getDimensionValue());
+				}
+			};
+		} else {
+			throw new RuntimeException("Failed to generate for setting " + settingType.getId());
 		}
 		
-		{
-			TabbedPane editorPane = createPane(tabbedPane, Type.EDITOR_TAB_EDITOR);
-			btnBorderColor = addButtonField(
-				editorPane,
-				Type.EDITOR_BORDERCOLOR_LABEL,
-				Type.EDITOR_BORDERCOLOR_TOOLTIP,
-				Type.EDITOR_BORDERCOLOR_BUTTON,
-				e -> {
-					Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), Settings.EditorBorderColor.get(), false);
-					if (color != null) {
-						Settings.EditorBorderColor.set(color);
-					}
-				}
-			);
-			
-			btnToolbarColor = addButtonField(
-				editorPane,
-				Type.EDITOR_TOOLBARCOLOR_LABEL,
-				Type.EDITOR_TOOLBARCOLOR_TOOLTIP,
-				Type.EDITOR_TOOLBARCOLOR_BUTTON,
-				e -> {
-					Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), Settings.EditorToolbarColor.get(), false);
-					if (color != null) {
-						Settings.EditorToolbarColor.set(color);
-					}
-				}
-			);
-			
-			btnLabelColor = addButtonField(
-				editorPane,
-				Type.EDITOR_LABELCOLOR_LABEL,
-				Type.EDITOR_LABELCOLOR_TOOLTIP,
-				Type.EDITOR_LABELCOLOR_BUTTON,
-				e -> {
-					Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), Settings.EditorLabelColor.get(), false);
-					if (color != null) {
-						Settings.EditorLabelColor.set(color);
-					}
-				}
-			);
-			
-			callbackIntervalField = addIntegerField(
-				editorPane,
-				Settings.EditorCallbackInterval.get(),
-				0,
-				99999,
-				Type.EDITOR_CALLBACKINTERVAL_LABEL,
-				Type.EDITOR_CALLBACKINTERVAL_TOOLTIP
-			);
-			
-			btnResetEditor = addButtonField(
-				editorPane,
-				Type.EDITOR_RESETEDITOR_LABEL,
-				Type.EDITOR_RESETEDITOR_TOOLTIP,
-				Type.EDITOR_RESETEDITOR_BUTTON,
-				e -> {
-					int dialogResult = JOptionPane.showConfirmDialog(dialog,
-						RustUI.getString(Type.EDITOR_RESETEDITORDIALOG_MESSAGE),
-						RustUI.getString(Type.EDITOR_RESETEDITORDIALOG_TITLE),
-						JOptionPane.YES_NO_OPTION
-					);
-					if (dialogResult == JOptionPane.YES_OPTION) {
-						Settings.EditorBorderColor.set(null);
-						Settings.EditorToolbarColor.set(null);
-						Settings.EditorLabelColor.set(null);
-						Settings.EditorCallbackInterval.set(null);
-						
-						// Update fields
-						callbackIntervalField.setText(Integer.toString(Settings.EditorCallbackInterval.get()));
-					}
-				}
-			);
-			
-			/*
-			btnResetSettings = addButtonField(
-				editorPane,
-				Type.EDITOR_RESETSETTINGS_LABEL,
-				Type.EDITOR_RESETSETTINGS_TOOLTIP,
-				Type.EDITOR_RESETSETTINGS_BUTTON,
-				e -> {
-					int dialogResult = JOptionPane.showConfirmDialog(dialog,
-						RustUI.getString(Type.EDITOR_RESETSETTINGSDIALOG_MESSAGE),
-						RustUI.getString(Type.EDITOR_RESETSETTINGSDIALOG_TITLE),
-						JOptionPane.YES_NO_OPTION
-					);
-					if (dialogResult == JOptionPane.YES_OPTION) {
-						gui.InternalSettings.reset();
-					}
-				}
-			);
-			*/
-		}
-		
-		{
-			TabbedPane debugPane = createPane(tabbedPane, Type.EDITOR_TAB_DEBUGGING);
-			addButtonField(debugPane, Type.DEBUG_OPENCONFIGDIRECTORY_LABEL, null, Type.DEBUG_OPENCONFIGDIRECTORY_BUTTON, e -> {
-				UrlUtils.openDirectory(new File("").getAbsoluteFile());
-			});
+		return null;
+	}
+	
+	/**
+	 * Custom actions will always be buttons
+	 */
+	private void customAction(SettingsType<?> setting) {
+		if (setting == Settings.SettingsBackground) {
+			Point dialogLocation = new Point(dialog.getLocationOnScreen());
+			dialogLocation.x += 130;
+			Settings.SettingsBackground.set(colorPicker.openColorDialog(dialogLocation));
+		} else if (setting == Settings.SettingsSign) {
+			Point dialogLocation = new Point(dialog.getLocationOnScreen());
+			dialogLocation.x += 130;
+			signPicker.openSignDialog(dialogLocation);
+			Settings.SettingsSign.set(signPicker.getSelectedSign());
+		} else {
+			LOGGER.warn("Custom action for setting '{}' is not defined", setting.getId());
 		}
 	}
 	
@@ -262,67 +289,31 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 		super.updateLanguage();
 	}
 	
+	private void updateComponentValues() {
+		// Update all component values
+		for (IUpdateValue updaters : applyEdits) {
+			updaters.action(false);
+		}
+	}
+	
 	public void openDialog(Point point) {
-		// Update the fields to correctly show the settings.
-		clickIntervalField.setText(Integer.toString(Settings.SettingsClickInterval.get()));
-		callbackIntervalField.setText(Integer.toString(Settings.EditorCallbackInterval.get()));
-		maxShapesField.setText(Integer.toString(Settings.SettingsMaxShapes.get()));
-		autosaveIntervalField.setText(Integer.toString(Settings.SettingsAutosaveInterval.get()));
-		alphaCombobox.setSelectedIndex(Settings.SettingsAlpha.get());
-		scalingCombobox.setSelectedIndex(Settings.SettingsScaling.get());
-		useIccConversionCombobox.setSelectedIndex(Settings.SettingsUseICCConversion.get() ? 1 : 0);
-		customSignDimension.setValue(Settings.SettingsSignDimension.get());
+		updateComponentValues();
 		
 		// Show the dialog.
 		dialog.setLocation(point);
 		dialog.setVisible(true);
 		
-		Settings.SettingsAlpha.set(alphaCombobox.getSelectedIndex());
-		Settings.SettingsScaling.set(scalingCombobox.getSelectedIndex());
-		
-		try {
-			Settings.SettingsMaxShapes.set(maxShapesField.getNumberValue());
-		} catch (NumberFormatException e) {
-			LOGGER.warn("Invalid max shapes count '{}'", maxShapesField.getText());
-			maxShapesField.setText(Integer.toString(Settings.SettingsMaxShapes.get()));
+		// Save all component values
+		for (IUpdateValue updaters : applyEdits) {
+			updaters.action(true);
 		}
-		
-		try {
-			Settings.EditorCallbackInterval.set(callbackIntervalField.getNumberValue());
-		} catch (NumberFormatException e) {
-			LOGGER.warn("Invalid callback interval '{}'", callbackIntervalField.getText());
-			callbackIntervalField.setText(Integer.toString(Settings.EditorCallbackInterval.get()));
-		}
-		
-		try {
-			Settings.SettingsClickInterval.set(clickIntervalField.getNumberValue());
-		} catch (NumberFormatException e) {
-			LOGGER.warn("Invalid click interval '{}'", clickIntervalField.getText());
-			clickIntervalField.setText(Integer.toString(Settings.SettingsClickInterval.get()));
-		}
-		
-		try {
-			Settings.SettingsAutosaveInterval.set(autosaveIntervalField.getNumberValue());
-		} catch (NumberFormatException e) {
-			LOGGER.warn("Invalid autosave interval '{}'", autosaveIntervalField.getText());
-			autosaveIntervalField.setText(Integer.toString(Settings.SettingsAutosaveInterval.get()));
-		}
-		
-		try {
-			Settings.SettingsUseICCConversion.set(useIccConversionCombobox.getSelectedIndex() == 1);
-		} catch(NumberFormatException e) {
-			LOGGER.warn("Invalid icc conversion interval '{}'", useIccConversionCombobox.getSelectedIndex());
-			useIccConversionCombobox.setSelectedIndex(Settings.SettingsUseICCConversion.get() ? 1 : 0);
-		}
-		
-		try {
-			Settings.SettingsSignDimension.set(customSignDimension.getDimensionValue());
-		} catch(NumberFormatException e) {
-			LOGGER.warn("Invalid sign dimension '{}'", customSignDimension.getDimensionValue());
-			customSignDimension.setValue(Settings.SettingsSignDimension.get());
-		}
-		
-		Settings.SettingsSign.set(signPicker.getSelectedSign());
-		Settings.SettingsBackground.set(colorPicker.getSelectedColor());
+	}
+	
+	private interface IUpdateValue {
+		/**
+		 * If {@code true} save the current value to the setting,
+		 * otherwise load the value from the setting
+		 */
+		void action(boolean save);
 	}
 }

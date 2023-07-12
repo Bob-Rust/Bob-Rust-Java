@@ -82,9 +82,4 @@ public class JIntegerField extends JFormattedTextField {
 	public int getNumberValue() throws NumberFormatException {
 		return Integer.parseInt(this.getText());
 	}
-	
-	@Override
-	public String toString() {
-		return ">>> " + formatter.getMinimum() + ", " + formatter.getMaximum();
-	}
 }

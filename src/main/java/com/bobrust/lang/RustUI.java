@@ -2,6 +2,8 @@ package com.bobrust.lang;
 
 public class RustUI {
 	public enum Type {
+		NONE(""),
+		
 		WARNING_CONFIGPERMISSION_TITLE("Important"),
 		WARNING_CONFIGPERMISSION_MESSAGE(
 			"This tool does not have the permission to update the config file\n" +
@@ -36,7 +38,7 @@ public class RustUI {
 		SETTINGS_SIGNTYPE_LABEL("Sign Type"),
 		SETTINGS_SIGNTYPE_BUTTON("Select Sign Type"),
 		SETTINGS_SIGNTYPE_TOOLTIP("The type of sign used when drawing"),
-		SETTINGS_CUSTOMSIGNDIMENSION_LABEL("Sign Size"),
+		SETTINGS_CUSTOMSIGNDIMENSION_LABEL("Custom Sign Size"),
 		SETTINGS_CUSTOMSIGNDIMENSION_TOOLTIP("Custom size of the sign"),
 		SETTINGS_BACKGROUNDCOLOR_LABEL("Background Color"),
 		SETTINGS_BACKGROUNDCOLOR_BUTTON("Background Color"),

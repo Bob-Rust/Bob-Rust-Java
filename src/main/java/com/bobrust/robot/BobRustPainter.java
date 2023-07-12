@@ -5,7 +5,7 @@ import java.awt.event.InputEvent;
 import java.util.List;
 
 import com.bobrust.settings.Settings;
-import com.bobrust.util.RustConstants;
+import com.bobrust.util.data.RustConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -159,15 +159,8 @@ public class BobRustPainter {
 		guiUpdateThread.setDaemon(true);
 		guiUpdateThread.start();
 		
-		int signWidth = signType.width;
-		int signHeight = signType.height;
-		
-		// Apply custom sign dimension
-		if (signType.name.equals(RustConstants.CUSTOM_SIGN_NAME)) {
-			var local = Settings.SettingsSignDimension.get();
-			signWidth = local.width;
-			signHeight = local.height;
-		}
+		int signWidth = signType.getWidth();
+		int signHeight = signType.getHeight();
 		
 		try {
 			// Last fields
@@ -199,8 +192,8 @@ public class BobRustPainter {
 				
 				// Change the color
 				if (lastColor != blob.colorIndex) {
-					if (!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 20, autoDelay)) {
-						LOGGER.warn("Potentially failed to change color! Will still keep try drawing");
+					if (!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 5, autoDelay)) {
+						// LOGGER.warn("Potentially failed to change color! Will still keep try drawing");
 					}
 					
 					lastColor = blob.colorIndex;

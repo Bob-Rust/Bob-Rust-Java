@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 
 import com.bobrust.gui.BobRustEditor;
 import com.bobrust.settings.Settings;
-import com.bobrust.util.RustConstants;
+import com.bobrust.util.data.RustConstants;
 
 @SuppressWarnings("serial")
 public class JRandomPanel extends JPanel {

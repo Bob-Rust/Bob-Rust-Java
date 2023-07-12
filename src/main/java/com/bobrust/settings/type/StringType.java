@@ -9,7 +9,7 @@ public class StringType extends SettingsType<String> {
 	}
 	
 	@Override
-	public void load(String value) {
+	protected void load(String value) {
 		this.value = SettingParser.parseString(value, defaultValue);
 	}
 	

@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.dialog.RustFileDialog;
-import com.bobrust.util.RustConstants;
+import com.bobrust.util.data.RustConstants;
 
 public class Main {
 	private static final Logger LOGGER = LogManager.getLogger(Main.class);
@@ -43,6 +43,7 @@ public class Main {
 		//         * Current image
 		//         * Options
 		
+		// TODO: Remake the project gui structure. This is really messy
 		new BobRustEditor();
 	}
 }

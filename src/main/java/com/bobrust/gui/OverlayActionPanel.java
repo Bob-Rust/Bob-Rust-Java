@@ -16,7 +16,6 @@ import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
 import com.bobrust.util.UrlUtils;
 
-@SuppressWarnings("serial")
 public class OverlayActionPanel extends JRandomPanel {
 	private final BobRustDesktopOverlay desktopOverlay;
 	private final JDialog dialog;

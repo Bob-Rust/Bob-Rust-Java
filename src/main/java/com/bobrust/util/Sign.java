@@ -3,14 +3,10 @@ package com.bobrust.util;
 import java.awt.Color;
 
 public class Sign {
-	public final String name;
-	public final int width;
-	public final int height;
-	public final Color averageColor;
-	
-	public Sign(String name, int width, int height) {
-		this(name, width, height, null);
-	}
+	private final String name;
+	private final int width;
+	private final int height;
+	private final Color averageColor;
 	
 	public Sign(String name, int width, int height, Color averageColor) {
 		this.name = name;
@@ -19,19 +15,20 @@ public class Sign {
 		this.averageColor = averageColor;
 	}
 	
+	public String getName() {
+		return name;
+	}
+	
 	public Color getAverageColor() {
 		return averageColor;
 	}
 	
-	@Override
-	public int hashCode() {
-		return name.hashCode();
+	public int getWidth() {
+		return width;
 	}
 	
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof Sign)) return false;
-		return hashCode() == obj.hashCode();
+	public int getHeight() {
+		return height;
 	}
 	
 	@Override

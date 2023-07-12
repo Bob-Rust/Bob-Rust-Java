@@ -33,6 +33,7 @@ public abstract class AbstractBobRustSettingsDialog {
 		if (tooltip != null) {
 			lblLabel.setToolTipText(RustUI.getString(tooltip));
 		}
+		
 		GridBagConstraints gbc_label = new GridBagConstraints();
 		gbc_label.anchor = GridBagConstraints.WEST;
 		gbc_label.insets = new Insets(0, 0, 5, 5);

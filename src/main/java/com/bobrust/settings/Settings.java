@@ -2,24 +2,76 @@ package com.bobrust.settings;
 
 import java.awt.*;
 
+import com.bobrust.lang.RustUI;
+import com.bobrust.settings.data.ScalingType;
 import com.bobrust.settings.type.*;
 import com.bobrust.settings.type.parent.InternalSettings;
-import com.bobrust.util.RustConstants;
-import com.bobrust.util.RustSigns;
+import com.bobrust.settings.type.parent.GuiElement;
+import com.bobrust.util.data.RustSigns;
 
 /**
  * Settings interface of the app.
  * 
  * All variables are static and can be accessed
+ * 
+ * By using the {@code @GuiElement} annotation you can easily add
+ * new settings to the app gui. These will be added automatically
+ * 
+ * @author HardCoded
  */
 public interface Settings {
-	ColorType  EditorBorderColor = new ColorType(new Color(0xff3333));
-	ColorType  EditorToolbarColor = new ColorType(new Color(0x333333));
-	ColorType  EditorLabelColor = new ColorType(Color.white);
+	// Editor
+	@GuiElement(tab = GuiElement.Tab.Editor,
+		label = RustUI.Type.EDITOR_BORDERCOLOR_LABEL,
+		tooltip = RustUI.Type.EDITOR_BORDERCOLOR_TOOLTIP,
+		button = RustUI.Type.EDITOR_BORDERCOLOR_BUTTON)
+	ColorType EditorBorderColor = new ColorType(new Color(0xff3333));
+	
+	@GuiElement(tab = GuiElement.Tab.Editor,
+		label = RustUI.Type.EDITOR_TOOLBARCOLOR_LABEL,
+		tooltip = RustUI.Type.EDITOR_TOOLBARCOLOR_TOOLTIP,
+		button = RustUI.Type.EDITOR_TOOLBARCOLOR_BUTTON)
+	ColorType EditorToolbarColor = new ColorType(new Color(0x333333));
+	
+	@GuiElement(tab = GuiElement.Tab.Editor,
+		label = RustUI.Type.EDITOR_LABELCOLOR_LABEL,
+		tooltip = RustUI.Type.EDITOR_LABELCOLOR_TOOLTIP,
+		button = RustUI.Type.EDITOR_LABELCOLOR_BUTTON)
+	ColorType EditorLabelColor = new ColorType(Color.white);
+	
+	@GuiElement(tab = GuiElement.Tab.Editor,
+		label = RustUI.Type.EDITOR_CALLBACKINTERVAL_LABEL,
+		tooltip = RustUI.Type.EDITOR_CALLBACKINTERVAL_TOOLTIP)
+	IntType EditorCallbackInterval = new IntType(20, 1, 99999);
+	
 	StringType EditorImageDirectory = new StringType(System.getProperty("user.home"));
-	StringType EditorPresetDirectory = new StringType(System.getProperty("user.home"));
-	IntType    EditorCallbackInterval = new IntType(20, 1, 99999);
-	IntType    SettingsAlpha = new IntType(2, 0, 5);
+	
+	
+	// Generator
+	@GuiElement(tab = GuiElement.Tab.Generator, type = GuiElement.Type.Custom,
+		label = RustUI.Type.SETTINGS_BACKGROUNDCOLOR_LABEL,
+		tooltip = RustUI.Type.SETTINGS_BACKGROUNDCOLOR_TOOLTIP,
+		button = RustUI.Type.SETTINGS_BACKGROUNDCOLOR_BUTTON)
+	ColorType SettingsBackground = new ColorType(null);
+	
+	@GuiElement(tab = GuiElement.Tab.Generator, type = GuiElement.Type.Custom,
+		label = RustUI.Type.SETTINGS_SIGNTYPE_LABEL,
+		tooltip = RustUI.Type.SETTINGS_SIGNTYPE_TOOLTIP,
+		button = RustUI.Type.SETTINGS_SIGNTYPE_BUTTON)
+	SignType SettingsSign = new SignType(RustSigns.FIRST);
+	
+	@GuiElement(tab = GuiElement.Tab.Generator,
+		label = RustUI.Type.SETTINGS_CUSTOMSIGNDIMENSION_LABEL,
+		tooltip = RustUI.Type.SETTINGS_CUSTOMSIGNDIMENSION_TOOLTIP)
+	SizeType SettingsSignDimension = new SizeType(
+		new Dimension(1, 1),
+		new Dimension(1, 1),
+		new Dimension(9999, 9999));
+	
+	@GuiElement(tab = GuiElement.Tab.Generator, type = GuiElement.Type.Combo,
+		label = RustUI.Type.SETTINGS_ALPHAINDEX_LABEL,
+		tooltip = RustUI.Type.SETTINGS_ALPHAINDEX_TOOLTIP)
+	IntType SettingsAlpha = new IntType(2, 0, 5);
 	
 	/**
 	 * Returns:
@@ -29,18 +81,40 @@ public interface Settings {
 	 * 2: Bicubic
 	 * </pre>
 	 */
-	IntType    SettingsScaling = new IntType(RustConstants.IMAGE_SCALING_NEAREST, 0, 2);
-	IntType    SettingsMaxShapes = new IntType(99999, 0, 99999);
-	SignType   SettingsSign = new SignType(RustSigns.FIRST);
-	SizeType   SettingsSignDimension = new SizeType(
-		new Dimension(1, 1),
-		new Dimension(1, 1),
-		new Dimension(9999, 9999));
-	ColorType  SettingsBackground = new ColorType(null);
-	IntType    SettingsClickInterval = new IntType(30, 1, 99999);
-	IntType    SettingsAutosaveInterval = new IntType(1000, 1, 99999);
-	BoolType   SettingsUseICCConversion = new BoolType(true);
+	@GuiElement(tab = GuiElement.Tab.Generator,
+		label = RustUI.Type.SETTINGS_SCALINGTYPE_LABEL,
+		tooltip = RustUI.Type.SETTINGS_SCALINGTYPE_TOOLTIP)
+	EnumType<ScalingType> SettingsScaling = new EnumType<>(ScalingType.Nearest);
+	
+	@GuiElement(tab = GuiElement.Tab.Generator,
+		label = RustUI.Type.SETTINGS_MAXSHAPES_LABEL,
+		tooltip = RustUI.Type.SETTINGS_MAXSHAPES_TOOLTIP)
+	IntType SettingsMaxShapes = new IntType(99999, 0, 99999);
+	
+	@GuiElement(tab = GuiElement.Tab.Generator,
+		label = RustUI.Type.SETTINGS_CLICKINTERVAL_LABEL,
+		tooltip = RustUI.Type.SETTINGS_CLICKINTERVAL_TOOLTIP)
+	IntType SettingsClickInterval = new IntType(30, 1, 99999);
+	
+	@GuiElement(tab = GuiElement.Tab.Generator,
+		label = RustUI.Type.SETTINGS_AUTOSAVEINTERVAL_LABEL,
+		tooltip = RustUI.Type.SETTINGS_AUTOSAVEINTERVAL_TOOLTIP)
+	IntType SettingsAutosaveInterval = new IntType(1000, 1, 99999);
+	
+	@GuiElement(tab = GuiElement.Tab.Generator,
+		label = RustUI.Type.SETTINGS_USEICCCONVERSION_LABEL,
+		tooltip = RustUI.Type.SETTINGS_USEICCCONVERSION_TOOLTIP)
+	BoolType SettingsUseICCConversion = new BoolType(true);
 	
 	// Used for internal save state
 	InternalSettings InternalSettings = new InternalSettings();
+	
+	static Color getSettingsBackgroundCalculated() {
+		Color color = SettingsBackground.get();
+		if (color == null) {
+			return SettingsSign.get().getAverageColor();
+		}
+		
+		return color;
+	}
 }

@@ -12,6 +12,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
+import com.bobrust.gui.dialog.BobRustSettingsDialog;
+import com.bobrust.gui.render.BobRustShapeRender;
 import com.bobrust.settings.Settings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,9 +24,8 @@ import com.bobrust.generator.BorstSettings;
 import com.bobrust.generator.Model;
 import com.bobrust.gui.dialog.BobRustDrawDialog;
 import com.bobrust.gui.dialog.BobRustMonitorPicker;
-import com.bobrust.gui.dialog.BobRustSettingsDialog;
 import com.bobrust.robot.BobRustPalette;
-import com.bobrust.util.RustConstants;
+import com.bobrust.util.data.RustConstants;
 import com.bobrust.util.RustImageUtil;
 import com.bobrust.util.Sign;
 
@@ -223,12 +224,12 @@ public class BobRustDesktopOverlay extends JPanel {
 			}
 		});
 		
-		settingsGui = new BobRustSettingsDialog(gui, dialog);
+		settingsGui = new BobRustSettingsDialog(dialog);
 		monitorPicker = new BobRustMonitorPicker(dialog);
 		drawDialog = new BobRustDrawDialog(this, dialog);
 		shapeRender = new BobRustShapeRender(SHAPE_CACHE_INTERVAL);
 		actionBarPanel = new OverlayActionPanel(dialog, gui, this);
-		topBarPanel = new OverlayTopPanel(gui);
+		topBarPanel = new OverlayTopPanel();
 		
 		dialog.addMouseListener(mouseAdapter);
 		dialog.addMouseMotionListener(mouseAdapter);
@@ -339,24 +340,15 @@ public class BobRustDesktopOverlay extends JPanel {
 			
 		if(!rect.isEmpty()) {
 			Sign signType = Settings.SettingsSign.get();
-			Color bgColor = gui.getSettingsBackgroundCalculated();
-			
-			// TODO: This should be more safer to use
-			int signWidth = signType.width;
-			int signHeight = signType.height;
-			if (signType.name.equals(RustConstants.CUSTOM_SIGN_NAME)) {
-				var size = Settings.SettingsSignDimension.get();
-				signWidth = size.width;
-				signHeight = size.height;
-			}
+			Color bgColor = Settings.getSettingsBackgroundCalculated();
 			
 			BufferedImage scaled;
 			scaled = RustImageUtil.getScaledInstance(
 				image,
 				canvasRegion,
 				imageRegion,
-				signWidth,
-				signHeight,
+				signType.getWidth(),
+				signType.getHeight(),
 				bgColor,
 				Settings.SettingsScaling.get()
 			);

@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.bobrust.util.RustConstants;
+import com.bobrust.util.data.RustConstants;
 
 public class BorstGenerator {
 	private static final Logger LOGGER = LogManager.getLogger(BorstGenerator.class);

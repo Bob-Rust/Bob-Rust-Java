@@ -16,10 +16,9 @@ public abstract class SettingsType<T> {
 	}
 	
 	/**
-	 * Load current value from a string
-	 * @param value
+	 * Deserialize value from a string
 	 */
-	public abstract void load(String value);
+	protected abstract void load(String value);
 	
 	public abstract void set(T value);
 	
@@ -32,4 +31,8 @@ public abstract class SettingsType<T> {
 	}
 	
 	public abstract String stringValue();
+	
+	public String getId() {
+		return id;
+	}
 }

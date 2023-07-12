@@ -14,8 +14,11 @@ import com.bobrust.gui.comp.JStyledToggleButton;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
 import com.bobrust.settings.Settings;
-import com.bobrust.util.RustSigns;
+import com.bobrust.util.data.RustSigns;
 import com.bobrust.util.Sign;
+
+import static com.bobrust.util.data.RustConstants.*;
+import static com.bobrust.util.data.RustConstants.TOWN_POST_AVERAGE;
 
 public class BobRustSignPicker {
 	private final JDialog dialog;
@@ -37,7 +40,7 @@ public class BobRustSignPicker {
 		for (Sign sign : RustSigns.SIGNS.values()) {
 			BufferedImage signImage = null;
 			
-			try (InputStream stream = BobRustSignPicker.class.getResourceAsStream("/signs/%s.png".formatted(sign.name))) {
+			try (InputStream stream = BobRustSignPicker.class.getResourceAsStream("/signs/%s.png".formatted(sign.getName()))) {
 				if (stream != null) {
 					signImage = ImageIO.read(stream);
 				}
@@ -51,8 +54,9 @@ public class BobRustSignPicker {
 			
 			Image scaledImage = signImage.getScaledInstance(imageSize.width, imageSize.height, Image.SCALE_SMOOTH);
 			
-			JStyledToggleButton button = new JStyledToggleButton(fancyName(sign.name));
+			JStyledToggleButton button = new JStyledToggleButton(fancyName(sign.getName()));
 			button.setHoverColor(new Color(240, 240, 240));
+			button.setDefaultColor(new Color(235, 235, 235));
 			button.setIcon(new ImageIcon(scaledImage));
 			button.setVerticalTextPosition(SwingConstants.TOP);
 			button.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -73,7 +77,33 @@ public class BobRustSignPicker {
 	}
 	
 	private String fancyName(String text) {
-		return text.replace("sign.", "").replace('.', ' ');
+		return switch (text) {
+			case "bobrust.custom" -> "Customizable";
+			
+			case "sign.pictureframe.landscape" -> "Landscape Picture Frame";
+			case "sign.pictureframe.portrait" -> "Portrait Picture Frame";
+			case "sign.pictureframe.tall" -> "Tall Picture Frame";
+			case "sign.pictureframe.xl" -> "XL Picture Frame";
+			case "sign.pictureframe.xxl" -> "XLL Picture Frame";
+			
+			case "sign.wooden.small" -> "Small Wooden Sign";
+			case "sign.wooden.medium" -> "Medium Wooden Sign";
+			case "sign.wooden.large" -> "Large Wooden Sign";
+			case "sign.wooden.huge" -> "Huge Wooden Sign";
+			
+			case "sign.hanging.banner.large" -> "Large Banner Hanging";
+			case "sign.pole.banner.large" -> "Large Banner on pole";
+			
+			case "sign.hanging" -> "Hanging Sign";
+			case "sign.hanging.ornate"-> "Ornate Hanging Sign";
+			
+			case "sign.post.single" -> "Single Sign Post";
+			case "sign.post.double" -> "Double Sign Post";
+			case "sign.post.town" -> "One Sided Town Sign";
+			case "sign.post.town.roof" -> "Two Sided Town Sign";
+			
+			default -> text.replace("sign.", "").replace('.', ' ');
+		};
 	}
 
 	public void openSignDialog(Point point) {

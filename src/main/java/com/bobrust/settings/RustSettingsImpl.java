@@ -1,6 +1,5 @@
 package com.bobrust.settings;
 
-import java.awt.*;
 import java.io.*;
 
 import org.apache.logging.log4j.LogManager;
@@ -43,10 +42,8 @@ public abstract class RustSettingsImpl {
 	private void updateBorstSettings() {
 		borstSettings.MaxShapes = Settings.SettingsMaxShapes.get();
 		borstSettings.Alpha = Settings.SettingsAlpha.get();
-		
-		Color color = Settings.SettingsBackground.get();
-		borstSettings.Background = (color == null ? Settings.SettingsSign.get().averageColor : color).getRGB();
-		borstSettings.CallbackInterval = Settings.SettingsClickInterval.get();
+		borstSettings.Background = Settings.getSettingsBackgroundCalculated().getRGB();
+		borstSettings.CallbackInterval = Settings.EditorCallbackInterval.get();
 	}
 	
 	private void saveSettings() {
@@ -66,7 +63,7 @@ public abstract class RustSettingsImpl {
 				);
 			}
 			
-			LOGGER.error("Error saving config file: {}", e);
+			LOGGER.error("Error saving config file", e);
 			LOGGER.throwing(e);
 			e.printStackTrace();
 		}

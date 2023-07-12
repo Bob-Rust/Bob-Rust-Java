@@ -15,8 +15,11 @@ import com.bobrust.generator.BorstUtils;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
 import com.bobrust.settings.Settings;
-import com.bobrust.util.RustConstants;
+import com.bobrust.util.data.RustConstants;
 
+/**
+ * A color picker that looks similar to the color picker in rust
+ */
 public class BobRustColorPicker {
 	private final JDialog dialog;
 	private final JLabel colorLabel;
@@ -103,15 +106,12 @@ public class BobRustColorPicker {
 
 	public Color openColorDialog(Point point) {
 		if (selectedColor == null) {
-			colorLabel.setBackground(Settings.SettingsSign.get().getAverageColor());
+			colorLabel.setBackground(Settings.getSettingsBackgroundCalculated());
 		}
 		
 		dialog.setLocation(point);
 		dialog.setVisible(true);
 		return selectedColor;
 	}
-
-	public Color getSelectedColor() {
-		return selectedColor;
-	}
+	
 }

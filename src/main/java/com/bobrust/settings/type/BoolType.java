@@ -9,7 +9,7 @@ public class BoolType extends SettingsType<Boolean> {
 	}
 	
 	@Override
-	public void load(String value) {
+	protected void load(String value) {
 		this.value = SettingParser.parseBoolean(value, defaultValue);
 	}
 	

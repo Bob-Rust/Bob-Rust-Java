@@ -40,7 +40,7 @@ public class SizeType extends SettingsType<Dimension> {
 	}
 	
 	@Override
-	public void load(String value) {
+	protected void load(String value) {
 		Dimension parsedValue = SettingParser.parseDimension(value, defaultValue);
 		if (useMinMax) {
 			this.value = clampDimension(parsedValue, min, max);
@@ -79,6 +79,10 @@ public class SizeType extends SettingsType<Dimension> {
 		}
 		
 		return local.width + " " + local.height;
+	}
+	
+	public boolean isRange() {
+		return useMinMax;
 	}
 	
 	public Dimension getMin() {

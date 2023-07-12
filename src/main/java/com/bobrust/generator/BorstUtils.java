@@ -4,7 +4,8 @@ public class BorstUtils {
 	// 9, 19, 60, 84, 98, 100
 	// 23, 48, 153, 214, 250, 255
 	// public static final int[] ALPHAS = { 9, 18, 72, 136, 218, 255 };
-	public static final int[] ALPHAS = { 23, 48, 153, 214, 250, 255 };
+	// public static final int[] ALPHAS = { 23, 48, 153, 214, 250, 255 };
+	public static final int[] ALPHAS = { 23, 48, 140, 190, 230, 255 };
 	public static final int[] SIZES = CircleCache.CIRCLE_CACHE_LENGTH; // { 1, 2, 4, 6, 10, 13 };
 	
 	public static final BorstColor[] COLORS = {
