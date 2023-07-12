@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import com.bobrust.gui.comp.JDimensionField;
+import com.bobrust.settings.Settings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +21,6 @@ import com.bobrust.util.UrlUtils;
 
 public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 	private static final Logger LOGGER = LogManager.getLogger(BobRustSettingsDialog.class);
-	private final BobRustEditor gui;
 	private final BobRustSignPicker signPicker;
 	private final BobRustColorPicker colorPicker;
 	private final JDialog dialog;
@@ -48,13 +48,12 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 	// final JButton btnResetSettings;
 	
 	public BobRustSettingsDialog(BobRustEditor gui, JDialog parent) {
-		this.gui = gui;
 		this.dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SETTINGSDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		this.dialog.setIconImage(RustConstants.DIALOG_ICON);
 		this.dialog.setSize(300, 360);
 		this.dialog.setResizable(false);
-		this.signPicker = new BobRustSignPicker(gui, dialog);
-		this.colorPicker = new BobRustColorPicker(gui, dialog);
+		this.signPicker = new BobRustSignPicker(dialog);
+		this.colorPicker = new BobRustColorPicker(dialog);
 		
 		dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.X_AXIS));
 		
@@ -86,22 +85,22 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 					Point dialogLocation = new Point(dialog.getLocationOnScreen());
 					dialogLocation.x += 130;
 					signPicker.openSignDialog(dialogLocation);
-					gui.SettingsSign.set(signPicker.getSelectedSign());
+					Settings.SettingsSign.set(signPicker.getSelectedSign());
 				}
 			);
 			
 			customSignDimension = addDimensionField(
 				generatorPane,
-				gui.SettingsSignDimension.get(),
-				gui.SettingsSignDimension.getMin(),
-				gui.SettingsSignDimension.getMax(),
+				Settings.SettingsSignDimension.get(),
+				Settings.SettingsSignDimension.getMin(),
+				Settings.SettingsSignDimension.getMax(),
 				Type.SETTINGS_CUSTOMSIGNDIMENSION_LABEL,
 				Type.SETTINGS_CUSTOMSIGNDIMENSION_TOOLTIP
 			);
 			
 			alphaCombobox = addComboBoxField(
 				generatorPane,
-				gui.SettingsAlpha.get(),
+				Settings.SettingsAlpha.get(),
 				new Integer[] { 0, 1, 2, 3, 4, 5 },
 				Type.SETTINGS_ALPHAINDEX_LABEL,
 				Type.SETTINGS_ALPHAINDEX_TOOLTIP
@@ -109,7 +108,7 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 			
 			scalingCombobox = addComboBoxField(
 				generatorPane,
-				gui.SettingsScaling.get(),
+				Settings.SettingsScaling.get(),
 				new String[] { "Nearest", "Bilinear", "Bicubic" },
 				Type.SETTINGS_SCALINGTYPE_LABEL,
 				Type.SETTINGS_SCALINGTYPE_TOOLTIP
@@ -117,7 +116,7 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 			
 			maxShapesField = addIntegerField(
 				generatorPane,
-				gui.SettingsMaxShapes.get(),
+				Settings.SettingsMaxShapes.get(),
 				0,
 				99999,
 				Type.SETTINGS_MAXSHAPES_LABEL,
@@ -126,7 +125,7 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 			
 			clickIntervalField = addIntegerField(
 				generatorPane,
-				gui.SettingsClickInterval.get(),
+				Settings.SettingsClickInterval.get(),
 				1,
 				60,
 				Type.SETTINGS_CLICKINTERVAL_LABEL,
@@ -135,7 +134,7 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 			
 			autosaveIntervalField = addIntegerField(
 				generatorPane,
-				gui.SettingsAutosaveInterval.get(),
+				Settings.SettingsAutosaveInterval.get(),
 				1,
 				4000,
 				Type.SETTINGS_AUTOSAVEINTERVAL_LABEL,
@@ -144,7 +143,7 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 			
 			useIccConversionCombobox = addComboBoxField(
 				generatorPane,
-				gui.SettingsUseICCConversion.get() ? 1 : 0,
+				Settings.SettingsUseICCConversion.get() ? 1 : 0,
 				new String[] { "Off", "On" },
 				Type.SETTINGS_USEICCCONVERSION_LABEL,
 				Type.SETTINGS_USEICCCONVERSION_TOOLTIP
@@ -159,9 +158,9 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 				Type.EDITOR_BORDERCOLOR_TOOLTIP,
 				Type.EDITOR_BORDERCOLOR_BUTTON,
 				e -> {
-					Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.EditorBorderColor.get(), false);
+					Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), Settings.EditorBorderColor.get(), false);
 					if (color != null) {
-						gui.EditorBorderColor.set(color);
+						Settings.EditorBorderColor.set(color);
 					}
 				}
 			);
@@ -172,9 +171,9 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 				Type.EDITOR_TOOLBARCOLOR_TOOLTIP,
 				Type.EDITOR_TOOLBARCOLOR_BUTTON,
 				e -> {
-					Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.EditorToolbarColor.get(), false);
+					Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), Settings.EditorToolbarColor.get(), false);
 					if (color != null) {
-						gui.EditorToolbarColor.set(color);
+						Settings.EditorToolbarColor.set(color);
 					}
 				}
 			);
@@ -185,16 +184,16 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 				Type.EDITOR_LABELCOLOR_TOOLTIP,
 				Type.EDITOR_LABELCOLOR_BUTTON,
 				e -> {
-					Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), gui.EditorLabelColor.get(), false);
+					Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), Settings.EditorLabelColor.get(), false);
 					if (color != null) {
-						gui.EditorLabelColor.set(color);
+						Settings.EditorLabelColor.set(color);
 					}
 				}
 			);
 			
 			callbackIntervalField = addIntegerField(
 				editorPane,
-				gui.EditorCallbackInterval.get(),
+				Settings.EditorCallbackInterval.get(),
 				0,
 				99999,
 				Type.EDITOR_CALLBACKINTERVAL_LABEL,
@@ -213,13 +212,13 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 						JOptionPane.YES_NO_OPTION
 					);
 					if (dialogResult == JOptionPane.YES_OPTION) {
-						gui.EditorBorderColor.set(null);
-						gui.EditorToolbarColor.set(null);
-						gui.EditorLabelColor.set(null);
-						gui.EditorCallbackInterval.set(null);
+						Settings.EditorBorderColor.set(null);
+						Settings.EditorToolbarColor.set(null);
+						Settings.EditorLabelColor.set(null);
+						Settings.EditorCallbackInterval.set(null);
 						
 						// Update fields
-						callbackIntervalField.setText(Integer.toString(gui.EditorCallbackInterval.get()));
+						callbackIntervalField.setText(Integer.toString(Settings.EditorCallbackInterval.get()));
 					}
 				}
 			);
@@ -265,65 +264,65 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 	
 	public void openDialog(Point point) {
 		// Update the fields to correctly show the settings.
-		clickIntervalField.setText(Integer.toString(gui.SettingsClickInterval.get()));
-		callbackIntervalField.setText(Integer.toString(gui.EditorCallbackInterval.get()));
-		maxShapesField.setText(Integer.toString(gui.SettingsMaxShapes.get()));
-		autosaveIntervalField.setText(Integer.toString(gui.SettingsAutosaveInterval.get()));
-		alphaCombobox.setSelectedIndex(gui.SettingsAlpha.get());
-		scalingCombobox.setSelectedIndex(gui.SettingsScaling.get());
-		useIccConversionCombobox.setSelectedIndex(gui.SettingsUseICCConversion.get() ? 1 : 0);
-		customSignDimension.setValue(gui.SettingsSignDimension.get());
+		clickIntervalField.setText(Integer.toString(Settings.SettingsClickInterval.get()));
+		callbackIntervalField.setText(Integer.toString(Settings.EditorCallbackInterval.get()));
+		maxShapesField.setText(Integer.toString(Settings.SettingsMaxShapes.get()));
+		autosaveIntervalField.setText(Integer.toString(Settings.SettingsAutosaveInterval.get()));
+		alphaCombobox.setSelectedIndex(Settings.SettingsAlpha.get());
+		scalingCombobox.setSelectedIndex(Settings.SettingsScaling.get());
+		useIccConversionCombobox.setSelectedIndex(Settings.SettingsUseICCConversion.get() ? 1 : 0);
+		customSignDimension.setValue(Settings.SettingsSignDimension.get());
 		
 		// Show the dialog.
 		dialog.setLocation(point);
 		dialog.setVisible(true);
 		
-		gui.SettingsAlpha.set(alphaCombobox.getSelectedIndex());
-		gui.SettingsScaling.set(scalingCombobox.getSelectedIndex());
+		Settings.SettingsAlpha.set(alphaCombobox.getSelectedIndex());
+		Settings.SettingsScaling.set(scalingCombobox.getSelectedIndex());
 		
 		try {
-			gui.SettingsMaxShapes.set(maxShapesField.getNumberValue());
+			Settings.SettingsMaxShapes.set(maxShapesField.getNumberValue());
 		} catch (NumberFormatException e) {
 			LOGGER.warn("Invalid max shapes count '{}'", maxShapesField.getText());
-			maxShapesField.setText(Integer.toString(gui.SettingsMaxShapes.get()));
+			maxShapesField.setText(Integer.toString(Settings.SettingsMaxShapes.get()));
 		}
 		
 		try {
-			gui.EditorCallbackInterval.set(callbackIntervalField.getNumberValue());
+			Settings.EditorCallbackInterval.set(callbackIntervalField.getNumberValue());
 		} catch (NumberFormatException e) {
 			LOGGER.warn("Invalid callback interval '{}'", callbackIntervalField.getText());
-			callbackIntervalField.setText(Integer.toString(gui.EditorCallbackInterval.get()));
+			callbackIntervalField.setText(Integer.toString(Settings.EditorCallbackInterval.get()));
 		}
 		
 		try {
-			gui.SettingsClickInterval.set(clickIntervalField.getNumberValue());
+			Settings.SettingsClickInterval.set(clickIntervalField.getNumberValue());
 		} catch (NumberFormatException e) {
 			LOGGER.warn("Invalid click interval '{}'", clickIntervalField.getText());
-			clickIntervalField.setText(Integer.toString(gui.SettingsClickInterval.get()));
+			clickIntervalField.setText(Integer.toString(Settings.SettingsClickInterval.get()));
 		}
 		
 		try {
-			gui.SettingsAutosaveInterval.set(autosaveIntervalField.getNumberValue());
+			Settings.SettingsAutosaveInterval.set(autosaveIntervalField.getNumberValue());
 		} catch (NumberFormatException e) {
 			LOGGER.warn("Invalid autosave interval '{}'", autosaveIntervalField.getText());
-			autosaveIntervalField.setText(Integer.toString(gui.SettingsAutosaveInterval.get()));
+			autosaveIntervalField.setText(Integer.toString(Settings.SettingsAutosaveInterval.get()));
 		}
 		
 		try {
-			gui.SettingsUseICCConversion.set(useIccConversionCombobox.getSelectedIndex() == 1);
+			Settings.SettingsUseICCConversion.set(useIccConversionCombobox.getSelectedIndex() == 1);
 		} catch(NumberFormatException e) {
 			LOGGER.warn("Invalid icc conversion interval '{}'", useIccConversionCombobox.getSelectedIndex());
-			useIccConversionCombobox.setSelectedIndex(gui.SettingsUseICCConversion.get() ? 1 : 0);
+			useIccConversionCombobox.setSelectedIndex(Settings.SettingsUseICCConversion.get() ? 1 : 0);
 		}
 		
 		try {
-			gui.SettingsSignDimension.set(customSignDimension.getDimensionValue());
+			Settings.SettingsSignDimension.set(customSignDimension.getDimensionValue());
 		} catch(NumberFormatException e) {
 			LOGGER.warn("Invalid sign dimension '{}'", customSignDimension.getDimensionValue());
-			customSignDimension.setValue(gui.SettingsSignDimension.get());
+			customSignDimension.setValue(Settings.SettingsSignDimension.get());
 		}
 		
-		gui.SettingsSign.set(signPicker.getSelectedSign());
-		gui.SettingsBackground.set(colorPicker.getSelectedColor());
+		Settings.SettingsSign.set(signPicker.getSelectedSign());
+		Settings.SettingsBackground.set(colorPicker.getSelectedColor());
 	}
 }

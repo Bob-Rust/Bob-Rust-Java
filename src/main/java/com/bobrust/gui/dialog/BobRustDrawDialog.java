@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 
+import com.bobrust.settings.Settings;
 import com.bobrust.util.RustConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,7 +31,6 @@ public class BobRustDrawDialog {
 	private static final Dimension REGULAR = new Dimension(320, 240);
 	private static final Dimension MINIMIZED = new Dimension(120, 240);
 	
-	private final BobRustEditor gui;
 	private final BobRustDesktopOverlay overlay;
 	private final BobRustPalette rustPalette;
 	private final BobRustPainter rustPainter;
@@ -49,12 +49,11 @@ public class BobRustDrawDialog {
 	
 	private boolean isPainting;
 	
-	public BobRustDrawDialog(BobRustEditor gui, BobRustDesktopOverlay overlay, JDialog parent) {
+	public BobRustDrawDialog(BobRustDesktopOverlay overlay, JDialog parent) {
 		this.parentDialog = parent;
 		this.overlay = overlay;
-		this.gui = gui;
 		this.rustPalette = new BobRustPalette();
-		this.rustPainter = new BobRustPainter(gui, overlay, rustPalette);
+		this.rustPainter = new BobRustPainter(overlay, rustPalette);
 		
 		dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_DRAWDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		dialog.setResizable(false);
@@ -86,7 +85,7 @@ public class BobRustDrawDialog {
 		maxShapesField.addActionListener((event) -> {
 			int value = maxShapesField.getNumberValue();
 			shapesSlider.setValue(value);
-			overlay.setEstimatedGenerationLabel(value, gui.SettingsMaxShapes.get());
+			overlay.setEstimatedGenerationLabel(value, Settings.SettingsMaxShapes.get());
 			overlay.setRenderPreviewShapes(value);
 			overlay.repaint();
 		});
@@ -103,7 +102,7 @@ public class BobRustDrawDialog {
 		shapesSlider.addChangeListener((event) -> {
 			int value = shapesSlider.getValue();
 			maxShapesField.setText(Integer.toString(value));
-			overlay.setEstimatedGenerationLabel(value, gui.SettingsMaxShapes.get());
+			overlay.setEstimatedGenerationLabel(value, Settings.SettingsMaxShapes.get());
 			overlay.setRenderPreviewShapes(value);
 			overlay.repaint();
 		});
@@ -123,7 +122,7 @@ public class BobRustDrawDialog {
 		panel_1.setLayout(new BoxLayout(panel_1, BoxLayout.X_AXIS));
 		
 		Dimension buttonSize2 = new Dimension(60, 20);
-		clickIntervalField = new JIntegerField(gui.SettingsClickInterval.get());
+		clickIntervalField = new JIntegerField(Settings.SettingsClickInterval.get());
 		clickIntervalField.setPreferredSize(buttonSize2);
 		clickIntervalField.setMaximumSize(buttonSize2);
 		clickIntervalField.setMinimumSize(buttonSize2);
@@ -132,8 +131,8 @@ public class BobRustDrawDialog {
 		clickIntervalField.setMaximum(60);
 		clickIntervalField.setAlignmentX(0.0f);
 		clickIntervalField.addActionListener((event) -> {
-			gui.SettingsClickInterval.set(clickIntervalField.getNumberValue());
-			overlay.setEstimatedGenerationLabel(maxShapesField.getNumberValue(), gui.SettingsMaxShapes.get());
+			Settings.SettingsClickInterval.set(clickIntervalField.getNumberValue());
+			overlay.setEstimatedGenerationLabel(maxShapesField.getNumberValue(), Settings.SettingsMaxShapes.get());
 			overlay.repaint();
 		});
 		panel_1.add(clickIntervalField);
@@ -286,10 +285,10 @@ public class BobRustDrawDialog {
 		rustPalette.reset();
 		
 		try {
-			gui.SettingsClickInterval.set(Integer.parseInt(clickIntervalField.getText()));
-		} catch(NumberFormatException e) {
+			Settings.SettingsClickInterval.set(Integer.parseInt(clickIntervalField.getText()));
+		} catch (NumberFormatException e) {
 			LOGGER.warn("Invalid click interval '{}'", clickIntervalField.getText());
-			clickIntervalField.setText(Integer.toString(gui.SettingsClickInterval.get()));
+			clickIntervalField.setText(Integer.toString(Settings.SettingsClickInterval.get()));
 		}
 	}
 	

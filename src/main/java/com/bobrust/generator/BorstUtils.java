@@ -1,9 +1,10 @@
 package com.bobrust.generator;
 
-import java.util.stream.IntStream;
-
 public class BorstUtils {
-	public static final int[] ALPHAS = { 9, 18, 72, 136, 218, 255 };
+	// 9, 19, 60, 84, 98, 100
+	// 23, 48, 153, 214, 250, 255
+	// public static final int[] ALPHAS = { 9, 18, 72, 136, 218, 255 };
+	public static final int[] ALPHAS = { 23, 48, 153, 214, 250, 255 };
 	public static final int[] SIZES = CircleCache.CIRCLE_CACHE_LENGTH; // { 1, 2, 4, 6, 10, 13 };
 	
 	public static final BorstColor[] COLORS = {
@@ -74,25 +75,23 @@ public class BorstUtils {
 	};
 	
 	// Precomputed lookup tables
-	private static final int[] ALPHA_INDEX_LOOKUP_TABLE;
-	private static final int[] ALPHA_VALUE_LOOKUP_TABLE;
-	private static final int[] SIZE_INDEX_LOOKUP_TABLE;
-	private static final int[] SIZE_VALUE_LOOKUP_TABLE;
+	private static final NumberLookup AlphaLookup = new NumberLookup(ALPHAS);
+	private static final NumberLookup SizeLookup = new NumberLookup(SIZES);
 	
 	public static int getClosestAlpha(int alpha) {
-		return ALPHA_VALUE_LOOKUP_TABLE[alpha < 0 ? 0: Math.min(alpha, ALPHA_VALUE_LOOKUP_TABLE.length - 1)]; 
+		return AlphaLookup.getClosestValue(alpha);
 	}
 	
 	public static int getClosestAlphaIndex(int alpha) {
-		return ALPHA_INDEX_LOOKUP_TABLE[alpha < 0 ? 0: Math.min(alpha, ALPHA_INDEX_LOOKUP_TABLE.length - 1)]; 
+		return AlphaLookup.getClosestIndex(alpha);
 	}
 	
 	public static int getClosestSize(int size) {
-		return SIZE_VALUE_LOOKUP_TABLE[size < 0 ? 0 : Math.min(size, SIZE_VALUE_LOOKUP_TABLE.length - 1)];
+		return SizeLookup.getClosestValue(size);
 	}
 	
 	public static int getClosestSizeIndex(int size) {
-		return SIZE_INDEX_LOOKUP_TABLE[size < 0 ? 0 : Math.min(size, SIZE_INDEX_LOOKUP_TABLE.length - 1)];
+		return SizeLookup.getClosestIndex(size);
 	}
 	
 	public static BorstColor getClosestColor(int color) {
@@ -124,51 +123,56 @@ public class BorstUtils {
 	}
 	
 	public static int clampInt(int value, int min, int max) {
-		return (value < min ? min:(value > max ? max:value));
+		return (value < min ? min : (value > max ? max : value));
 	}
 	
-	// Lookup table generators
-	private static int getClosestAlphaIndex0(int alpha) {
-		int current_diff = 65535;
-		int result = 0;
-		
-		for (int i = 0, len = ALPHAS.length; i < len; i++) {
-			int diff = Math.abs(ALPHAS[i] - alpha);
-			if (current_diff > diff) {
-				current_diff = diff;
-				result = i;
+	private static class NumberLookup {
+		private final int[] valueLookup;
+		private final int[] indexLookup;
+		private final int max;
+		public NumberLookup(int[] values) {
+			if (values == null || values.length == 0) {
+				throw new NullPointerException("Cannot create an empty lookup table");
+			}
+			
+			// Calculate min / max
+			int max = Integer.MIN_VALUE;
+			for (int value : values) {
+				max = Math.max(max, value);
+			}
+			
+			this.max = max;
+			this.valueLookup = new int[max + 1];
+			this.indexLookup = new int[max + 1];
+			
+			// Calculate lookups
+			for (int i = 0; i < max + 1; i++) {
+				int index = closestIndex(i, max, values);
+				this.indexLookup[i] = index;
+				this.valueLookup[i] = values[index];
 			}
 		}
 		
-		return result;
-	}
-	
-	private static int getClosestSizeIndex0(int size) {
-		int current_diff = 65535;
-		int result = 0;
-		for (int i = 0, len = SIZES.length; i < len; i++) {
-			int diff = Math.abs(size - SIZES[i]);
-			if (current_diff > diff) {
-				current_diff = diff;
-				result = i;
-			}
+		public int getClosestIndex(int value) {
+			return indexLookup[Math.max(0, Math.min(max, value))];
 		}
-	
-		return result;
-	}
-	
-	static {
-		ALPHA_INDEX_LOOKUP_TABLE = new int[256];
-		for (int i = 0; i < 256; i++) ALPHA_INDEX_LOOKUP_TABLE[i] = getClosestAlphaIndex0(i);
 		
-		ALPHA_VALUE_LOOKUP_TABLE = new int[256];
-		for (int i = 0; i < 256; i++) ALPHA_VALUE_LOOKUP_TABLE[i] = ALPHAS[getClosestAlphaIndex0(i)];
+		public int getClosestValue(int value) {
+			return valueLookup[Math.max(0, Math.min(max, value))];
+		}
 		
-		int maxSize = IntStream.of(SIZES).max().orElseThrow();
-		SIZE_INDEX_LOOKUP_TABLE = new int[maxSize + 1];
-		for (int i = 0; i <= maxSize; i++) SIZE_INDEX_LOOKUP_TABLE[i] = getClosestSizeIndex0(i);
-		
-		SIZE_VALUE_LOOKUP_TABLE = new int[maxSize + 1];
-		for (int i = 0; i <= maxSize; i++) SIZE_VALUE_LOOKUP_TABLE[i] = SIZES[getClosestSizeIndex0(i)];
+		private int closestIndex(int value, int maxValue, int[] array) {
+			int current_diff = maxValue * maxValue;
+			int result = -1;
+			for (int i = 0, len = array.length; i < len; i++) {
+				int diff = Math.abs(value - array[i]);
+				if (current_diff > diff) {
+					current_diff = diff;
+					result = i;
+				}
+			}
+			
+			return result;
+		}
 	}
 }

@@ -4,7 +4,7 @@ import java.awt.*;
 import java.awt.event.InputEvent;
 import java.util.List;
 
-import com.bobrust.generator.BorstColor;
+import com.bobrust.settings.Settings;
 import com.bobrust.util.RustConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,11 +12,9 @@ import org.apache.logging.log4j.Logger;
 import com.bobrust.generator.BorstUtils;
 import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
-import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.BobRustDesktopOverlay;
 import com.bobrust.util.RustUtil;
 import com.bobrust.util.Sign;
-import org.lwjgl.system.CallbackI;
 
 public class BobRustPainter {
 	private static final Logger LOGGER = LogManager.getLogger(BobRustPainter.class);
@@ -24,7 +22,6 @@ public class BobRustPainter {
 	// The maximum distance the mouse can be from the correct position
 	private static final double MAXIMUM_DISPLACEMENT = 10;
 	
-	private final BobRustEditor gui;
 	private final BobRustDesktopOverlay overlay;
 	private final BobRustPalette palette;
 	private volatile int clickIndex;
@@ -33,8 +30,7 @@ public class BobRustPainter {
 	private double widthDelta;
 	private double heightDelta;
 	
-	public BobRustPainter(BobRustEditor gui, BobRustDesktopOverlay overlay, BobRustPalette palette) {
-		this.gui = gui;
+	public BobRustPainter(BobRustDesktopOverlay overlay, BobRustPalette palette) {
 		this.overlay = overlay;
 		this.palette = palette;
 	}
@@ -89,7 +85,6 @@ public class BobRustPainter {
 		}
 
 		GraphicsConfiguration gc = overlay.getMonitorConfiguration();
-//		ScreenDevice device = new ScreenDevice(gc);
 		
 		{
 			GraphicsDevice gd = gc.getDevice();
@@ -103,15 +98,14 @@ public class BobRustPainter {
 		Robot robot = new Robot(gc.getDevice());
 		
 		Rectangle canvas = overlay.getCanvasArea();
-//		Rectangle screen = overlay.getScreenLocation();
-		Sign signType = gui.SettingsSign.get();
+		Sign signType = Settings.SettingsSign.get();
 		
-		int clickInterval = gui.SettingsClickInterval.get();
-		int alphaSetting = gui.SettingsAlpha.get();
+		int clickInterval = Settings.SettingsClickInterval.get();
+		int alphaSetting = Settings.SettingsAlpha.get();
 		int shapeSetting = shape;
 		int delayPerCycle = (int) (1000.0 / clickInterval);
 		double autoDelay = 1000.0 / (clickInterval * 3.0);
-		int autosaveInterval = gui.SettingsAutosaveInterval.get();
+		int autosaveInterval = Settings.SettingsAutosaveInterval.get();
 		
 		this.clickIndex = 0;
 		
@@ -140,6 +134,8 @@ public class BobRustPainter {
 		// the current thread to click on the screen we want to minimize
 		// the amount of noise that rendering components could generate.
 		Thread guiUpdateThread = new Thread(() -> {
+			// TODO: This could be made using a better algorithm.
+			//       The painter should not touch the render thread
 			long start = System.nanoTime();
 			int msDelay = delayPerCycle;
 			while (true) {
@@ -168,7 +164,7 @@ public class BobRustPainter {
 		
 		// Apply custom sign dimension
 		if (signType.name.equals(RustConstants.CUSTOM_SIGN_NAME)) {
-			var local = gui.SettingsSignDimension.get();
+			var local = Settings.SettingsSignDimension.get();
 			signWidth = local.width;
 			signHeight = local.height;
 		}

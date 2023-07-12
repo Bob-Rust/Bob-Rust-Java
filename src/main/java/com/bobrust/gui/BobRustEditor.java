@@ -13,6 +13,7 @@ import com.bobrust.generator.BorstGenerator;
 import com.bobrust.generator.BorstGenerator.BorstData;
 import com.bobrust.generator.BorstGenerator.BorstGeneratorBuilder;
 import com.bobrust.gui.dialog.RustFileDialog;
+import com.bobrust.settings.Settings;
 import com.bobrust.settings.RustSettingsImpl;
 
 public class BobRustEditor extends RustSettingsImpl {
@@ -51,9 +52,9 @@ public class BobRustEditor extends RustSettingsImpl {
 	}
 	
 	public File openImageFileChooser(JDialog dialog) {
-		File file = fileChooser.open(dialog, filterImages, "Open Image", EditorImageDirectory.get());
+		File file = fileChooser.open(dialog, filterImages, "Open Image", Settings.EditorImageDirectory.get());
 		if (file != null) {
-			EditorImageDirectory.set(file.getParentFile().getAbsolutePath());
+			Settings.EditorImageDirectory.set(file.getParentFile().getAbsolutePath());
 			return file;
 		}
 		
@@ -76,7 +77,7 @@ public class BobRustEditor extends RustSettingsImpl {
 	}
 	
 	protected Color getSettingsBackgroundCalculated() {
-		Color bgColor = SettingsBackground.get();
-		return bgColor == null ? SettingsSign.get().getAverageColor() : bgColor;
+		Color bgColor = Settings.SettingsBackground.get();
+		return bgColor == null ? Settings.SettingsSign.get().getAverageColor() : bgColor;
 	}
 }

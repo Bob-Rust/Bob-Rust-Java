@@ -35,8 +35,8 @@ public interface RustConstants {
 	int IMAGE_SCALING_BICUBIC = 2;
 	
 	// TODO: Approximate these
-	Color CANVAS_AVERAGE = new Color(0x8f887c);
-	Color WOODEN_AVERAGE = new Color(0xd7c2ad); // 0x6d5033);
+	Color CANVAS_AVERAGE = new Color(0xb3aba0); // 0x8f887c);
+	Color WOODEN_AVERAGE = new Color(0xa89383); // 0x6d5033);
 	Color TOWN_POST_AVERAGE = new Color(0x94624d);
 	Color HANGING_METAL_AVERAGE = new Color(0x534c46);
 	

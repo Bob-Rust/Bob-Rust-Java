@@ -10,10 +10,10 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.comp.JStyledToggleButton;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
+import com.bobrust.settings.Settings;
 import com.bobrust.util.RustSigns;
 import com.bobrust.util.Sign;
 
@@ -21,7 +21,7 @@ public class BobRustSignPicker {
 	private final JDialog dialog;
 	private Sign selectedSign;
 	
-	public BobRustSignPicker(BobRustEditor gui, JDialog parent) {
+	public BobRustSignPicker(JDialog parent) {
 		dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SIGNPICKERDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		dialog.setSize(520, 670);
 		dialog.setResizable(false);
@@ -31,7 +31,7 @@ public class BobRustSignPicker {
 		Dimension buttonSize = new Dimension(120, 120);
 		Dimension imageSize = new Dimension(80, 80);
 		
-		Sign guiSign = gui.SettingsSign.get();
+		Sign guiSign = Settings.SettingsSign.get();
 		selectedSign = guiSign;
 		
 		for (Sign sign : RustSigns.SIGNS.values()) {

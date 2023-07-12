@@ -9,6 +9,7 @@ import java.util.Random;
 import javax.swing.JPanel;
 
 import com.bobrust.gui.BobRustEditor;
+import com.bobrust.settings.Settings;
 import com.bobrust.util.RustConstants;
 
 @SuppressWarnings("serial")
@@ -26,8 +27,8 @@ public class JRandomPanel extends JPanel {
 		super.paintComponent(gr);
 		
 		if (RustConstants.ENABLE_RANDOM_BACKGROUND) {
-			if (!gui.EditorToolbarColor.get().equals(lastToolbarColor) || randomPaint == null) {
-				lastToolbarColor = gui.EditorToolbarColor.get();
+			if (!Settings.EditorToolbarColor.get().equals(lastToolbarColor) || randomPaint == null) {
+				lastToolbarColor = Settings.EditorToolbarColor.get();
 				BufferedImage randomImage = getRandomImage(128, 128, lastToolbarColor.darker(), 0, 120, 0);
 				randomPaint = new TexturePaint(randomImage, new Rectangle2D.Double(0, 0, 128, 128));
 			}

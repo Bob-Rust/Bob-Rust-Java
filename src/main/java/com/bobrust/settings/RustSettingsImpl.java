@@ -1,5 +1,6 @@
 package com.bobrust.settings;
 
+import java.awt.*;
 import java.io.*;
 
 import org.apache.logging.log4j.LogManager;
@@ -10,7 +11,7 @@ import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
 import com.bobrust.util.*;
 
-public abstract class RustSettingsImpl implements RustSettings {
+public abstract class RustSettingsImpl {
 	private static final Logger LOGGER = LogManager.getLogger(RustSettingsImpl.class);
 	private static final File CONFIG_FILE = new File("bobrust.properties");
 	
@@ -18,22 +19,34 @@ public abstract class RustSettingsImpl implements RustSettings {
 	private boolean allowSaving;
 	
 	// Borst settings
-	private BorstSettings borstSettings;
+	private final BorstSettings borstSettings;
 	
 	public RustSettingsImpl() {
 		this.borstSettings = new BorstSettings();
 	}
 	
 	protected void loadSettings() {
-		InternalSettings.init(CONFIG_FILE);
-		InternalSettings.load();
-		InternalSettings.setListener(changed -> {
+		Settings.InternalSettings.init(CONFIG_FILE);
+		Settings.InternalSettings.load();
+		Settings.InternalSettings.setListener(changed -> {
 			saveSettings();
+			updateBorstSettings();
 			postSetProperty();
 		});
 		
+		updateBorstSettings();
+		
 		allowSaving = true;
 		saveSettings(true);
+	}
+	
+	private void updateBorstSettings() {
+		borstSettings.MaxShapes = Settings.SettingsMaxShapes.get();
+		borstSettings.Alpha = Settings.SettingsAlpha.get();
+		
+		Color color = Settings.SettingsBackground.get();
+		borstSettings.Background = (color == null ? Settings.SettingsSign.get().averageColor : color).getRGB();
+		borstSettings.CallbackInterval = Settings.SettingsClickInterval.get();
 	}
 	
 	private void saveSettings() {
@@ -44,7 +57,7 @@ public abstract class RustSettingsImpl implements RustSettings {
 		if (!allowSaving) return;
 		
 		try (FileOutputStream stream = new FileOutputStream(CONFIG_FILE)) {
-			InternalSettings.properties.store(stream, "");
+			Settings.InternalSettings.properties.store(stream, "");
 		} catch (IOException e) {
 			if (giveMessage) {
 				RustWindowUtil.showWarningMessage(

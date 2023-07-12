@@ -1,6 +1,6 @@
 package com.bobrust.settings.type.parent;
 
-import com.bobrust.settings.RustSettings;
+import com.bobrust.settings.Settings;
 import com.bobrust.settings.RustSettingsImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +24,7 @@ public class InternalSettings {
 		settings = new LinkedHashMap<>();
 		properties = new Properties();
 		
-		Field[] fields = RustSettings.class.getDeclaredFields();
+		Field[] fields = Settings.class.getDeclaredFields();
 		for (Field field : fields) {
 			var type = field.getType();
 			var name = field.getName();

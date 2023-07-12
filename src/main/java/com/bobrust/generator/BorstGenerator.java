@@ -13,7 +13,6 @@ public class BorstGenerator {
 	private final Consumer<BorstData> callback;
 	private final BorstSettings settings;
 	private volatile Thread thread;
-	private volatile boolean isPaused;
 	private volatile int index;
 	
 	private BorstGenerator(BorstSettings settings, Consumer<BorstData> callback) {
@@ -25,20 +24,20 @@ public class BorstGenerator {
 		return thread != null;
 	}
 	
-	public synchronized boolean isPaused() {
-		return isPaused;
-	}
-	
 	/**
 	 * Start the generator
 	 */
 	public synchronized boolean start() {
 		if (thread != null) {
 			LOGGER.warn("BorstGenerator has already been started! Restarting generator");
+			
 			try {
-				stop();
-			} catch(InterruptedException e) {
-				e.printStackTrace();
+				thread.interrupt();
+				thread.join();
+			} catch (InterruptedException e) {
+				LOGGER.warn("Borst generator was interrupted");
+				Thread.currentThread().interrupt();
+				return false;
 			}
 		}
 		
@@ -51,16 +50,7 @@ public class BorstGenerator {
 		int length = settings.MaxShapes;
 		int interval = settings.CallbackInterval;
 		int background = settings.Background;
-		int alpha;
-		
-		try {
-			alpha = BorstUtils.ALPHAS[settings.Alpha];
-		} catch (Exception e) {
-			LOGGER.error("Failed to set alpha value. '%s' is not a valid alpha index.", settings.Alpha);
-			return false;
-		}
-		
-		isPaused = false;
+		int alpha = BorstUtils.ALPHAS[settings.Alpha];
 		
 		Thread thread = new Thread(() -> {
 			this.index = 0;
@@ -74,22 +64,9 @@ public class BorstGenerator {
 					int n = model.processStep();
 					long end = System.nanoTime();
 					
-					if (isPaused) {
-						try {
-							Thread.sleep(Long.MAX_VALUE);
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
-							// We un-paused or called stop()
-						} finally {
-							// If we still are paused we called stop()
-							if (isPaused) {
-								return;
-							}
-						}
-					}
-					
 					// Return if the current thread is interrupted.
 					if (Thread.currentThread().isInterrupted()) {
+						Thread.currentThread().interrupt();
 						return;
 					}
 					
@@ -98,9 +75,10 @@ public class BorstGenerator {
 						data.index = i;
 						callback.accept(data);
 						
-						double time = (end - begin) / 1000000000.0;
-						double sps = i / time;
 						if (RustConstants.DEBUG_GENERATOR) {
+							double time = (end - begin) / 1000000000.0;
+							double sps = i / time;
+							
 							LOGGER.debug("{}: t={} s, score={}, n={}, s/s={}",
 								"%5d".formatted(i),
 								"%.3f".formatted(time),
@@ -114,12 +92,11 @@ public class BorstGenerator {
 			} finally {
 				data.index = length;
 				data.done = true;
-				isPaused = false;
 				callback.accept(data);
 			}
 		}, "Borst Generator Thread");
-		thread.setDaemon(true);
 		this.thread = thread;
+		thread.setDaemon(true);
 		thread.start();
 		return true;
 	}
@@ -136,35 +113,9 @@ public class BorstGenerator {
 				thread.join();
 			} finally {
 				// Make sure that the thread keeps it's interrupted state.
-				thread.interrupt();
 				thread = null;
 			}
 		}
-	}
-	
-	/**
-	 * Join the current thread.
-	 * @throws InterruptedException
-	 */
-	public synchronized void join() throws InterruptedException {
-		if (thread != null) {
-			thread.join();
-		}
-	}
-	
-	public synchronized void resume() {
-		if (thread != null && isPaused) {
-			isPaused = false;
-			thread.interrupt();
-		}
-	}
-	
-	public synchronized void pause() {
-		isPaused = true;
-	}
-	
-	public synchronized int getIndex() {
-		return this.index;
 	}
 	
 	public class BorstData {
@@ -200,10 +151,6 @@ public class BorstGenerator {
 	public static class BorstGeneratorBuilder {
 		private Consumer<BorstData> callback;
 		private BorstSettings settings;
-		
-		public BorstGeneratorBuilder() {
-			
-		}
 		
 		public BorstGeneratorBuilder setCallback(Consumer<BorstData> consumer) {
 			this.callback = consumer;

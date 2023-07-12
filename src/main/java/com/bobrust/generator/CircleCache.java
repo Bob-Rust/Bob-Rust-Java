@@ -6,17 +6,17 @@ class CircleCache {
 	private static final Scanline[] CIRCLE_2 = generateCircle(8);
 	private static final Scanline[] CIRCLE_3 = generateCircle(12);
 	private static final Scanline[] CIRCLE_4 = generateCircle(19);
-	private static final Scanline[] CIRCLE_5 = generateCircle(25); // Might be larger
+	private static final Scanline[] CIRCLE_5 = generateCircle(26); // 25 // Might be larger
 	
 	public static final Scanline[][] CIRCLE_CACHE = { CIRCLE_0, CIRCLE_1, CIRCLE_2, CIRCLE_3, CIRCLE_4, CIRCLE_5 };
-	public static final int[] CIRCLE_CACHE_LENGTH = {
-		CIRCLE_CACHE[0].length,
-		CIRCLE_CACHE[1].length,
-		CIRCLE_CACHE[2].length,
-		CIRCLE_CACHE[3].length,
-		CIRCLE_CACHE[4].length,
-		CIRCLE_CACHE[5].length
-	};
+	public static final int[] CIRCLE_CACHE_LENGTH;
+	
+	static {
+		CIRCLE_CACHE_LENGTH = new int[CIRCLE_CACHE.length];
+		for (int i = 0; i < CIRCLE_CACHE.length; i++) {
+			CIRCLE_CACHE_LENGTH[i] = CIRCLE_CACHE[i].length;
+		}
+	}
 	
 	/*public static void main(String[] args) {
 		// 1, 4, 8, 12, 19, 25

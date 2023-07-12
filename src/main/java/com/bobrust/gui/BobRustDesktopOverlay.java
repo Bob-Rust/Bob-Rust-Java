@@ -12,6 +12,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
+import com.bobrust.settings.Settings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,7 +34,6 @@ import com.bobrust.util.Sign;
  * 
  * @author HardCoded
  */
-@SuppressWarnings("serial")
 public class BobRustDesktopOverlay extends JPanel {
 	private static final Dimension DEFAULT_DIALOG_SIZE = new Dimension(146, 364 - 28);
 	private static final int RECTANGLE_SELECTION_SIZE = 10;
@@ -225,7 +225,7 @@ public class BobRustDesktopOverlay extends JPanel {
 		
 		settingsGui = new BobRustSettingsDialog(gui, dialog);
 		monitorPicker = new BobRustMonitorPicker(dialog);
-		drawDialog = new BobRustDrawDialog(gui, this, dialog);
+		drawDialog = new BobRustDrawDialog(this, dialog);
 		shapeRender = new BobRustShapeRender(SHAPE_CACHE_INTERVAL);
 		actionBarPanel = new OverlayActionPanel(dialog, gui, this);
 		topBarPanel = new OverlayTopPanel(gui);
@@ -308,7 +308,7 @@ public class BobRustDesktopOverlay extends JPanel {
 		if(file != null) {
 			try {
 				BufferedImage selectedImage = ImageIO.read(file);
-				if (gui.SettingsUseICCConversion.get()) {
+				if (Settings.SettingsUseICCConversion.get()) {
 					selectedImage = RustImageUtil.applyFilters(selectedImage);
 				}
 				
@@ -338,22 +338,31 @@ public class BobRustDesktopOverlay extends JPanel {
 		Rectangle rect = canvasRegion.createIntersection(imageRegion).getBounds();
 			
 		if(!rect.isEmpty()) {
-			Sign signType = gui.SettingsSign.get();
+			Sign signType = Settings.SettingsSign.get();
 			Color bgColor = gui.getSettingsBackgroundCalculated();
+			
+			// TODO: This should be more safer to use
+			int signWidth = signType.width;
+			int signHeight = signType.height;
+			if (signType.name.equals(RustConstants.CUSTOM_SIGN_NAME)) {
+				var size = Settings.SettingsSignDimension.get();
+				signWidth = size.width;
+				signHeight = size.height;
+			}
 			
 			BufferedImage scaled;
 			scaled = RustImageUtil.getScaledInstance(
 				image,
 				canvasRegion,
 				imageRegion,
-				signType.width,
-				signType.height,
+				signWidth,
+				signHeight,
 				bgColor,
-				gui.SettingsScaling.get()
+				Settings.SettingsScaling.get()
 			);
 			
 			// Apply the ICC cmyk lut filter
-			if (gui.SettingsUseICCConversion.get()) {
+			if (Settings.SettingsUseICCConversion.get()) {
 				scaled = RustImageUtil.applyFilters(scaled);
 			}
 			
@@ -375,13 +384,14 @@ public class BobRustDesktopOverlay extends JPanel {
 	}
 	
 	public void resetGeneration() {
-		if(gui.borstGenerator.isRunning()) {
+		if (gui.borstGenerator.isRunning()) {
 			try {
 				gui.getBorstSettings().DirectImage = null;
 				gui.borstGenerator.stop();
 				modelImage = null;
-			} catch(InterruptedException e) {
+			} catch (InterruptedException e) {
 				e.printStackTrace();
+				Thread.currentThread().interrupt();
 			}
 			
 			shapeRender.reset();
@@ -400,14 +410,14 @@ public class BobRustDesktopOverlay extends JPanel {
 	
 	public void updateEditor() {
 		// Update the action bar
-		actionBarPanel.setBackground(gui.EditorToolbarColor.get());
-		actionBarPanel.updateLabelForeground(gui.EditorLabelColor.get());
+		actionBarPanel.setBackground(Settings.EditorToolbarColor.get());
+		actionBarPanel.updateLabelForeground(Settings.EditorLabelColor.get());
 		
 		// Update the desktop overlay
-		setBorder(isFullscreen ? new LineBorder(gui.EditorBorderColor.get(), BORDER_SIZE):null);
+		setBorder(isFullscreen ? new LineBorder(Settings.EditorBorderColor.get(), BORDER_SIZE):null);
 		
 		BorstData lastData = this.lastData;
-		setEstimatedGenerationLabel(lastData != null ? lastData.getIndex() : 0, gui.SettingsMaxShapes.get());
+		setEstimatedGenerationLabel(lastData != null ? lastData.getIndex() : 0, Settings.SettingsMaxShapes.get());
 	}
 	
 	public JDialog getDialog() {
@@ -478,7 +488,7 @@ public class BobRustDesktopOverlay extends JPanel {
 		lastData = data;
 		
 		if (!drawDialog.isVisible()) {
-			setEstimatedGenerationLabel(data.getIndex(), gui.SettingsMaxShapes.get());
+			setEstimatedGenerationLabel(data.getIndex(), Settings.SettingsMaxShapes.get());
 			repaint();
 		}
 	}
