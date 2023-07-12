@@ -104,7 +104,7 @@ public interface Settings {
 	@GuiElement(tab = GuiElement.Tab.Generator,
 		label = RustUI.Type.SETTINGS_USEICCCONVERSION_LABEL,
 		tooltip = RustUI.Type.SETTINGS_USEICCCONVERSION_TOOLTIP)
-	BoolType SettingsUseICCConversion = new BoolType(true);
+	BoolType SettingsUseICCConversion = new BoolType(false);
 	
 	// Used for internal save state
 	InternalSettings InternalSettings = new InternalSettings();
