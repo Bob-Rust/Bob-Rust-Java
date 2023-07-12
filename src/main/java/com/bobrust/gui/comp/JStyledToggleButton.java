@@ -7,7 +7,7 @@ import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.JToggleButton;
 
-import com.bobrust.util.RustConstants;
+import com.bobrust.util.data.RustConstants;
 
 @SuppressWarnings("serial")
 public class JStyledToggleButton extends JToggleButton {

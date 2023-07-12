@@ -9,7 +9,8 @@ import java.util.Random;
 import javax.swing.JPanel;
 
 import com.bobrust.gui.BobRustEditor;
-import com.bobrust.util.RustConstants;
+import com.bobrust.settings.Settings;
+import com.bobrust.util.data.RustConstants;
 
 @SuppressWarnings("serial")
 public class JRandomPanel extends JPanel {
@@ -25,9 +26,9 @@ public class JRandomPanel extends JPanel {
 	protected void paintComponent(Graphics gr) {
 		super.paintComponent(gr);
 		
-		if(RustConstants.ENABLE_RANDOM_BACKGROUND) {
-			if(!gui.getEditorToolbarColor().equals(lastToolbarColor) || randomPaint == null) {
-				lastToolbarColor = gui.getEditorToolbarColor();
+		if (RustConstants.ENABLE_RANDOM_BACKGROUND) {
+			if (!Settings.EditorToolbarColor.get().equals(lastToolbarColor) || randomPaint == null) {
+				lastToolbarColor = Settings.EditorToolbarColor.get();
 				BufferedImage randomImage = getRandomImage(128, 128, lastToolbarColor.darker(), 0, 120, 0);
 				randomPaint = new TexturePaint(randomImage, new Rectangle2D.Double(0, 0, 128, 128));
 			}
@@ -50,7 +51,7 @@ public class JRandomPanel extends JPanel {
 		Random random = new Random(seed);
 		for(int i = 0, len = pixels.length; i < len; i++) {
 			int col = (int)(random.nextGaussian() * random.nextGaussian() * distance) + lowest;
-			col = col < lowest ? lowest:(col > highest ? highest:col);
+			col = col < lowest ? lowest : (col > highest ? highest:col);
 			pixels[i] = rgb | (col << 24);
 		}
 		

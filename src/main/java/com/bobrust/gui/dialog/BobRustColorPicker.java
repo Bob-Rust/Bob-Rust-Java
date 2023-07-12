@@ -12,20 +12,21 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import com.bobrust.generator.BorstUtils;
-import com.bobrust.gui.BobRustEditor;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
-import com.bobrust.util.RustConstants;
+import com.bobrust.settings.Settings;
+import com.bobrust.util.data.RustConstants;
 
+/**
+ * A color picker that looks similar to the color picker in rust
+ */
 public class BobRustColorPicker {
-	private final BobRustEditor gui;
 	private final JDialog dialog;
 	private final JLabel colorLabel;
 	private Color selectedColor;
 	
-	public BobRustColorPicker(BobRustEditor gui, JDialog parent) {
-		this.gui = gui;
-		this.selectedColor = gui.getSettingsBackground();
+	public BobRustColorPicker(JDialog parent) {
+		this.selectedColor = Settings.SettingsBackground.get();
 		
 		dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		dialog.setSize(165, 340);
@@ -53,7 +54,7 @@ public class BobRustColorPicker {
 		colorLabel.setBorder(new LineBorder(new Color(255, 255, 255)));
 		colorLabel.setHorizontalTextPosition(SwingConstants.LEFT);
 		colorLabel.setBounds(75, 264, 75, 16);
-		colorLabel.setBackground(gui.getSettingsBackground());
+		colorLabel.setBackground(Settings.SettingsBackground.get());
 		panel.add(colorLabel);
 		
 		JLabel lblColorPaletteImage = new JLabel(new ImageIcon(RustConstants.COLOR_PALETTE));
@@ -96,7 +97,7 @@ public class BobRustColorPicker {
 		btnDefaultColor.setBounds(74, 279, 77, 23);
 		btnDefaultColor.addActionListener((event) -> {
 			selectedColor = null;
-			colorLabel.setBackground(gui.getSettingsSign().getAverageColor());
+			colorLabel.setBackground(Settings.SettingsSign.get().getAverageColor());
 		});
 		panel.add(btnDefaultColor);
 		
@@ -104,16 +105,13 @@ public class BobRustColorPicker {
 	}
 
 	public Color openColorDialog(Point point) {
-		if(selectedColor == null) {
-			colorLabel.setBackground(gui.getSettingsSign().getAverageColor());
+		if (selectedColor == null) {
+			colorLabel.setBackground(Settings.getSettingsBackgroundCalculated());
 		}
 		
 		dialog.setLocation(point);
 		dialog.setVisible(true);
 		return selectedColor;
 	}
-
-	public Color getSelectedColor() {
-		return selectedColor;
-	}
+	
 }

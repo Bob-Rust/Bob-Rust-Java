@@ -8,7 +8,6 @@ import java.util.Locale;
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 
-@SuppressWarnings("serial")
 public class JIntegerField extends JFormattedTextField {
 	private final NumberFormatter formatter;
 	
@@ -24,6 +23,7 @@ public class JIntegerField extends JFormattedTextField {
 		formatter.setMaximum(99999);
 		formatter.setAllowsInvalid(false);
 		formatter.setCommitsOnValidEdit(true);
+		formatter.setOverwriteMode(false);
 		formatter.setFormat(format);
 		
 		setFormatterFactory(new AbstractFormatterFactory() {
@@ -51,7 +51,7 @@ public class JIntegerField extends JFormattedTextField {
 			
 			@Override
 			public boolean accept(Object sender) {
-				if(isDelegate()) {
+				if (isDelegate()) {
 					return backspaceAction.accept(sender);
 				} else {
 					return super.accept(sender);
@@ -60,7 +60,7 @@ public class JIntegerField extends JFormattedTextField {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(isDelegate()) {
+				if (isDelegate()) {
 					backspaceAction.actionPerformed(e);
 				} else {
 					JIntegerField.this.selectAll();

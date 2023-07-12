@@ -2,7 +2,6 @@ package com.bobrust.gui.dialog;
 
 import java.awt.*;
 import java.awt.Dialog.ModalityType;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,64 +10,53 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.comp.JStyledToggleButton;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
-import com.bobrust.util.RustSigns;
+import com.bobrust.settings.Settings;
+import com.bobrust.util.data.RustSigns;
 import com.bobrust.util.Sign;
+
+import static com.bobrust.util.data.RustConstants.*;
+import static com.bobrust.util.data.RustConstants.TOWN_POST_AVERAGE;
 
 public class BobRustSignPicker {
 	private final JDialog dialog;
 	private Sign selectedSign;
 	
-	public BobRustSignPicker(BobRustEditor gui, JDialog parent) {
+	public BobRustSignPicker(JDialog parent) {
 		dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SIGNPICKERDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		dialog.setSize(520, 670);
 		dialog.setResizable(false);
 		dialog.getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		
 		ButtonGroup buttonGroup = new ButtonGroup();
-		
-		ActionListener buttonListener = (event) -> {
-			Sign sign = RustSigns.SIGNS.get("sign." + event.getActionCommand());
-			if(sign != null) {
-				dialog.dispose();
-				selectedSign = sign;
-			}
-		};
-		
 		Dimension buttonSize = new Dimension(120, 120);
 		Dimension imageSize = new Dimension(80, 80);
 		
-		Sign guiSign = gui.getSettingsSign();
+		Sign guiSign = Settings.SettingsSign.get();
 		selectedSign = guiSign;
 		
-		for(Sign sign : RustSigns.SIGNS.values()) {
+		for (Sign sign : RustSigns.SIGNS.values()) {
 			BufferedImage signImage = null;
 			
-			try(InputStream stream = BobRustSignPicker.class.getResourceAsStream("/signs/%s.png".formatted(sign.name))) {
-				if(stream != null) {
+			try (InputStream stream = BobRustSignPicker.class.getResourceAsStream("/signs/%s.png".formatted(sign.getName()))) {
+				if (stream != null) {
 					signImage = ImageIO.read(stream);
 				}
-			} catch(IOException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			
-			if(signImage == null) {
+			if (signImage == null) {
 				continue;
 			}
 			
-			BufferedImage scaledImage = new BufferedImage(imageSize.width, imageSize.height, BufferedImage.TYPE_INT_ARGB);
-			Graphics2D g = scaledImage.createGraphics();
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			g.drawImage(signImage, 0, 0, imageSize.width, imageSize.height, null);
-			g.dispose();
+			Image scaledImage = signImage.getScaledInstance(imageSize.width, imageSize.height, Image.SCALE_SMOOTH);
 			
-			JStyledToggleButton button = new JStyledToggleButton(sign.name.replace("sign.", ""));
+			JStyledToggleButton button = new JStyledToggleButton(fancyName(sign.getName()));
 			button.setHoverColor(new Color(240, 240, 240));
+			button.setDefaultColor(new Color(235, 235, 235));
 			button.setIcon(new ImageIcon(scaledImage));
 			button.setVerticalTextPosition(SwingConstants.TOP);
 			button.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -76,16 +64,46 @@ public class BobRustSignPicker {
 			button.setPreferredSize(buttonSize);
 			button.setMinimumSize(buttonSize);
 			button.setMaximumSize(buttonSize);
-			button.addActionListener(buttonListener);
+			button.addActionListener((event) -> selectedSign = sign);
 			dialog.getContentPane().add(button);
 			
 			buttonGroup.add(button);
 			dialog.getContentPane().add(button);
 			
-			if(guiSign == sign) {
+			if (guiSign == sign) {
 				button.setSelected(true);
 			}
 		}
+	}
+	
+	private String fancyName(String text) {
+		return switch (text) {
+			case "bobrust.custom" -> "Customizable";
+			
+			case "sign.pictureframe.landscape" -> "Landscape Picture Frame";
+			case "sign.pictureframe.portrait" -> "Portrait Picture Frame";
+			case "sign.pictureframe.tall" -> "Tall Picture Frame";
+			case "sign.pictureframe.xl" -> "XL Picture Frame";
+			case "sign.pictureframe.xxl" -> "XLL Picture Frame";
+			
+			case "sign.wooden.small" -> "Small Wooden Sign";
+			case "sign.wooden.medium" -> "Medium Wooden Sign";
+			case "sign.wooden.large" -> "Large Wooden Sign";
+			case "sign.wooden.huge" -> "Huge Wooden Sign";
+			
+			case "sign.hanging.banner.large" -> "Large Banner Hanging";
+			case "sign.pole.banner.large" -> "Large Banner on pole";
+			
+			case "sign.hanging" -> "Hanging Sign";
+			case "sign.hanging.ornate"-> "Ornate Hanging Sign";
+			
+			case "sign.post.single" -> "Single Sign Post";
+			case "sign.post.double" -> "Double Sign Post";
+			case "sign.post.town" -> "One Sided Town Sign";
+			case "sign.post.town.roof" -> "Two Sided Town Sign";
+			
+			default -> text.replace("sign.", "").replace('.', ' ');
+		};
 	}
 
 	public void openSignDialog(Point point) {

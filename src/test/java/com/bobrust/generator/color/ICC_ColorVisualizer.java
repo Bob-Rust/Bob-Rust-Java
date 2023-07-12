@@ -26,9 +26,9 @@ public class ICC_ColorVisualizer {
 	}
 	
 	private static BufferedImage getImage(File name) {
-		try(FileInputStream stream = new FileInputStream(name)) {
+		try (FileInputStream stream = new FileInputStream(name)) {
 			return ImageIO.read(stream);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -62,17 +62,17 @@ public class ICC_ColorVisualizer {
 		int bwi = width;
 		int bhe = height;
 		
-		if(width > max_width || height > max_height) {
+		if (width > max_width || height > max_height) {
 			double he = max_height;
-			double wi = width * (max_height / (double)height);
+			double wi = width * (max_height / (double) height);
 			
-			if(wi > max_width) {
+			if (wi > max_width) {
 				wi = max_width;
-				he = height * (max_width / (double)width);
+				he = height * (max_width / (double) width);
 			}
 
-			bhe = (int)he;
-			bwi = (int)wi;
+			bhe = (int) he;
+			bwi = (int) wi;
 		}
 		
 		BufferedImage image = new BufferedImage(bwi, bhe, BufferedImage.TYPE_INT_ARGB);

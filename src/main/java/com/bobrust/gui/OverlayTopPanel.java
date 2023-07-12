@@ -6,18 +6,15 @@ import java.awt.Font;
 import javax.swing.*;
 
 import com.bobrust.lang.RustTranslator;
+import com.bobrust.settings.Settings;
 
-@SuppressWarnings("serial")
 public class OverlayTopPanel extends JPanel {
 	private static final int ESTIMATE_DELAY_OFFSET = 14;
-	
-	private final BobRustEditor gui;
 	
 	final JLabel generationLabel;
 	final JLabel generationInfo;
 	
-	public OverlayTopPanel(BobRustEditor gui) {
-		this.gui = gui;
+	public OverlayTopPanel() {
 		this.setBounds(150, 5, 10, 10);
 		this.setBackground(new Color(0x7f000000, true));
 		this.setLayout(null);
@@ -52,7 +49,7 @@ public class OverlayTopPanel extends JPanel {
 	
 	public void setEstimatedGenerationLabel(int index, int maxShapes) {
 		generationLabel.setText("%d/%d shapes generated".formatted(index, maxShapes));
-		long time = (long)(index * 1.1 * (ESTIMATE_DELAY_OFFSET + 1000.0 / (double)gui.getSettingsClickInterval()));
+		long time = (long)(index * 1.1 * (ESTIMATE_DELAY_OFFSET + 1000.0 / (double) Settings.SettingsClickInterval.get()));
 		generationInfo.setText("Estimated %s".formatted(RustTranslator.getTimeMinutesMessage(time)));
 	}
 	

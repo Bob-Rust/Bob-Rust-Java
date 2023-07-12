@@ -34,13 +34,13 @@ public class Circle {
 		int h = worker.h - 1;
 		Random rnd = worker.rnd;
 		
-		if(rnd.nextInt(3) == 0) {
+		if (rnd.nextInt(3) == 0) {
 			int a = x + (int)(rnd.nextGaussian() * 16);
 			int b = y + (int)(rnd.nextGaussian() * 16);
 			x = BorstUtils.clampInt(a, 0, w);
 			y = BorstUtils.clampInt(b, 0, h);
 		} else {
-			int c = BorstUtils.getClosestSize(r + (int)(rnd.nextGaussian() * 16));
+			int c = BorstUtils.getClosestSize(r + (int)(rnd.nextGaussian() * 32));
 			r = BorstUtils.clampInt(c, 1, w);
 		}
 	}
@@ -55,20 +55,20 @@ public class Circle {
 		int LENGTH = CircleCache.CIRCLE_CACHE_LENGTH[cache_index];
 		
 		List<Scanline> list = new ArrayList<>(LENGTH);
-		for(int i = 0; i < LENGTH; i++) {
+		for (int i = 0; i < LENGTH; i++) {
 			Scanline line = LINES[i];
 			int yy = line.y + y;
-			if(yy < 0) {
+			if (yy < 0) {
 				continue;
 			}
 			
-			if(yy >= h) {
+			if (yy >= h) {
 				break;
 			}
 			
 			int x1 = line.x1 + x;
 			int x2 = line.x2 + x;
-			x1 = (x1 <  0) ? 0:x1;
+			x1 = (x1 <  0) ? 0 : x1;
 			x2 = (x2 >= w) ? (w - 1):x2;
 			list.add(new Scanline(yy, x1, x2));
 		}

@@ -48,11 +48,11 @@ public class BorstImage {
 	public static BorstImage loadBorstImage(String path, int target_width, int target_height) throws IOException {
 		BufferedImage image = ImageIO.read(new File(path));
 		
-		if(target_width == 0) {
+		if (target_width == 0) {
 			target_width = image.getWidth();
 		}
 		
-		if(target_height == 0) {
+		if (target_height == 0) {
 			target_height = image.getHeight();
 		}
 		

@@ -1,27 +1,16 @@
 package com.bobrust.util;
 
+import com.bobrust.util.data.RustConstants;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class RustWindowUtil {
-	private static boolean init;
-	
-	// TODO: Make sure the UIManager is initialized
-	public static void loadUI() {
-		if (init) {
-			return;
-		}
-		
-		// Make sure we are initialized
-		init = true;
-		
+	static {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch(Exception ignore) {
+		} catch (Exception ignore) {
 			// Do nothing
 		}
 	}
@@ -42,7 +31,6 @@ public class RustWindowUtil {
 	}
 	
 	public static void showWarningMessage(Component component, String message, String title) {
-		RustWindowUtil.loadUI();
 		JOptionPane.showMessageDialog(component, message, title, JOptionPane.WARNING_MESSAGE);
 	}
 	
@@ -54,9 +42,9 @@ public class RustWindowUtil {
 		try {
 			Robot robot = new Robot(device);
 			
-			return (BufferedImage)robot.createMultiResolutionScreenCapture(gc.getBounds())
+			return (BufferedImage) robot.createMultiResolutionScreenCapture(gc.getBounds())
 				.getResolutionVariant(screenWidth, screenHeight);
-		} catch(AWTException e) {
+		} catch (AWTException e) {
 			e.printStackTrace();
 		}
 		

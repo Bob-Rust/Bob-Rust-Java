@@ -4,13 +4,14 @@ import java.awt.*;
 import java.awt.event.InputEvent;
 import java.util.List;
 
+import com.bobrust.settings.Settings;
+import com.bobrust.util.data.RustConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.bobrust.generator.BorstUtils;
 import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
-import com.bobrust.gui.BobRustEditor;
 import com.bobrust.gui.BobRustDesktopOverlay;
 import com.bobrust.util.RustUtil;
 import com.bobrust.util.Sign;
@@ -18,12 +19,9 @@ import com.bobrust.util.Sign;
 public class BobRustPainter {
 	private static final Logger LOGGER = LogManager.getLogger(BobRustPainter.class);
 	
-	// This is the index of the circle shape
-	private static final int CIRCLE_SHAPE = 1;
 	// The maximum distance the mouse can be from the correct position
 	private static final double MAXIMUM_DISPLACEMENT = 10;
 	
-	private final BobRustEditor gui;
 	private final BobRustDesktopOverlay overlay;
 	private final BobRustPalette palette;
 	private volatile int clickIndex;
@@ -32,19 +30,61 @@ public class BobRustPainter {
 	private double widthDelta;
 	private double heightDelta;
 	
-	public BobRustPainter(BobRustEditor gui, BobRustDesktopOverlay overlay, BobRustPalette palette) {
-		this.gui = gui;
+	public BobRustPainter(BobRustDesktopOverlay overlay, BobRustPalette palette) {
 		this.overlay = overlay;
 		this.palette = palette;
 	}
 	
 	// TODO: All points should be described as an percentage of the screen
 	
+	public BlobList generateDebugDrawList() {
+		// DEBUG_DRAWN_COLORS
+		BlobList list = new BlobList();
+		
+		int xo = 128;
+		int yo = 128;
+		
+		// Draw shape sizes
+		for (int shape = 0; shape < 2; shape++) {
+			for (int size = 0; size < 6; size++) {
+				int x = size * 64 + xo;
+				int y = shape * 64 + yo;
+				list.add(Blob.get(x, y, BorstUtils.SIZES[size], 0,
+					shape == 0
+						? RustConstants.CIRCLE_SHAPE
+						: RustConstants.SQUARE_SHAPE, 5));
+			}
+		}
+		
+		// Draw alpha
+		for (int alpha = 0; alpha < 6; alpha++) {
+			int x = (alpha) * 64 + xo;
+			int y = 3 * 64 + yo;
+			
+			list.add(Blob.get(x, y, BorstUtils.SIZES[5], 0, RustConstants.SQUARE_SHAPE, alpha));
+		}
+		
+		// Draw colors
+		int maxWidth = 16;
+		for (int color = 0; color < BorstUtils.COLORS.length; color++) {
+			int x = (color % maxWidth) * 64 + (7) * 64 + xo;
+			int y = (color / maxWidth) * 64 + yo;
+			list.add(Blob.get(x, y, BorstUtils.SIZES[5], BorstUtils.COLORS[color].rgb, RustConstants.SQUARE_SHAPE, 5));
+		}
+		
+		return list;
+	}
+	
 	public boolean startDrawing(BlobList list) throws Exception {
-		if(list.size() < 1) return true;
+		return startDrawing(list, RustConstants.CIRCLE_SHAPE);
+	}
+	
+	public boolean startDrawing(BlobList list, int shape) throws Exception {
+		if (list.size() < 1) {
+			return true;
+		}
 
 		GraphicsConfiguration gc = overlay.getMonitorConfiguration();
-//		ScreenDevice device = new ScreenDevice(gc);
 		
 		{
 			GraphicsDevice gd = gc.getDevice();
@@ -58,15 +98,14 @@ public class BobRustPainter {
 		Robot robot = new Robot(gc.getDevice());
 		
 		Rectangle canvas = overlay.getCanvasArea();
-//		Rectangle screen = overlay.getScreenLocation();
-		Sign signType = gui.getSettingsSign();
+		Sign signType = Settings.SettingsSign.get();
 		
-		int clickInterval = gui.getSettingsClickInterval();
-		int alphaSetting = gui.getSettingsAlpha();
-		int shapeSetting = CIRCLE_SHAPE;
-		int delayPerCycle = (int)(1000.0 / clickInterval);
+		int clickInterval = Settings.SettingsClickInterval.get();
+		int alphaSetting = Settings.SettingsAlpha.get();
+		int shapeSetting = shape;
+		int delayPerCycle = (int) (1000.0 / clickInterval);
 		double autoDelay = 1000.0 / (clickInterval * 3.0);
-		int autosaveInterval = gui.getSettingsAutosaveInterval();
+		int autosaveInterval = Settings.SettingsAutosaveInterval.get();
 		
 		this.clickIndex = 0;
 		
@@ -95,18 +134,20 @@ public class BobRustPainter {
 		// the current thread to click on the screen we want to minimize
 		// the amount of noise that rendering components could generate.
 		Thread guiUpdateThread = new Thread(() -> {
+			// TODO: This could be made using a better algorithm.
+			//       The painter should not touch the render thread
 			long start = System.nanoTime();
 			int msDelay = delayPerCycle;
-			while(true) {
+			while (true) {
 				try {
 					Thread.sleep(50);
-				} catch(InterruptedException e) {
+				} catch (InterruptedException e) {
 					// Make sure we keep the interrupted status
 					Thread.currentThread().interrupt();
 					break;
 				}
 				
-				if(clickIndex > 0) {
+				if (clickIndex > 0) {
 					long time = System.nanoTime() - start;
 					msDelay = (int)((time / 1000000.0) / (double)clickIndex);
 				}
@@ -118,11 +159,18 @@ public class BobRustPainter {
 		guiUpdateThread.setDaemon(true);
 		guiUpdateThread.start();
 		
+		int signWidth = signType.getWidth();
+		int signHeight = signType.getHeight();
+		
 		try {
 			// Last fields
 			Point lastPoint = new Point(0, 0);
 			int lastColor = -1;
 			int lastSize = -1;
+			
+			// Debug
+			int lastShape = -1;
+			int lastAlpha = -1;
 			
 			{
 				Blob first = blobList.get(0);
@@ -132,28 +180,41 @@ public class BobRustPainter {
 				lastColor = first.colorIndex;
 			}
 			
-			for(int i = 0, l = 1; i < count; i++, l++) {
+			for (int i = 0, actions = 1; i < count; i++, actions++) {
 				Blob blob = blobList.get(i);
 				
 				// Change the size
-				if(lastSize != blob.sizeIndex) {
+				if (lastSize != blob.sizeIndex) {
 					clickSize(robot, palette.getSizeButton(blob.sizeIndex), 20, autoDelay);
 					lastSize = blob.sizeIndex;
-					l++;
+					actions++;
 				}
 				
 				// Change the color
-				if(lastColor != blob.colorIndex) {
-					if(!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 20, autoDelay)) {
-						LOGGER.warn("Potentially failed to change color! Will still keep try drawing");
+				if (lastColor != blob.colorIndex) {
+					if (!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 5, autoDelay)) {
+						// LOGGER.warn("Potentially failed to change color! Will still keep try drawing");
 					}
 					
 					lastColor = blob.colorIndex;
-					l++;
+					actions++;
 				}
 				
-				double dx = blob.x / (double)signType.width;
-				double dy = blob.y / (double)signType.height;
+				// Change the shape (Only ever used in debug)
+				if (RustConstants.DEBUG_DRAWN_COLORS && lastShape != blob.shapeIndex) {
+					clickSize(robot, palette.getShapeButton(blob.shapeIndex), 20, autoDelay);
+					lastShape = blob.shapeIndex;
+					actions++;
+				}
+				
+				if (RustConstants.DEBUG_DRAWN_COLORS && lastAlpha != blob.alphaIndex) {
+					clickSize(robot, palette.getAlphaButton(blob.alphaIndex), 20, autoDelay);
+					lastAlpha = blob.alphaIndex;
+					actions++;
+				}
+				
+				double dx = blob.x / (double) signWidth;
+				double dy = blob.y / (double) signHeight;
 				double tx = dx * canvas.width + canvas.x;
 				double ty = dy * canvas.height + canvas.y;
 				int sx = (int)tx + displayX;
@@ -162,12 +223,12 @@ public class BobRustPainter {
 				lastPoint.setLocation(sx, sy);
 				clickPointScaled(robot, lastPoint, autoDelay);
 				
-				if((i % autosaveInterval) == 0) {
+				if ((i % autosaveInterval) == 0) {
 					clickPoint(robot, palette.getSaveButton(), autoDelay);
-					l++;
+					actions++;
 				}
 				
-				this.clickIndex = l;
+				this.clickIndex = actions;
 			}
 
 			this.clickIndex = score;
@@ -197,7 +258,7 @@ public class BobRustPainter {
 	}
 	
 	private void clickPoint(Robot robot, Point point, int times, double delay) {
-		for(int i = 0; i < times; i++) {
+		for (int i = 0; i < times; i++) {
 			clickPoint(robot, point, delay);
 		}
 	}
@@ -231,14 +292,14 @@ public class BobRustPainter {
 			} else {
 				break;
 			}
-		} while(maxAttempts-- > 0);
+		} while (maxAttempts-- > 0);
 		
 		if (maxAttempts == 0) {
 			LOGGER.warn("Potentially failed to paint color! Will still keep try drawing");
 		}
 		
 		double distance = point.distance(MouseInfo.getPointerInfo().getLocation());
-		if(distance > MAXIMUM_DISPLACEMENT) {
+		if (distance > MAXIMUM_DISPLACEMENT) {
 			throw new IllegalStateException("Mouse moved during the operation");
 		}
 		
@@ -261,7 +322,7 @@ public class BobRustPainter {
 		addTimeDelay(time + delay * 3.0);
 		
 		double distance = point.distance(MouseInfo.getPointerInfo().getLocation());
-		if(distance > MAXIMUM_DISPLACEMENT) {
+		if (distance > MAXIMUM_DISPLACEMENT) {
 			throw new IllegalStateException("Mouse moved during the operation");
 		}
 		
@@ -271,11 +332,11 @@ public class BobRustPainter {
 	
 	private void clickSize(Robot robot, Point point, int maxAttempts, double delay) {
 		// Make sure that we press the size
-		while(maxAttempts-- > 0) {
+		while (maxAttempts-- > 0) {
 			clickPoint(robot, point, delay);
 			
 			Color after = robot.getPixelColor(point.x, point.y + 8);
-			if(after.getGreen() > 120) {
+			if (after.getGreen() > 120) {
 				return;
 			}
 		}
@@ -288,11 +349,11 @@ public class BobRustPainter {
 		Color before = robot.getPixelColor(colorPreview.x, colorPreview.y);
 		
 		// Make sure that we press the size
-		while(maxAttempts-- > 0) {
+		while (maxAttempts-- > 0) {
 			clickPoint(robot, point, delay);
 			
 			Color after = robot.getPixelColor(colorPreview.x, colorPreview.y);
-			if(!before.equals(after)) {
+			if (!before.equals(after)) {
 				return true;
 			}
 		}

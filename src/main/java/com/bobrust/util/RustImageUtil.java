@@ -8,6 +8,7 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import com.bobrust.settings.data.ScalingType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,13 +30,13 @@ public class RustImageUtil {
 	
 	static {
 		int[] lut = null;
-		try(InputStream stream = RustImageUtil.class.getResourceAsStream("/profiles/cmyk.png")) {
+		try (InputStream stream = RustImageUtil.class.getResourceAsStream("/profiles/cmyk.png")) {
 			BufferedImage cmykLut = ImageIO.read(stream);
 			int w = cmykLut.getWidth();
 			int h = cmykLut.getHeight();
 			lut = new int[w * h];
 			cmykLut.getRGB(0, 0, w, h, lut, 0, w);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			LOGGER.error("Error loading cmyk lut: {}", e);
 			LOGGER.throwing(e);
 			e.printStackTrace();
@@ -58,7 +59,7 @@ public class RustImageUtil {
 		
 		final int[] src = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
 		final int[] lut = iccCmykLut;
-		for(int i = 0, len = src.length; i < len; i++) {
+		for (int i = 0, len = src.length; i < len; i++) {
 			int col = src[i] & 0xffffff;
 			int cr = ((col >> 16) & 255) >> d_shift;
 			int cg = ((col >> 8) & 255) >> d_shift;
@@ -70,16 +71,16 @@ public class RustImageUtil {
 		return image;
 	}
 	
-	public static BufferedImage getScaledInstance(BufferedImage source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, int scalingType) {
+	public static BufferedImage getScaledInstance(BufferedImage source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, ScalingType scalingType) {
 		Object hint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
-		switch(scalingType) {
-			case RustConstants.IMAGE_SCALING_NEAREST -> {
+		switch (scalingType) {
+			case Nearest -> {
 				hint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
 			}
-			case RustConstants.IMAGE_SCALING_BILINEAR -> {
+			case Bilinear -> {
 				hint = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
 			}
-			case RustConstants.IMAGE_SCALING_BICUBIC -> {
+			case Bicubic -> {
 				hint = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
 			}
 		}
