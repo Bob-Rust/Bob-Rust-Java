@@ -125,6 +125,17 @@ task copyRuntimeLibs(type: Copy) {
     from configurations.packImpl
 }
 
+task assembleProject {
+    doFirst {
+        // Clean the libs folder such that the release doesn't contain old files
+        println "Cleaning libs"
+        project.delete(files("${buildDir}/libs"))
+    }
+    
+    dependsOn("assembleRelease")
+    dependsOn("jpackage")
+}
+
 /**
  * https://github.com/petr-panteleyev/jpackage-gradle-plugin
  * https://docs.oracle.com/en/java/javase/16/jpackage/override-jpackage-resources.html#GUID-1B718F8B-B68D-4D46-B1DB-003D7729AAB6
@@ -151,6 +162,7 @@ tasks.jpackage {
         resourceDir = "$projectDir/jpackage"
         winMenu = true
         winDirChooser = true
+        winPerUserInstall = true // Use AppData
         winShortcut = true
         winUpgradeUuid = "2a3ea308-884a-4d37-81ce-9899b022d9ef"
         icon = "$projectDir/jpackage/assets/icon.ico"
