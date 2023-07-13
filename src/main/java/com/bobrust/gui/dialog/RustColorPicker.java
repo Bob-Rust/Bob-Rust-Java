@@ -20,12 +20,12 @@ import com.bobrust.util.data.RustConstants;
 /**
  * A color picker that looks similar to the color picker in rust
  */
-public class BobRustColorPicker {
+public class RustColorPicker {
 	private final JDialog dialog;
 	private final JLabel colorLabel;
 	private Color selectedColor;
 	
-	public BobRustColorPicker(JDialog parent) {
+	public RustColorPicker(JDialog parent) {
 		this.selectedColor = Settings.SettingsBackground.get();
 		
 		dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), ModalityType.APPLICATION_MODAL);

@@ -41,7 +41,7 @@ public class RustFileDialog {
 		try {
 			Class.forName("org.lwjgl.util.tinyfd.TinyFileDialogs");
 			hasLwjgl = true;
-		} catch(Throwable ignore) {
+		} catch (Throwable ignore) {
 			// If we caught an exception that means that we did not load the library
 			hasLwjgl = false;
 		}
@@ -63,34 +63,33 @@ public class RustFileDialog {
 	
 	public File open(JDialog parent, FileNameExtensionFilter fileFilter, String title, String directory) {
 		try {
-			if(HAS_LWJGL) {
+			if (HAS_LWJGL) {
 				// If we successfully loaded LWJGL
-				try(MemoryStack stack = MemoryStack.stackPush()) {
+				try (MemoryStack stack = MemoryStack.stackPush()) {
 					PointerBuffer filters = stack.mallocPointer(fileFilter.getExtensions().length);
-					for(String filter : fileFilter.getExtensions()) {
+					for (String filter : fileFilter.getExtensions()) {
 						filters.put(stack.UTF8("*." + filter));
 					}
 					filters.flip();
 					
 					String result = TinyFileDialogs.tinyfd_openFileDialog(title, directory + File.separatorChar, filters, fileFilter.getDescription(), false);
 					
-					if(result != null) {
+					if (result != null) {
 						return new File(result).getAbsoluteFile();
 					}
 				}
 				
 				return null;
 			}
-		} catch(Throwable t) {
+		} catch (Throwable t) {
 			// We where not supposed to crash here but we still did.
 			// This is a fallback catch to make sure we always have
-			// atleast one file dialog displayed.
-			LOGGER.error("Failed to create Tinyfd open dialog: {}", t);
-			LOGGER.throwing(t);
+			// at least one file dialog displayed
+			LOGGER.error("Failed to create Tinyfd open dialog", t);
 			t.printStackTrace();
 		}
 		
-		if(fileChooser == null) {
+		if (fileChooser == null) {
 			fileChooser = new JFileChooser();
 		}
 		
@@ -102,8 +101,7 @@ public class RustFileDialog {
 		fileChooser.addChoosableFileFilter(fileFilter);
 		fileChooser.setFileFilter(fileFilter);
 		int status = fileChooser.showOpenDialog(parent);
-		
-		if(status == JFileChooser.APPROVE_OPTION) {
+		if (status == JFileChooser.APPROVE_OPTION) {
 			return fileChooser.getSelectedFile();
 		}
 		

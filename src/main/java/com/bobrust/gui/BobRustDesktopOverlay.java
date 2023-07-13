@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
-import com.bobrust.gui.dialog.BobRustSettingsDialog;
+import com.bobrust.gui.dialog.SettingsDialog;
 import com.bobrust.gui.render.BobRustShapeRender;
 import com.bobrust.settings.Settings;
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +23,7 @@ import com.bobrust.generator.BorstGenerator.BorstData;
 import com.bobrust.generator.BorstSettings;
 import com.bobrust.generator.Model;
 import com.bobrust.gui.dialog.BobRustDrawDialog;
-import com.bobrust.gui.dialog.BobRustMonitorPicker;
+import com.bobrust.gui.dialog.MonitorPickerDialog;
 import com.bobrust.robot.BobRustPalette;
 import com.bobrust.util.data.RustConstants;
 import com.bobrust.util.RustImageUtil;
@@ -52,8 +52,8 @@ public class BobRustDesktopOverlay extends JPanel {
 	private final Point dragStart = new Point(0, 0);
 	private final Point dragEnd = new Point(0, 0);
 	
-	private final BobRustMonitorPicker monitorPicker;
-	private final BobRustSettingsDialog settingsGui;
+	private final MonitorPickerDialog monitorPicker;
+	private final SettingsDialog settingsGui;
 	private final BobRustDrawDialog drawDialog;
 	private final BobRustShapeRender shapeRender;
 	
@@ -224,8 +224,8 @@ public class BobRustDesktopOverlay extends JPanel {
 			}
 		});
 		
-		settingsGui = new BobRustSettingsDialog(dialog);
-		monitorPicker = new BobRustMonitorPicker(dialog);
+		settingsGui = new SettingsDialog(dialog);
+		monitorPicker = new MonitorPickerDialog(dialog);
 		drawDialog = new BobRustDrawDialog(this, dialog);
 		shapeRender = new BobRustShapeRender(SHAPE_CACHE_INTERVAL);
 		actionBarPanel = new OverlayActionPanel(dialog, gui, this);

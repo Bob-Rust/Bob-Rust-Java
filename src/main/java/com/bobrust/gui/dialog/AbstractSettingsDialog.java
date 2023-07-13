@@ -13,10 +13,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractBobRustSettingsDialog {
+public abstract class AbstractSettingsDialog {
 	protected final List<TabbedPane> tabbedPanes;
 	
-	public AbstractBobRustSettingsDialog() {
+	public AbstractSettingsDialog() {
 		this.tabbedPanes = new ArrayList<>();
 	}
 	
@@ -187,7 +187,7 @@ public abstract class AbstractBobRustSettingsDialog {
 	}
 	
 	protected static class TabbedPane {
-		protected static final int MAX_HEIGHT = 10;
+		protected static final int MAX_HEIGHT = 11;
 		
 		protected final JTabbedPane tabbedPane;
 		protected final RustUI.Type title;

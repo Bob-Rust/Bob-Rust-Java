@@ -16,7 +16,23 @@ public class JRoundPanel extends JPanel {
 		Graphics2D g = (Graphics2D) gr;
 		g.setColor(getBackground());
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.fillRoundRect(0, 0, getWidth(), getHeight(), borderRadius, borderRadius);
+		
+		int x = 0;
+		int y = 0;
+		int w = getWidth();
+		int h = getHeight();
+		var border = getBorder();
+		if (border != null) {
+			Insets insets = border.getBorderInsets(this);
+			if (insets != null) {
+				x += insets.left;
+				y += insets.top;
+				w -= x + insets.right;
+				h -= y + insets.bottom;
+			}
+		}
+		g.fillRoundRect(x, y, w, h, borderRadius, borderRadius);
+		
 		
 		// Remove everything outside
 		// RoundRectangle2D shape = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), borderRadius, borderRadius);

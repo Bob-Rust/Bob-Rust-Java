@@ -19,10 +19,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
-public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
-	private static final Logger LOGGER = LogManager.getLogger(BobRustSettingsDialog.class);
-	private final BobRustSignPicker signPicker;
-	private final BobRustColorPicker colorPicker;
+public class SettingsDialog extends AbstractSettingsDialog {
+	private static final Logger LOGGER = LogManager.getLogger(SettingsDialog.class);
+	private final SignPickerDialog signPicker;
+	private final RustColorPicker colorPicker;
 	private final JDialog dialog;
 	
 	// TabbedPane
@@ -34,14 +34,14 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 	
 	private final java.util.List<IUpdateValue> applyEdits;
 	
-	public BobRustSettingsDialog(JDialog parent) {
+	public SettingsDialog(JDialog parent) {
 		this.applyEdits = new ArrayList<>();
 		this.dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SETTINGSDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		this.dialog.setIconImage(RustConstants.DIALOG_ICON);
 		this.dialog.setSize(300, 360);
 		this.dialog.setResizable(false);
-		this.signPicker = new BobRustSignPicker(dialog);
-		this.colorPicker = new BobRustColorPicker(dialog);
+		this.colorPicker = new RustColorPicker(dialog);
+		this.signPicker = new SignPickerDialog(dialog);
 		
 		dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.X_AXIS));
 		

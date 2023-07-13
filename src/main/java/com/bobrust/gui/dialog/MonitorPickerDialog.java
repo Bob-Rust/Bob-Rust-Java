@@ -1,7 +1,6 @@
 package com.bobrust.gui.dialog;
 
 import java.awt.*;
-import java.awt.Dialog.ModalityType;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -9,27 +8,25 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
-public class BobRustMonitorPicker {
-	private final JDialog dialog;
-	
+public class MonitorPickerDialog extends JDialog {
 	private GraphicsConfiguration config;
 	
-	public BobRustMonitorPicker(JDialog parent) {
-		dialog = new JDialog(parent, "", ModalityType.APPLICATION_MODAL);
-		dialog.setUndecorated(true);
-		dialog.setAlwaysOnTop(true);
-		dialog.setBackground(new Color(0x20000000, true));
+	public MonitorPickerDialog(JDialog parent) {
+		super(parent, "", ModalityType.APPLICATION_MODAL);
+		setUndecorated(true);
+		setAlwaysOnTop(true);
+		setBackground(new Color(0x20000000, true));
 		
 		JPanel panel = new JPanel();
 		panel.setBackground(new Color(0x20000000, true));
 		panel.setOpaque(false);
 		panel.setBorder(new LineBorder(Color.red, 10));
-		dialog.setContentPane(panel);
+		setContentPane(panel);
 		
 		panel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				dialog.dispose();
+				dispose();
 			}
 		});
 	}
@@ -37,12 +34,12 @@ public class BobRustMonitorPicker {
 	private GraphicsConfiguration getGraphicsConfiguration(Point point) {
 		GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		
-		if(point != null) {
+		if (point != null) {
 			GraphicsDevice[] array = graphicsEnvironment.getScreenDevices();
 			
-			for(GraphicsDevice device : array) {
-				for(GraphicsConfiguration gc : device.getConfigurations()) {
-					if(gc.getBounds().contains(point)) {
+			for (GraphicsDevice device : array) {
+				for (GraphicsConfiguration gc : device.getConfigurations()) {
+					if (gc.getBounds().contains(point)) {
 						return gc;
 					}
 				}
@@ -54,17 +51,16 @@ public class BobRustMonitorPicker {
 	}
 	
 	public GraphicsConfiguration openDialog() {
-		// TODO: Use a better structure than a thread
 		Thread thread = new Thread(() -> {
 			try {
-				while(true) {
+				while (true) {
 					Point mousePoint = MouseInfo.getPointerInfo().getLocation();
 					GraphicsConfiguration gc = getGraphicsConfiguration(mousePoint);
-					dialog.setBounds(gc.getBounds());
+					setBounds(gc.getBounds());
 					Thread.sleep(100);
 				}
-			} catch(InterruptedException e) {
-				
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 			}
 		});
 		thread.setDaemon(true);
@@ -72,13 +68,15 @@ public class BobRustMonitorPicker {
 		
 		try {
 			// Make it possible to select another monitor
-			GraphicsConfiguration gc = getGraphicsConfiguration(dialog.getLocation());
-			dialog.setBounds(gc.getBounds());
-			dialog.setVisible(true);
+			GraphicsConfiguration gc = getGraphicsConfiguration(getLocation());
+			setBounds(gc.getBounds());
+			
+			// This blocks until the monitor has been selected
+			setVisible(true);
 			
 			// TODO: Use getScreenResolution() to calculate the correct screen size
 			// Toolkit.getDefaultToolkit().getScreenResolution();
-			return updateConfiguration(dialog.getLocation());
+			return updateConfiguration(getLocation());
 		} finally {
 			thread.interrupt();
 		}
@@ -91,7 +89,7 @@ public class BobRustMonitorPicker {
 	}
 	
 	public GraphicsConfiguration getMonitor() {
-		if(config == null) {
+		if (config == null) {
 			// If the config is null we use the default configuration
 			config = getGraphicsConfiguration(null);
 		}
