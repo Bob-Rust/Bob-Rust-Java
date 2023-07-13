@@ -24,9 +24,9 @@ public class EnumType<T extends Enum<T>> extends SettingsType<T> {
 		if (value == null) {
 			this.value = defaultValue;
 			parent.update(this);
-		} else if (value.getClass().isInstance(defaultValue.getClass())) {
+		} else if (defaultValue.getDeclaringClass().isAssignableFrom(value.getClass())) {
 			this.value = defaultValue.getDeclaringClass().cast(value);
-			parent.update(this);	
+			parent.update(this);
 		}
 	}
 	
