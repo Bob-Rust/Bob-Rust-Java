@@ -14,7 +14,7 @@ import com.bobrust.gui.dialog.RustFileDialog;
 import com.bobrust.settings.Settings;
 import com.bobrust.settings.RustSettingsImpl;
 
-// TODO: Remove extends
+// TODO: Remove this class
 public class BobRustEditor extends RustSettingsImpl {
 	private BobRustDesktopOverlay overlayDialog;
 	private ApplicationWindow overlayDialogNew;
@@ -52,8 +52,8 @@ public class BobRustEditor extends RustSettingsImpl {
 		overlayDialogNew = new ApplicationWindow();
 		overlayDialogNew.setVisible(true);
 		
-		overlayDialog = new BobRustDesktopOverlay(this);
-		overlayDialog.getDialog().setVisible(true);
+		// overlayDialog = new BobRustDesktopOverlay(this);
+		// overlayDialog.getDialog().setVisible(true);
 	}
 	
 	public File openImageFileChooser(JDialog dialog) {

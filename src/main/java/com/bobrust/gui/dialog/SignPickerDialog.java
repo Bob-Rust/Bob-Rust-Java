@@ -105,6 +105,7 @@ public class SignPickerDialog extends JDialog {
 	public void openSignDialog(Point point) {
 		setLocation(point);
 		setVisible(true);
+		dispose();
 	}
 
 	public Sign getSelectedSign() {

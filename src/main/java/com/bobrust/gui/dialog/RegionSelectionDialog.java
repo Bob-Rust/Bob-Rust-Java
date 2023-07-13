@@ -1,33 +1,62 @@
 package com.bobrust.gui.dialog;
 
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import com.bobrust.util.RustWindowUtil;
 
-import javax.swing.JDialog;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.awt.event.*;
 
-public class MonitorPickerDialog extends JDialog {
+/**
+ * A dialog that allows you to select a region
+ */
+public class RegionSelectionDialog extends JDialog {
+	private final JDialog parent;
 	private GraphicsConfiguration config;
 	
-	public MonitorPickerDialog(JDialog parent) {
+	public RegionSelectionDialog(JDialog parent) {
 		super(parent, "", ModalityType.APPLICATION_MODAL);
+		this.parent = parent;
+		
 		setUndecorated(true);
+		setFocusable(true);
 		setAlwaysOnTop(true);
 		setBackground(new Color(0x40000000, true));
-		
-		JPanel panel = new JPanel();
-		panel.setOpaque(false);
-		panel.setBorder(new LineBorder(Color.red, 10));
-		setContentPane(panel);
-		
-		panel.addMouseListener(new MouseAdapter() {
+		addWindowListener(new WindowAdapter() {
 			@Override
-			public void mousePressed(MouseEvent e) {
+			public void windowClosing(WindowEvent e) {
+				// TODO Set state of region to no-change
 				dispose();
+				parent.setVisible(true);
+				RustWindowUtil.showWarningMessage(parent, "When closing the region dialog you should use 'Enter' or 'Escape' instead of pressing Alt+F4", "How to close the region selector");
 			}
 		});
+		addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					// Correct way to close the region selector
+					dispose();
+				}
+			}
+		});
+		
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout());
+		panel.setBorder(new LineBorder(Color.red, 10));
+		panel.setOpaque(false);
+		setContentPane(panel);
+		
+		JPanel topTextPanel = new JPanel();
+		topTextPanel.setBackground(Color.red);
+		panel.add(topTextPanel, BorderLayout.NORTH);
+		
+		// TODO: Move the text a bit further up to make more space for selecting the canvas area
+		JLabel topText = new JLabel("Press Enter or Escape to close");
+		topText.setHorizontalTextPosition(SwingConstants.CENTER);
+		topText.setFont(topText.getFont().deriveFont(20.0f));
+		topText.setForeground(Color.white);
+		topTextPanel.add(topText);
 	}
 	
 	private GraphicsConfiguration getGraphicsConfiguration(Point point) {
@@ -53,6 +82,7 @@ public class MonitorPickerDialog extends JDialog {
 		Thread thread = new Thread(() -> {
 			try {
 				while (true) {
+					// Follow the mouse and allow it to change
 					Point mousePoint = MouseInfo.getPointerInfo().getLocation();
 					GraphicsConfiguration gc = getGraphicsConfiguration(mousePoint);
 					setBounds(gc.getBounds());
@@ -71,10 +101,11 @@ public class MonitorPickerDialog extends JDialog {
 			setBounds(gc.getBounds());
 			
 			// This blocks until the monitor has been selected
+			parent.setVisible(false);
 			setVisible(true);
+			parent.setVisible(true);
+			dispose();
 			
-			// TODO: Use getScreenResolution() to calculate the correct screen size
-			// Toolkit.getDefaultToolkit().getScreenResolution();
 			return updateConfiguration(getLocation());
 		} finally {
 			thread.interrupt();
