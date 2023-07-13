@@ -14,8 +14,10 @@ import com.bobrust.gui.dialog.RustFileDialog;
 import com.bobrust.settings.Settings;
 import com.bobrust.settings.RustSettingsImpl;
 
+// TODO: Remove extends
 public class BobRustEditor extends RustSettingsImpl {
 	private BobRustDesktopOverlay overlayDialog;
+	private BobRustDesktopOverlayNew overlayDialogNew;
 	
 	private RustFileDialog fileChooser;
 	private FileNameExtensionFilter filterImages;
@@ -46,6 +48,9 @@ public class BobRustEditor extends RustSettingsImpl {
 		
 		fileChooser = new RustFileDialog();
 		filterImages = new FileNameExtensionFilter("Image Files", ImageIO.getReaderFileSuffixes());
+		
+		// overlayDialogNew = new BobRustDesktopOverlayNew();
+		// overlayDialogNew.setVisible(true);
 		
 		overlayDialog = new BobRustDesktopOverlay(this);
 		overlayDialog.getDialog().setVisible(true);
