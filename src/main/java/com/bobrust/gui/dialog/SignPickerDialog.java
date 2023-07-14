@@ -12,16 +12,17 @@ import javax.swing.border.EmptyBorder;
 import com.bobrust.gui.comp.JStyledToggleButton;
 import com.bobrust.lang.RustUI;
 import com.bobrust.settings.Settings;
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 import com.bobrust.util.data.RustSigns;
 import com.bobrust.util.Sign;
 
+// TODO: Make it possible to use escape or enter to exit the dialog
 public class SignPickerDialog extends JDialog {
 	private Sign selectedSign;
 	
 	public SignPickerDialog(JDialog parent) {
 		super(parent, RustUI.getString(RustUI.Type.EDITOR_SIGNPICKERDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
-		setIconImage(RustConstants.DIALOG_ICON);
+		setIconImage(AppConstants.DIALOG_ICON);
 		setSize(520, 670);
 		setResizable(false);
 		getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));

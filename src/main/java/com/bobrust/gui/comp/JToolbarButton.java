@@ -21,7 +21,6 @@ public class JToolbarButton extends JRoundPanel {
 		
 		button = new JButton();
 		button.setBorder(new EmptyBorder(8, 8, 8, 8));
-		button.setToolTipText("This is a tooltip");
 		button.setFocusPainted(false);
 		button.setContentAreaFilled(false);
 		button.addMouseListener(new MouseAdapter() {
@@ -54,6 +53,11 @@ public class JToolbarButton extends JRoundPanel {
 		if (!enabled) {
 			super.setBackground(background.darker());
 		}
+	}
+	
+	@Override
+	public void setToolTipText(String text) {
+		button.setToolTipText(text);
 	}
 	
 	public void addActionListener(ActionListener actionListener) {

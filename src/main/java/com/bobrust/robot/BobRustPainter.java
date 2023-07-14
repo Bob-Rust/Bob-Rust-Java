@@ -5,14 +5,13 @@ import java.awt.event.InputEvent;
 import java.util.List;
 
 import com.bobrust.settings.Settings;
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.bobrust.generator.BorstUtils;
 import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
-import com.bobrust.gui.BobRustDesktopOverlay;
 import com.bobrust.util.RustUtil;
 import com.bobrust.util.Sign;
 
@@ -22,7 +21,6 @@ public class BobRustPainter {
 	// The maximum distance the mouse can be from the correct position
 	private static final double MAXIMUM_DISPLACEMENT = 10;
 	
-	private final BobRustDesktopOverlay overlay;
 	private final BobRustPalette palette;
 	private volatile int clickIndex;
 	private int displayX;
@@ -30,15 +28,12 @@ public class BobRustPainter {
 	private double widthDelta;
 	private double heightDelta;
 	
-	public BobRustPainter(BobRustDesktopOverlay overlay, BobRustPalette palette) {
-		this.overlay = overlay;
+	public BobRustPainter(BobRustPalette palette) {
 		this.palette = palette;
 	}
 	
 	// TODO: All points should be described as an percentage of the screen
-	
 	public BlobList generateDebugDrawList() {
-		// DEBUG_DRAWN_COLORS
 		BlobList list = new BlobList();
 		
 		int xo = 128;
@@ -51,8 +46,8 @@ public class BobRustPainter {
 				int y = shape * 64 + yo;
 				list.add(Blob.get(x, y, BorstUtils.SIZES[size], 0,
 					shape == 0
-						? RustConstants.CIRCLE_SHAPE
-						: RustConstants.SQUARE_SHAPE, 5));
+						? AppConstants.CIRCLE_SHAPE
+						: AppConstants.SQUARE_SHAPE, 5));
 			}
 		}
 		
@@ -61,7 +56,7 @@ public class BobRustPainter {
 			int x = (alpha) * 64 + xo;
 			int y = 3 * 64 + yo;
 			
-			list.add(Blob.get(x, y, BorstUtils.SIZES[5], 0, RustConstants.SQUARE_SHAPE, alpha));
+			list.add(Blob.get(x, y, BorstUtils.SIZES[5], 0, AppConstants.SQUARE_SHAPE, alpha));
 		}
 		
 		// Draw colors
@@ -69,40 +64,47 @@ public class BobRustPainter {
 		for (int color = 0; color < BorstUtils.COLORS.length; color++) {
 			int x = (color % maxWidth) * 64 + (7) * 64 + xo;
 			int y = (color / maxWidth) * 64 + yo;
-			list.add(Blob.get(x, y, BorstUtils.SIZES[5], BorstUtils.COLORS[color].rgb, RustConstants.SQUARE_SHAPE, 5));
+			list.add(Blob.get(x, y, BorstUtils.SIZES[5], BorstUtils.COLORS[color].rgb, AppConstants.SQUARE_SHAPE, 5));
 		}
 		
 		return list;
 	}
 	
-	public boolean startDrawing(BlobList list) throws Exception {
-		return startDrawing(list, RustConstants.CIRCLE_SHAPE);
+	// TODO: With the new refactor we want to be able to know where the tool stopped doing stuff.
+	//       We will have to save that value and return it in combination with a state
+	//       - Finished
+	//       - Stopped by User
+	
+	public boolean startDrawing(GraphicsConfiguration monitor, Rectangle canvasArea, BlobList list, int offset) {
+		return startDrawing(monitor, canvasArea, list, offset, AppConstants.CIRCLE_SHAPE);
 	}
 	
-	public boolean startDrawing(BlobList list, int shape) throws Exception {
-		if (list.size() < 1) {
+	public boolean startDrawing(GraphicsConfiguration monitor, Rectangle canvasArea, BlobList list, int offset, int shapeSetting) {
+		if (list.size() <= offset) {
 			return true;
 		}
-
-		GraphicsConfiguration gc = overlay.getMonitorConfiguration();
+		
+		Robot robot;
+		try {
+			robot = new Robot(monitor.getDevice());
+		} catch (AWTException e) {
+			return false;
+		}
 		
 		{
-			GraphicsDevice gd = gc.getDevice();
-			Rectangle bounds = gc.getBounds();
+			GraphicsDevice gd = monitor.getDevice();
+			Rectangle bounds = monitor.getBounds();
 			
 			displayX = bounds.x;
 			displayY = bounds.y;
 			widthDelta = bounds.getWidth() / (double)gd.getDisplayMode().getWidth();
 			heightDelta = bounds.getHeight() / (double)gd.getDisplayMode().getHeight();
 		}
-		Robot robot = new Robot(gc.getDevice());
 		
-		Rectangle canvas = overlay.getCanvasArea();
 		Sign signType = Settings.SettingsSign.get();
 		
 		int clickInterval = Settings.SettingsClickInterval.get();
 		int alphaSetting = Settings.SettingsAlpha.get();
-		int shapeSetting = shape;
 		int delayPerCycle = (int) (1000.0 / clickInterval);
 		double autoDelay = 1000.0 / (clickInterval * 3.0);
 		int autosaveInterval = Settings.SettingsAutosaveInterval.get();
@@ -116,144 +118,110 @@ public class BobRustPainter {
 		
 		// Calculate the total amount of presses needed
 		// For each autosave press there is one more click
-		int score = RustUtil.getScore(list) + count + (count / (autosaveInterval < 1 ? 1:autosaveInterval));
-		
-		{
-			// Make sure that we have selected the game
-			clickPoint(robot, palette.getFocusPoint(), 4, 50);
-			
-			// Make sure that we have selected the correct alpha
-			clickPoint(robot, palette.getAlphaButton(alphaSetting), 4, 50);
-			
-			// Make sure that we have selected the correct shape
-			clickPoint(robot, palette.getShapeButton(shapeSetting), 4, 50);
-		}
-		
-		// We create an update thread because repainting graphics
-		// could be an expensive operation. And because we only need
-		// the current thread to click on the screen we want to minimize
-		// the amount of noise that rendering components could generate.
-		Thread guiUpdateThread = new Thread(() -> {
-			// TODO: This could be made using a better algorithm.
-			//       The painter should not touch the render thread
-			long start = System.nanoTime();
-			int msDelay = delayPerCycle;
-			while (true) {
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					// Make sure we keep the interrupted status
-					Thread.currentThread().interrupt();
-					break;
-				}
-				
-				if (clickIndex > 0) {
-					long time = System.nanoTime() - start;
-					msDelay = (int)((time / 1000000.0) / (double)clickIndex);
-				}
-				
-				overlay.setRemainingTime(clickIndex, score, msDelay * (score - clickIndex));
-				overlay.repaint();
-			}
-		}, "Drawing Update Thread");
-		guiUpdateThread.setDaemon(true);
-		guiUpdateThread.start();
+		int score = RustUtil.getScore(list, offset) + count + (count / Math.max(autosaveInterval, 1));
 		
 		int signWidth = signType.getWidth();
 		int signHeight = signType.getHeight();
 		
-		try {
-			// Last fields
-			Point lastPoint = new Point(0, 0);
-			int lastColor = -1;
-			int lastSize = -1;
+		// Last fields
+		Point lastPoint = new Point(0, 0);
+		int lastColor;
+		int lastSize;
+		
+		// Debug
+		int lastShape;
+		int lastAlpha;
+		
+		{
+			Blob startBlob = blobList.get(offset);
 			
-			// Debug
-			int lastShape = -1;
-			int lastAlpha = -1;
+			// Make sure that we have selected the game
+			clickPoint(robot, palette.getFocusPoint(), 4, 50);
 			
-			{
-				Blob first = blobList.get(0);
-				
-				// Select first color to prevent exception
-				clickPoint(robot, palette.getColorButton(BorstUtils.getClosestColor(first.color)), 4, 50);
-				lastColor = first.colorIndex;
-			}
+			int alphaIndex = startBlob.alphaIndex == -1 ? alphaSetting : startBlob.alphaIndex;
+			int shapeIndex = startBlob.shapeIndex == -1 ? shapeSetting : startBlob.shapeIndex;
 			
-			for (int i = 0, actions = 1; i < count; i++, actions++) {
-				Blob blob = blobList.get(i);
-				
-				// Change the size
-				if (lastSize != blob.sizeIndex) {
-					clickSize(robot, palette.getSizeButton(blob.sizeIndex), 20, autoDelay);
-					lastSize = blob.sizeIndex;
-					actions++;
-				}
-				
-				// Change the color
-				if (lastColor != blob.colorIndex) {
-					if (!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 5, autoDelay)) {
-						// LOGGER.warn("Potentially failed to change color! Will still keep try drawing");
-					}
-					
-					lastColor = blob.colorIndex;
-					actions++;
-				}
-				
-				// Change the shape (Only ever used in debug)
-				if (RustConstants.DEBUG_DRAWN_COLORS && lastShape != blob.shapeIndex) {
-					clickSize(robot, palette.getShapeButton(blob.shapeIndex), 20, autoDelay);
-					lastShape = blob.shapeIndex;
-					actions++;
-				}
-				
-				if (RustConstants.DEBUG_DRAWN_COLORS && lastAlpha != blob.alphaIndex) {
-					clickSize(robot, palette.getAlphaButton(blob.alphaIndex), 20, autoDelay);
-					lastAlpha = blob.alphaIndex;
-					actions++;
-				}
-				
-				double dx = blob.x / (double) signWidth;
-				double dy = blob.y / (double) signHeight;
-				double tx = dx * canvas.width + canvas.x;
-				double ty = dy * canvas.height + canvas.y;
-				int sx = (int)tx + displayX;
-				int sy = (int)ty + displayY;
-				
-				lastPoint.setLocation(sx, sy);
-				clickPointScaled(robot, lastPoint, autoDelay);
-				
-				if ((i % autosaveInterval) == 0) {
-					clickPoint(robot, palette.getSaveButton(), autoDelay);
-					actions++;
-				}
-				
-				this.clickIndex = actions;
-			}
-
-			this.clickIndex = score;
+			// Select first color to prevent exception
+			clickPoint(robot, palette.getColorButton(BorstUtils.getClosestColor(startBlob.color)), 4, 50);
+			clickPoint(robot, palette.getSizeButton(startBlob.sizeIndex), 4, 50);
+			clickPoint(robot, palette.getAlphaButton(alphaIndex), 4, 50);
+			clickPoint(robot, palette.getShapeButton(shapeIndex), 4, 50);
 			
-			// Make sure that we save the painting
-			{
-				clickPoint(robot, palette.getSaveButton(), 4, autoDelay);
-			}
-		} finally {
-			// Interrupt the update thread and join
-			guiUpdateThread.interrupt();
-			guiUpdateThread.join();
-			
-			// Make sure we update the remaining time
-			overlay.setRemainingTime(clickIndex, score, 0);
-			overlay.repaint();
+			// Fill in last color information
+			lastColor = startBlob.colorIndex;
+			lastSize = startBlob.sizeIndex;
+			lastAlpha = startBlob.alphaIndex;
+			lastShape = startBlob.shapeIndex;
 		}
+		
+		for (int i = offset, actions = 1; i < count; i++, actions++) {
+			Blob blob = blobList.get(i);
+			
+			// Change the size
+			if (lastSize != blob.sizeIndex) {
+				clickSize(robot, palette.getSizeButton(blob.sizeIndex), 20, autoDelay);
+				lastSize = blob.sizeIndex;
+				actions++;
+			}
+			
+			// Change the color
+			if (lastColor != blob.colorIndex) {
+				if (!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 5, autoDelay)) {
+					// LOGGER.warn("Potentially failed to change color! Will still keep try drawing");
+				}
+				
+				lastColor = blob.colorIndex;
+				actions++;
+			}
+			
+			// Change the shape (Only ever used in debug)
+			if (AppConstants.DEBUG_DRAWN_COLORS && lastShape != blob.shapeIndex) {
+				clickSize(robot, palette.getShapeButton(blob.shapeIndex), 20, autoDelay);
+				lastShape = blob.shapeIndex;
+				actions++;
+			}
+			
+			if (AppConstants.DEBUG_DRAWN_COLORS && lastAlpha != blob.alphaIndex) {
+				clickSize(robot, palette.getAlphaButton(blob.alphaIndex), 20, autoDelay);
+				lastAlpha = blob.alphaIndex;
+				actions++;
+			}
+			
+			// Blob coordinates to sign coordinates
+			double dx = blob.x / (double) signWidth;
+			double dy = blob.y / (double) signHeight;
+			
+			// Sign coordinates to canvas coordinates
+			double tx = dx * canvasArea.width + canvasArea.x;
+			double ty = dy * canvasArea.height + canvasArea.y;
+			
+			// Canvas coordinates to screen coordinates
+			int sx = (int) tx + displayX;
+			int sy = (int) ty + displayY;
+			
+			lastPoint.setLocation(sx, sy);
+			clickPointScaled(robot, lastPoint, autoDelay);
+			
+			if ((i % autosaveInterval) == 0) {
+				clickPoint(robot, palette.getSaveButton(), autoDelay);
+				actions++;
+			}
+			
+			this.clickIndex = actions;
+		}
+
+		this.clickIndex = score;
+		
+		// Make sure that we save the painting
+		clickPoint(robot, palette.getSaveButton(), 4, autoDelay);
 		
 		return true;
 	}
 	
 	private Point transformPoint(Point point) {
 		return new Point(
-			displayX + (int)((point.x - displayX) * widthDelta),
-			displayY + (int)((point.y - displayY) * heightDelta)
+			displayX + (int) ((point.x - displayX) * widthDelta),
+			displayY + (int) ((point.y - displayY) * heightDelta)
 		);
 	}
 	
@@ -282,16 +250,12 @@ public class BobRustPainter {
 			robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 			addTimeDelay(time + delay * 3.0);
 			
-			if (true) {
-				Color after = robot.getPixelColor(point.x, point.y);
-				if (!before.equals(after)) {
-					break;
-				}
-				
-				addTimeDelay(time + delay);
-			} else {
+			Color after = robot.getPixelColor(point.x, point.y);
+			if (!before.equals(after)) {
 				break;
 			}
+			
+			addTimeDelay(time + delay);
 		} while (maxAttempts-- > 0);
 		
 		if (maxAttempts == 0) {
@@ -302,9 +266,6 @@ public class BobRustPainter {
 		if (distance > MAXIMUM_DISPLACEMENT) {
 			throw new IllegalStateException("Mouse moved during the operation");
 		}
-		
-		//time = (System.nanoTime() / 1000000.0) - time;
-		//System.out.printf("Time: took %.4f, wanted: %.4f\n", time, delay * 3.0);
 	}
 	
 	private void clickPoint(Robot robot, Point point, double delay) {
@@ -325,9 +286,6 @@ public class BobRustPainter {
 		if (distance > MAXIMUM_DISPLACEMENT) {
 			throw new IllegalStateException("Mouse moved during the operation");
 		}
-		
-		//time = (System.nanoTime() / 1000000.0) - time;
-		//System.out.printf("Time: took %.4f, wanted: %.4f\n", time, delay * 3.0);
 	}
 	
 	private void clickSize(Robot robot, Point point, int maxAttempts, double delay) {
@@ -340,8 +298,6 @@ public class BobRustPainter {
 				return;
 			}
 		}
-		
-		//throw new IllegalStateException("Failed to select size");
 	}
 	
 	private boolean clickColor(Robot robot, Point point, int maxAttempts, double delay) {
@@ -366,11 +322,11 @@ public class BobRustPainter {
 		Color before = robot.getPixelColor(colorPreview.x, colorPreview.y);
 		
 		// Make sure that we press the size
-		while(maxAttempts-- > 0) {
+		while (maxAttempts-- > 0) {
 			clickPointScaled(robot, point, delay);
 			
 			Color after = robot.getPixelColor(colorPreview.x, colorPreview.y);
-			if(!before.equals(after)) {
+			if (!before.equals(after)) {
 				return true;
 			}
 		}
@@ -383,16 +339,11 @@ public class BobRustPainter {
 	 */
 	private void addTimeDelay(double expected) {
 		double time = expected - (System.nanoTime() / 1000000.0);
-		if(time < 0) return;
-		
-		long millis = (long)time;
-		int nanos = (int)((time - millis) * 10000000);
-		if(nanos > 999999) nanos = 999999;
-		if(nanos < 0) nanos = 0;
+		if (time < 0) return;
 		
 		try {
-			Thread.sleep(millis, nanos);
-		} catch(final InterruptedException ignored) {
+			Thread.sleep(Math.round(time));
+		} catch (InterruptedException ignored) {
 			Thread.currentThread().interrupt();
 		}
 	}

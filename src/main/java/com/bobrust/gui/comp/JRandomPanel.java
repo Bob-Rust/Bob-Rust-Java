@@ -8,25 +8,18 @@ import java.util.Random;
 
 import javax.swing.JPanel;
 
-import com.bobrust.gui.BobRustEditor;
 import com.bobrust.settings.Settings;
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 
-@SuppressWarnings("serial")
 public class JRandomPanel extends JPanel {
-	private final BobRustEditor gui;
 	private TexturePaint randomPaint;
 	private Color lastToolbarColor;
-	
-	public JRandomPanel(BobRustEditor gui) {
-		this.gui = gui;
-	}
 	
 	@Override
 	protected void paintComponent(Graphics gr) {
 		super.paintComponent(gr);
 		
-		if (RustConstants.ENABLE_RANDOM_BACKGROUND) {
+		if (AppConstants.ENABLE_RANDOM_BACKGROUND) {
 			if (!Settings.EditorToolbarColor.get().equals(lastToolbarColor) || randomPaint == null) {
 				lastToolbarColor = Settings.EditorToolbarColor.get();
 				BufferedImage randomImage = getRandomImage(128, 128, lastToolbarColor.darker(), 0, 120, 0);

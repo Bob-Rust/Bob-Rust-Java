@@ -1,12 +1,15 @@
 package com.bobrust.settings.type.parent;
 
+import com.bobrust.lang.RustUI;
 import com.bobrust.settings.Settings;
 import com.bobrust.settings.RustSettingsImpl;
+import com.bobrust.util.RustWindowUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
@@ -58,18 +61,32 @@ public class InternalSettings {
 			try {
 				configFile.createNewFile();
 			} catch (IOException e) {
-				LOGGER.error("Error creating config file: {}", e);
-				LOGGER.throwing(e);
-				e.printStackTrace();
+				LOGGER.error("Error creating config file", e);
 			}
 		}
 		
 		try (FileInputStream stream = new FileInputStream(configFile)) {
 			properties.load(stream);
 		} catch (IOException e) {
-			LOGGER.error("Error reading config file: {}", e);
-			LOGGER.throwing(e);
-			e.printStackTrace();
+			LOGGER.error("Error reading config file", e);
+		}
+	}
+	
+	/**
+	 * Save data to a config file
+	 */
+	public void save(File configFile, boolean allowWarningMessage) {
+		try (FileOutputStream stream = new FileOutputStream(configFile)) {
+			properties.store(stream, "");
+		} catch (IOException e) {
+			if (allowWarningMessage) {
+				RustWindowUtil.showWarningMessage(
+					RustUI.getString(RustUI.Type.WARNING_CONFIGPERMISSION_MESSAGE),
+					RustUI.getString(RustUI.Type.WARNING_CONFIGPERMISSION_TITLE)
+				);
+			}
+			
+			LOGGER.error("Error saving config file", e);
 		}
 	}
 	

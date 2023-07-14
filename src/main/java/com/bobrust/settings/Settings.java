@@ -89,7 +89,7 @@ public interface Settings {
 	@GuiElement(tab = GuiElement.Tab.Generator,
 		label = RustUI.Type.SETTINGS_MAXSHAPES_LABEL,
 		tooltip = RustUI.Type.SETTINGS_MAXSHAPES_TOOLTIP)
-	IntType SettingsMaxShapes = new IntType(99999, 0, 99999);
+	IntType SettingsMaxShapes = new IntType(99999, 0, 200000);
 	
 	@GuiElement(tab = GuiElement.Tab.Generator,
 		label = RustUI.Type.SETTINGS_CLICKINTERVAL_LABEL,

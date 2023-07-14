@@ -1,5 +1,7 @@
 package com.bobrust.lang;
 
+// TODO: Remove this class. No need to make this app so much more complicated by language?
+//       Or at least change how this works 
 public class RustUI {
 	public enum Type {
 		NONE(""),

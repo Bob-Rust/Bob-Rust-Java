@@ -7,14 +7,14 @@ import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.JButton;
 
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 
 @SuppressWarnings("serial")
 public class JStyledButton extends JButton {
-	private Color defaultColor = RustConstants.BUTTON_DEFAULT_COLOR;
-	private Color hoverColor = RustConstants.BUTTON_HOVER_COLOR;
-	private Color selectedColor = RustConstants.BUTTON_SELECTED_COLOR;
-	private Color disabledColor = RustConstants.BUTTON_DISABLED_COLOR;
+	private Color defaultColor = AppConstants.BUTTON_DEFAULT_COLOR;
+	private Color hoverColor = AppConstants.BUTTON_HOVER_COLOR;
+	private Color selectedColor = AppConstants.BUTTON_SELECTED_COLOR;
+	private Color disabledColor = AppConstants.BUTTON_DISABLED_COLOR;
 	
 	public JStyledButton() {
 		this("");
@@ -83,8 +83,8 @@ public class JStyledButton extends JButton {
 		// TODO: Cache this value and only update when the component is resized.
 		RoundRectangle2D shape = new RoundRectangle2D.Float(
 			1, 2, getWidth() - 2, getHeight() - 4,
-			RustConstants.BUTTON_BORDER_RADIUS,
-			RustConstants.BUTTON_BORDER_RADIUS
+			AppConstants.BUTTON_BORDER_RADIUS,
+			AppConstants.BUTTON_BORDER_RADIUS
 		);
 		
 		g.fill(shape);

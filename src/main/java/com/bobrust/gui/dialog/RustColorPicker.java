@@ -15,7 +15,7 @@ import com.bobrust.generator.BorstUtils;
 import com.bobrust.lang.RustUI;
 import com.bobrust.lang.RustUI.Type;
 import com.bobrust.settings.Settings;
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 
 /**
  * A color picker that looks similar to the color picker in rust
@@ -57,7 +57,7 @@ public class RustColorPicker {
 		colorLabel.setBackground(Settings.SettingsBackground.get());
 		panel.add(colorLabel);
 		
-		JLabel lblColorPaletteImage = new JLabel(new ImageIcon(RustConstants.COLOR_PALETTE));
+		JLabel lblColorPaletteImage = new JLabel(new ImageIcon(AppConstants.COLOR_PALETTE));
 		lblColorPaletteImage.setBounds(0, 0, 150, 264);
 		lblColorPaletteImage.setBorder(null);
 		lblColorPaletteImage.addMouseListener(new MouseAdapter() {
@@ -71,7 +71,7 @@ public class RustColorPicker {
 					
 					int cx = x * 31 + 25 + 12;
 					int cy = y * 15 + 6 + 12;
-					selectedColor = new Color(BorstUtils.getClosestColor(RustConstants.COLOR_PALETTE.getRGB(cx, cy)).rgb);
+					selectedColor = new Color(BorstUtils.getClosestColor(AppConstants.COLOR_PALETTE.getRGB(cx, cy)).rgb);
 					colorLabel.setBackground(selectedColor);
 				}
 			}

@@ -1,5 +1,6 @@
 package com.bobrust.gui.dialog;
 
+import com.bobrust.gui.comp.JResizeComponent;
 import com.bobrust.util.RustWindowUtil;
 
 import javax.swing.*;
@@ -12,7 +13,8 @@ import java.awt.event.*;
  */
 public class RegionSelectionDialog extends JDialog {
 	private final JDialog parent;
-	private GraphicsConfiguration config;
+	private final JResizeComponent resizeComponent;
+	private final Timer selectMonitorTimer;
 	
 	public RegionSelectionDialog(JDialog parent) {
 		super(parent, "", ModalityType.APPLICATION_MODAL);
@@ -21,14 +23,14 @@ public class RegionSelectionDialog extends JDialog {
 		setUndecorated(true);
 		setFocusable(true);
 		setAlwaysOnTop(true);
-		setBackground(new Color(0x40000000, true));
+		setBackground(new Color(0x10000000, true));
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				// TODO Set state of region to no-change
 				dispose();
 				parent.setVisible(true);
-				RustWindowUtil.showWarningMessage(parent, "When closing the region dialog you should use 'Enter' or 'Escape' instead of pressing Alt+F4", "How to close the region selector");
+				RustWindowUtil.showWarningMessage(parent, "When closing the region dialog you should use 'Escape' or 'Enter' instead of pressing Alt+F4", "How to close the region selector");
 			}
 		});
 		addKeyListener(new KeyAdapter() {
@@ -47,16 +49,43 @@ public class RegionSelectionDialog extends JDialog {
 		panel.setOpaque(false);
 		setContentPane(panel);
 		
+		{
+			JPanel test = new JPanel();
+			test.setOpaque(false);
+			test.setLayout(null);
+			panel.add(test, BorderLayout.CENTER);
+			
+			resizeComponent = new JResizeComponent();
+			resizeComponent.setBounds(100, 100, 200, 200);
+			resizeComponent.setEnabled(true);
+			test.add(resizeComponent);
+		}
+		
 		JPanel topTextPanel = new JPanel();
 		topTextPanel.setBackground(Color.red);
 		panel.add(topTextPanel, BorderLayout.NORTH);
 		
-		// TODO: Move the text a bit further up to make more space for selecting the canvas area
-		JLabel topText = new JLabel("Press Enter or Escape to close");
+		// TODO: Make sure this label is always blocking some part of the top of the screen
+		//       Make sure the font exists and will look similar on multiple systems!
+		JLabel topText = new JLabel("Press Escape or Enter to close");
 		topText.setHorizontalTextPosition(SwingConstants.CENTER);
 		topText.setFont(topText.getFont().deriveFont(20.0f));
 		topText.setForeground(Color.white);
 		topTextPanel.add(topText);
+		
+		selectMonitorTimer = new Timer(100, e -> {
+			var pointerInfo = MouseInfo.getPointerInfo();
+			if (pointerInfo == null) {
+				return;
+			}
+			
+			Point mousePoint = pointerInfo.getLocation();
+			GraphicsConfiguration gc = getGraphicsConfiguration(mousePoint);
+			setBounds(gc.getBounds());
+			
+			// Revalidate resize component
+			resizeComponent.revalidateSelection();
+		});
 	}
 	
 	private GraphicsConfiguration getGraphicsConfiguration(Point point) {
@@ -78,52 +107,39 @@ public class RegionSelectionDialog extends JDialog {
 		return graphicsEnvironment.getDefaultScreenDevice().getDefaultConfiguration();
 	}
 	
-	public GraphicsConfiguration openDialog() {
-		Thread thread = new Thread(() -> {
-			try {
-				while (true) {
-					// Follow the mouse and allow it to change
-					Point mousePoint = MouseInfo.getPointerInfo().getLocation();
-					GraphicsConfiguration gc = getGraphicsConfiguration(mousePoint);
-					setBounds(gc.getBounds());
-					Thread.sleep(100);
-				}
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-		});
-		thread.setDaemon(true);
-		thread.start();
+	public Region openDialog(boolean allowChangingMonitor, Image displayedImage, Rectangle rectangle) {
+		if (allowChangingMonitor) {
+			selectMonitorTimer.start();
+		}
 		
 		try {
 			// Make it possible to select another monitor
-			GraphicsConfiguration gc = getGraphicsConfiguration(getLocation());
-			setBounds(gc.getBounds());
+			GraphicsConfiguration config = getGraphicsConfiguration(getLocation());
+			setBounds(config.getBounds());
+			revalidate();
+			repaint();
+			
+			// Update resizeComponent with the specified image
+			resizeComponent.setImage(displayedImage);
+			resizeComponent.setScreenRelativeRectangle(rectangle);
 			
 			// This blocks until the monitor has been selected
 			parent.setVisible(false);
 			setVisible(true);
+			
 			parent.setVisible(true);
 			dispose();
 			
-			return updateConfiguration(getLocation());
+			if (allowChangingMonitor) {
+				// Update result value
+				config = getGraphicsConfiguration(getLocation());
+			}
+			
+			return new Region(config, resizeComponent.getScreenRelativeRectangle());
 		} finally {
-			thread.interrupt();
+			selectMonitorTimer.stop();
 		}
 	}
 	
-	public GraphicsConfiguration updateConfiguration(Point point) {
-		GraphicsConfiguration config = getGraphicsConfiguration(point);
-		this.config = config;
-		return config;
-	}
-	
-	public GraphicsConfiguration getMonitor() {
-		if (config == null) {
-			// If the config is null we use the default configuration
-			config = getGraphicsConfiguration(null);
-		}
-		
-		return config;
-	}
+	public static record Region(GraphicsConfiguration monitor, Rectangle selection) { }
 }

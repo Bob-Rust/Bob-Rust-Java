@@ -1,8 +1,9 @@
 package com.bobrust.gui.dialog;
 
+import com.bobrust.generator.BorstGenerator;
+import com.bobrust.generator.BorstSettings;
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.generator.sorter.BorstSorter;
-import com.bobrust.gui.BobRustDesktopOverlay;
 import com.bobrust.gui.comp.JIntegerField;
 import com.bobrust.lang.RustUI;
 import com.bobrust.robot.BobRustPainter;
@@ -11,7 +12,7 @@ import com.bobrust.settings.Settings;
 import com.bobrust.util.RustUtil;
 import com.bobrust.util.RustWindowUtil;
 import com.bobrust.util.UrlUtils;
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +27,6 @@ public class DrawDialogNew extends JDialog {
 	private static final Dimension REGULAR = new Dimension(320, 240);
 	private static final Dimension MINIMIZED = new Dimension(120, 240);
 	
-	private final BobRustDesktopOverlay overlay;
 	private final BobRustPalette rustPalette;
 	private final BobRustPainter rustPainter;
 	
@@ -40,33 +40,40 @@ public class DrawDialogNew extends JDialog {
 	private final JButton btnSelectColorPalette;
 	private final JButton btnStartDrawing;
 	
+	// Borst stuff
+	private final BorstGenerator borstGenerator;
+	private final BorstSettings borstSettings;
+	private BorstGenerator.BorstData lastData;
+	
 	private boolean isPainting;
 	
 	public DrawDialogNew(JDialog parent) {
 		super(parent, RustUI.getString(RustUI.Type.EDITOR_DRAWDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
 		this.parentDialog = parent;
-		this.overlay = null;
 		this.rustPalette = new BobRustPalette();
-		this.rustPainter = new BobRustPainter(null, rustPalette);
+		this.rustPainter = new BobRustPainter(rustPalette);
+		this.borstSettings = new BorstSettings();
+		this.borstGenerator = new BorstGenerator(borstSettings, data -> {
+			// TODO: Implement this method
+			lastData = data;
+		});
 		
-		setIconImage(RustConstants.DIALOG_ICON);
+		setIconImage(AppConstants.DIALOG_ICON);
 		setResizable(false);
 		setSize(REGULAR);
-		getContentPane().setLayout(new BorderLayout(0, 0));
 		
 		JPanel rootPanel = new JPanel();
 		rootPanel.setLayout(new BoxLayout(rootPanel, BoxLayout.Y_AXIS));
 		rootPanel.setBorder(new EmptyBorder(3, 3, 3, 3));
 		rootPanel.setAlignmentY(Component.TOP_ALIGNMENT);
-		getContentPane().add(rootPanel);
+		setContentPane(rootPanel);
 		
-		JLabel lblShapeCount = new JLabel(RustUI.getString(RustUI.Type.ACTION_SHAPECOUNT_LABEL));
-		rootPanel.add(lblShapeCount);
+		rootPanel.add(new JLabel("Shape Count"));
 		
 		JPanel panel = new JPanel();
 		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		rootPanel.add(panel);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+		rootPanel.add(panel);
 		
 		Dimension buttonSize = new Dimension(60, 20);
 		shapesSlider = new JSlider();
@@ -79,15 +86,15 @@ public class DrawDialogNew extends JDialog {
 		maxShapesField.addActionListener((event) -> {
 			int value = maxShapesField.getNumberValue();
 			shapesSlider.setValue(value);
-			overlay.setEstimatedGenerationLabel(value, Settings.SettingsMaxShapes.get());
-			overlay.setRenderPreviewShapes(value);
-			overlay.repaint();
+			// overlay.setEstimatedGenerationLabel(value, Settings.SettingsMaxShapes.get());
+			// overlay.setRenderPreviewShapes(value);
+			// overlay.repaint();
 		});
 		panel.add(maxShapesField);
 		
-		JLabel lblMinimumShape = new JLabel("1");
-		lblMinimumShape.setBorder(new EmptyBorder(0, 10, 0, 5));
-		panel.add(lblMinimumShape);
+		JLabel minShapeLabel = new JLabel("1");
+		minShapeLabel.setBorder(new EmptyBorder(0, 10, 0, 5));
+		panel.add(minShapeLabel);
 		
 		shapesSlider.setOpaque(false);
 		shapesSlider.setMinimum(1);
@@ -96,9 +103,9 @@ public class DrawDialogNew extends JDialog {
 		shapesSlider.addChangeListener((event) -> {
 			int value = shapesSlider.getValue();
 			maxShapesField.setText(Integer.toString(value));
-			overlay.setEstimatedGenerationLabel(value, Settings.SettingsMaxShapes.get());
-			overlay.setRenderPreviewShapes(value);
-			overlay.repaint();
+			// overlay.setEstimatedGenerationLabel(value, Settings.SettingsMaxShapes.get());
+			// overlay.setRenderPreviewShapes(value);
+			// overlay.repaint();
 		});
 		panel.add(shapesSlider);
 		
@@ -126,8 +133,8 @@ public class DrawDialogNew extends JDialog {
 		clickIntervalField.setAlignmentX(0.0f);
 		clickIntervalField.addActionListener((event) -> {
 			Settings.SettingsClickInterval.set(clickIntervalField.getNumberValue());
-			overlay.setEstimatedGenerationLabel(maxShapesField.getNumberValue(), Settings.SettingsMaxShapes.get());
-			overlay.repaint();
+			// overlay.setEstimatedGenerationLabel(maxShapesField.getNumberValue(), Settings.SettingsMaxShapes.get());
+			// overlay.repaint();
 		});
 		panel_1.add(clickIntervalField);
 		
@@ -136,15 +143,15 @@ public class DrawDialogNew extends JDialog {
 		btnCalculateExactTime.addActionListener((event) -> {
 			int count = maxShapesField.getNumberValue();
 			
-			BlobList list = RustUtil.convertToList(overlay.getBorstData().getModel(), count);
+			// TODO: Make sure that we actually have data first
+			BlobList list = RustUtil.convertToList(lastData.getModel(), count);
 			list = BorstSorter.sort(list);
-			int after = RustUtil.getScore(list);
+			int after = RustUtil.getScore(list, 0);
 			
 			int totalClicks = after + count;
-			
-			int interval = (int) clickIntervalField.getNumberValue();
-			overlay.setExactGenerationLabel((long)(totalClicks * (1000.0 / (double)interval)));
-			overlay.repaint();
+			int interval = clickIntervalField.getNumberValue();
+			// overlay.setExactGenerationLabel((long)(totalClicks * (1000.0 / (double)interval)));
+			// overlay.repaint();
 		});
 		rootPanel.add(btnCalculateExactTime);
 		
@@ -169,40 +176,44 @@ public class DrawDialogNew extends JDialog {
 			btnStartDrawing.setEnabled(false);
 			isPainting = true;
 			
-			Thread thread = new Thread(() -> {
-				try {
-					Point p = parentDialog.getLocation();
-					setLocation(p.x, p.y);
-					setSize(MINIMIZED);
-					overlay.setHideRegions();
-					
-					int count = maxShapesField.getNumberValue();
-					BlobList list;
-					if (RustConstants.DEBUG_DRAWN_COLORS) {
-						list = rustPainter.generateDebugDrawList();
-					} else {
-						list = BorstSorter.sort(RustUtil.convertToList(overlay.getBorstData().getModel(), count));
-					}
-					
-					if (!rustPainter.startDrawing(list)) {
-						LOGGER.warn("The user stopped the drawing process early");
-					}
-				} catch (IllegalStateException e) {
-					LOGGER.warn("The user stopped the drawing process early");
-					LOGGER.warn("Message: {}", e.getMessage());
-				} catch (Exception e) {
-					LOGGER.throwing(e);
-				} finally {
-					isPainting = false;
-					btnStartDrawing.setEnabled(true);
-					setLocation(previous_location);
-					setSize(REGULAR);
-				}
-			}, "BobRustDrawing Thread");
-			thread.setDaemon(true);
-			thread.start();
+			startDrawingAction(previous_location);
 		});
 		rootPanel.add(btnStartDrawing);
+	}
+	
+	private void startDrawingAction(Point previous_location) {
+		Thread thread = new Thread(() -> {
+			try {
+				Point p = parentDialog.getLocation();
+				setLocation(p.x, p.y);
+				setSize(MINIMIZED);
+				
+				int count = maxShapesField.getNumberValue();
+				BlobList list;
+				if (AppConstants.DEBUG_DRAWN_COLORS) {
+					list = rustPainter.generateDebugDrawList();
+				} else {
+					// TODO: Make sure 'lastData' is not null
+					list = BorstSorter.sort(RustUtil.convertToList(lastData.getModel(), count));
+				}
+				
+				if (!rustPainter.startDrawing(monitor, null, list, 0)) {
+					LOGGER.warn("The user stopped the drawing process early");
+				}
+			} catch (IllegalStateException e) {
+				LOGGER.warn("The user stopped the drawing process early");
+				LOGGER.warn("Message: {}", e.getMessage());
+			} catch (Exception e) {
+				LOGGER.throwing(e);
+			} finally {
+				isPainting = false;
+				btnStartDrawing.setEnabled(true);
+				setLocation(previous_location);
+				setSize(REGULAR);
+			}
+		}, "BobRustDrawing Thread");
+		thread.setDaemon(true);
+		thread.start();
 	}
 	
 	private void showPaletteWarning() {
@@ -229,18 +240,17 @@ public class DrawDialogNew extends JDialog {
 		
 		// Check for bright red on the edge of the screen
 		try {
-			// TODO: Get the true size of the screen
-			BufferedImage screenshot = RustWindowUtil.captureScreenshot(overlay.getMonitorConfiguration());
+			BufferedImage screenshot = RustWindowUtil.captureScreenshot(monitor);
 			Point paletteLocation = rustPalette.findPalette(screenshot);
 			
 			if (paletteLocation != null) {
-				overlay.colorRegion.setLocation(paletteLocation.x, paletteLocation.y + 132 + 100);
+				// overlay.colorRegion.setLocation(paletteLocation.x, paletteLocation.y + 132 + 100);
 				Point paletteScreenLocation = new Point(screenBounds.x + paletteLocation.x, screenBounds.y + paletteLocation.y);
 				
 				if (rustPalette.analyse(this, screenshot, screenBounds, paletteScreenLocation)) {
 					// Found the palette
 					LOGGER.info("Found the color palette ({}, {})", paletteScreenLocation.x, paletteScreenLocation.y);
-					overlay.repaint();
+					// overlay.repaint();
 					return true;
 				}
 			}
@@ -256,7 +266,10 @@ public class DrawDialogNew extends JDialog {
 		return isPainting;
 	}
 	
-	public void openDialog(Point point) {
+	private GraphicsConfiguration monitor;
+	public void openDialog(GraphicsConfiguration monitor, Point point) {
+		this.monitor = monitor;
+		
 		// Force the user to reset the palette
 		btnStartDrawing.setEnabled(false);
 		rustPalette.reset();

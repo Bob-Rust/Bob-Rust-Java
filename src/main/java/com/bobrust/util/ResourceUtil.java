@@ -1,6 +1,5 @@
 package com.bobrust.util;
 
-import com.bobrust.util.data.RustConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ResourceUtil {
-	private static final Logger LOGGER = LogManager.getLogger(RustConstants.class);
+	private static final Logger LOGGER = LogManager.getLogger(ResourceUtil.class);
 	
 	private ResourceUtil() {
 		

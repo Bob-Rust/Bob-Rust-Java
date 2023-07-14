@@ -1,6 +1,6 @@
 package com.bobrust.util;
 
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -19,7 +19,7 @@ public class RustWindowUtil {
 		JFrame frame = new JFrame();
 		frame.setUndecorated(true);
 		frame.setVisible(true);
-		frame.setIconImage(RustConstants.DIALOG_ICON);
+		frame.setIconImage(AppConstants.DIALOG_ICON);
 		frame.setLocationRelativeTo(null);
 		return frame;
 	}

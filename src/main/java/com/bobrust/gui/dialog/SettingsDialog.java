@@ -7,7 +7,7 @@ import com.bobrust.settings.type.*;
 import com.bobrust.settings.type.parent.GuiElement;
 import com.bobrust.settings.type.parent.SettingsType;
 import com.bobrust.util.UrlUtils;
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,7 +37,7 @@ public class SettingsDialog extends AbstractSettingsDialog {
 	public SettingsDialog(JDialog parent) {
 		this.applyEdits = new ArrayList<>();
 		this.dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SETTINGSDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
-		this.dialog.setIconImage(RustConstants.DIALOG_ICON);
+		this.dialog.setIconImage(AppConstants.DIALOG_ICON);
 		this.dialog.setSize(300, 360);
 		this.dialog.setResizable(false);
 		this.colorPicker = new RustColorPicker(dialog);

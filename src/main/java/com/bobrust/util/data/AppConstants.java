@@ -9,8 +9,8 @@ import com.bobrust.util.ResourceUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public interface RustConstants {
-	Logger LOGGER = LogManager.getLogger(RustConstants.class);
+public interface AppConstants {
+	Logger LOGGER = LogManager.getLogger(AppConstants.class);
 	
 	// Used by JRandomPanel
 	boolean ENABLE_RANDOM_BACKGROUND = false;

@@ -3,7 +3,7 @@ package com.bobrust.util.data;
 import com.bobrust.settings.Settings;
 import com.bobrust.util.Sign;
 
-import static com.bobrust.util.data.RustConstants.*;
+import static com.bobrust.util.data.AppConstants.*;
 
 import java.util.LinkedHashMap;
 import java.util.List;

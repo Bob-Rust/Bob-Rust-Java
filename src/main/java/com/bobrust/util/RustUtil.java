@@ -17,7 +17,7 @@ public class RustUtil {
 	private static final Logger LOGGER = LogManager.getLogger(RustUtil.class);
 	
 	public static BlobList convertToList(Model model, int count) {
-		final int len = Math.min(model.colors.size(), count);
+		int len = Math.min(model.colors.size(), count);
 		
 		BlobList list = new BlobList();
 		for (int i = 0; i < len; i++) {
@@ -32,13 +32,14 @@ public class RustUtil {
 	/**
 	 * Returns the amount of size and color changes between blobs.
 	 */
-	public static int getScore(BlobList list) {
+	public static int getScore(BlobList list, int offset) {
 		List<Blob> blobList = list.getList();
 		Blob last = null;
 		
 		int changes = 2;
-		for (Blob blob : blobList) {
-			if(last != null) {
+		for (int i = offset ; i < blobList.size(); i++) {
+			Blob blob = blobList.get(i);
+			if (last != null) {
 				changes += (last.size != blob.size) ? 1:0;
 				changes += (last.color != blob.color) ? 1:0;
 			}
@@ -53,16 +54,16 @@ public class RustUtil {
 		Model model = data.getModel();
 		
 		BlobList list = new BlobList();
-		for(int i = 0, len = model.colors.size(); i < len; i++) {
+		for (int i = 0, len = model.colors.size(); i < len; i++) {
 			Circle circle = model.shapes.get(i);
 			BorstColor color = model.colors.get(i);
 			list.add(Blob.get(circle.x, circle.y, circle.r, color.rgb));
 		}
 		
-		LOGGER.info("Size change: {} / {}", getScore(list), getScore(BorstSorter.sort(list)));
+		LOGGER.info("Size change: {} / {}", getScore(list, 0), getScore(BorstSorter.sort(list), 0));
 	}
 
 	public static int clamp(int value, int min, int max) {
-		return value < min ? min:(value > max ? max:value);
+		return value < min ? min : (value > max ? max:value);
 	}
 }

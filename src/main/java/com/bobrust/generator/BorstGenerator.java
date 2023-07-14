@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 
 public class BorstGenerator {
 	private static final Logger LOGGER = LogManager.getLogger(BorstGenerator.class);
@@ -15,7 +15,7 @@ public class BorstGenerator {
 	private volatile Thread thread;
 	private volatile int index;
 	
-	private BorstGenerator(BorstSettings settings, Consumer<BorstData> callback) {
+	public BorstGenerator(BorstSettings settings, Consumer<BorstData> callback) {
 		this.callback = Objects.requireNonNull(callback);
 		this.settings = Objects.requireNonNull(settings);
 	}
@@ -75,7 +75,7 @@ public class BorstGenerator {
 						data.index = i;
 						callback.accept(data);
 						
-						if (RustConstants.DEBUG_GENERATOR) {
+						if (AppConstants.DEBUG_GENERATOR) {
 							double time = (end - begin) / 1000000000.0;
 							double sps = i / time;
 							
@@ -145,25 +145,6 @@ public class BorstGenerator {
 		
 		public boolean isDone() {
 			return done;
-		}
-	}
-	
-	public static class BorstGeneratorBuilder {
-		private Consumer<BorstData> callback;
-		private BorstSettings settings;
-		
-		public BorstGeneratorBuilder setCallback(Consumer<BorstData> consumer) {
-			this.callback = consumer;
-			return this;
-		}
-		
-		public BorstGeneratorBuilder setSettings(BorstSettings settings) {
-			this.settings = settings;
-			return this;
-		}
-		
-		public BorstGenerator create() {
-			return new BorstGenerator(settings, callback);
 		}
 	}
 }
