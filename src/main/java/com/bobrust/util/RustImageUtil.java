@@ -46,9 +46,9 @@ public class RustImageUtil {
 		bits = Integer.numberOfTrailingZeros(lut.length) / 3;
 	}
 	
-	public static BufferedImage applyFilters(BufferedImage scaled) {
+	public static BufferedImage applyFilters(Image scaled) {
 		// Create a new Image that has a backing int buffer
-		BufferedImage image = new BufferedImage(scaled.getWidth(), scaled.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		BufferedImage image = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
 		g.drawImage(scaled, 0, 0, null);
 		g.dispose();
@@ -71,19 +71,12 @@ public class RustImageUtil {
 		return image;
 	}
 	
-	public static BufferedImage getScaledInstance(BufferedImage source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, ScalingType scalingType) {
-		Object hint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
-		switch (scalingType) {
-			case Nearest -> {
-				hint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
-			}
-			case Bilinear -> {
-				hint = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
-			}
-			case Bicubic -> {
-				hint = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
-			}
-		}
+	public static BufferedImage getScaledInstance(Image source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, ScalingType scalingType) {
+		Object hint = switch (scalingType) {
+			case Nearest -> RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+			case Bilinear -> RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+			case Bicubic -> RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+		};
 		
 		int dst_x1 = ((imageRect.x - canvasRect.x) * width) / canvasRect.width;
 		int dst_y1 = ((imageRect.y - canvasRect.y) * height) / canvasRect.height;
@@ -95,7 +88,7 @@ public class RustImageUtil {
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
 		g.setColor(bgColor);
 		g.fillRect(0, 0, width, height);
-		g.drawImage(source, dst_x1, dst_y1, dst_x2, dst_y2, 0, 0, source.getWidth(), source.getHeight(), null);
+		g.drawImage(source, dst_x1, dst_y1, dst_x2, dst_y2, 0, 0, source.getWidth(null), source.getHeight(null), null);
 		g.dispose();
 		
 		return image;

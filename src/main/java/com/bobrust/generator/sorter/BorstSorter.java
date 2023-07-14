@@ -180,7 +180,7 @@ public class BorstSorter {
 		// Takes 1500 ms for 60000 shapes
 		while(++i < array.length) {
 			Blob last = out[i - 1];
-			int index = find_best_fast_cache(last.getSizeIndex(), last.getColorIndex(), start, cache, array);
+			int index = find_best_fast_cache(last.sizeIndex, last.colorIndex, start, cache, array);
 			out[i] = array[index].blob;
 			array[index] = null;
 			
@@ -206,8 +206,8 @@ public class BorstSorter {
 		for(Piece piece : array) {
 			if(piece == null) continue;
 			
-			int color = piece.blob.getColorIndex();
-			int size = piece.blob.getSizeIndex();
+			int color = piece.blob.colorIndex;
+			int size = piece.blob.sizeIndex;
 			
 			/* all */ {
 				IntList list = list_all[size + color * 6];
@@ -305,7 +305,7 @@ public class BorstSorter {
 			int s1 = s.size;
 			
 			// If both the size and the color is equal of the two blobs
-			// then they are indistinguishable from eachother.
+			// then they are indistinguishable from each other.
 			if(s1 == s2 && s.color == blob.color) continue;
 			
 			int x = s.x - blob.x;

@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Model {
+/**
+ * Internal representation of the approximation model
+ */
+class Model {
 	private final Worker worker;
 	private final BorstImage target;
 	private final BorstImage context;

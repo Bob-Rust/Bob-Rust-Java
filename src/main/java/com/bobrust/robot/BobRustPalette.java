@@ -91,8 +91,8 @@ public class BobRustPalette {
 			return false;
 		}
 		
-		// 128x240   (4x16 colors)
-		// tiles (16 x 32)
+		// 128x240 (4x16 colors)
+		// tiles   (16 x 32)
 		// Set<Integer> colors = new LinkedHashSet<>();
 		for (int x = 0; x < 4; x++) {
 			for (int y = 0; y < 16; y++) {
@@ -112,7 +112,7 @@ public class BobRustPalette {
 			Graphics2D g = image.createGraphics();
 			g.drawImage(image, 0, 0, null);
 			g.setColor(Color.white);
-			for(Map.Entry<BorstColor, Point> entry : colorMap.entrySet()) {
+			for (Map.Entry<BorstColor, Point> entry : colorMap.entrySet()) {
 				Point point = entry.getValue();
 				Point sc = new Point(point.x, point.y);
 				g.drawOval(sc.x - 15 - zero.x, sc.y - 7 - zero.y, 30, 15);

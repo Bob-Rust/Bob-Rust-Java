@@ -52,6 +52,8 @@ public class JToolbarButton extends JRoundPanel {
 		
 		if (!enabled) {
 			super.setBackground(background.darker());
+		} else {
+			super.setBackground(background);
 		}
 	}
 	

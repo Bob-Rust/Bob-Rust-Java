@@ -47,7 +47,6 @@ public class RustUI {
 		SETTINGS_BACKGROUNDCOLOR_TOOLTIP("The background color of the canvas"),
 		
 		EDITOR_SIGNPICKERDIALOG_TITLE("Sign Picker"),
-		EDITOR_DRAWDIALOG_TITLE("Draw Settings"),
 		EDITOR_SETTINGSDIALOG_TITLE("Settings"),
 		EDITOR_TAB_GENERATOR("Generator"),
 		EDITOR_TAB_EDITOR("Editor"),
@@ -73,47 +72,10 @@ public class RustUI {
 		EDITOR_RESETEDITOR_TOOLTIP("Reset the editor colors"),
 		EDITOR_RESETEDITORDIALOG_TITLE("Warning"),
 		EDITOR_RESETEDITORDIALOG_MESSAGE("Are you sure you want to reset the editor?"),
-		EDITOR_RESETSETTINGS_LABEL("Reset Settings"),
-		EDITOR_RESETSETTINGS_BUTTON("Reset Settings"),
-		EDITOR_RESETSETTINGS_TOOLTIP("Reset all the settings"),
-		EDITOR_RESETSETTINGSDIALOG_TITLE("Warning"),
-		EDITOR_RESETSETTINGSDIALOG_MESSAGE("Are you sure you want to reset all the settings?"),
 
 		EDITOR_COLORPICKER_BUTTON_DEFAULT("Default"),
 		EDITOR_COLORPICKER_BUTTON_CUSTOM("Custom"),
 		EDITOR_COLORPICKER_LABEL_CURRENTCOLOR("Current Color"),
-		
-		ACTION_OPTIONS_LABEL("Options"),
-		ACTION_MAKEFULLSCREEN_ON("Make Fullscreen"),
-		ACTION_MAKEFULLSCREEN_OFF("Minimize"),
-		ACTION_SELECTMONITOR_BUTTON("Select Monitor"),
-		ACTION_LOADIMAGE_BUTTON("Load Image"),
-		ACTION_OPTIONS_BUTTON("Options"),
-		
-		ACTION_REGIONS_LABEL("Regions"),
-		ACTION_CANVASREGION_BUTTON("Canvas Region"),
-		ACTION_IMAGEREGION_BUTTON("Image Region"),
-		
-		ACTION_PREVIEWACTIONS_LABEL("Preview Actions"),
-		ACTION_STARTGENERATE_BUTTON("Start Generate"),
-		ACTION_RESETGENERATE_BUTTON("Reset Generate"),
-		ACTION_DRAWIMAGE_BUTTON("Draw Image"),
-		ACTION_CLOSE_BUTTON("Close"),
-		
-		ACTION_CLOSEDIALOG_TITLE("Warning"),
-		ACTION_CLOSEDIALOG_MESSAGE("Do you want to close the application?"),
-
-		ACTION_HELP_LABEL("Help"),
-		ACTION_REPORTISSUE_BUTTON("Report Issue"),
-		ACTION_DONATE_BUTTON("Donate"),
-		ACTION_ABOUT_BUTTON("About"),
-		
-		ACTION_SHAPECOUNT_LABEL("Shape Count"),
-		ACTION_CALCULATEEXACTTIME_BUTTON("Calculate Exact Time"),
-		ACTION_STARTDRAWING_BUTTON("Start Drawing"),
-		ACTION_SELECTCOLORPALETTE_BUTTON("Select Color Palette"),
-		
-		ACTION_PALETTEWARNINGDIALOG_TITLE("Could not find the palette"),
 		
 		;
 		

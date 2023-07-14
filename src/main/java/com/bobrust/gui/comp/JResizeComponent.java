@@ -47,12 +47,12 @@ public class JResizeComponent extends JPanel implements MouseListener, MouseMoti
 		// Draw image if it 
 		var localImage = image;
 		if (localImage != null) {
-			int width = getWidth() - MIN_SIZE - 3;
-			int height = getHeight() - MIN_SIZE - 3;
+			int width = getWidth() - MIN_SIZE - 1;
+			int height = getHeight() - MIN_SIZE - 1;
 			if (width > 0 && height > 0) {
 				g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER).derive(0.5f));
-				g.drawImage(localImage, BORDER + 2, BORDER + 2, width, height, null);
+				g.drawImage(localImage, BORDER + 1, BORDER + 1, width, height, null);
 			}
 		}
 	}
@@ -274,40 +274,31 @@ public class JResizeComponent extends JPanel implements MouseListener, MouseMoti
 		setBounds(area);
 	}
 	
-	public void setScreenRelativeRectangle(Rectangle rect) {
-		int x = rect.x - BORDER;
-		int y = rect.y - BORDER;
-		int w = rect.width + 2 * BORDER;
-		int h = rect.height + 2 * BORDER;
+	public void setSelectedRectangle(Rectangle rect) {
+		int x = rect.x - BORDER - 1;
+		int y = rect.y - BORDER - 1;
+		int w = rect.width + MIN_SIZE + 1;
+		int h = rect.height + MIN_SIZE + 1;
 		
-		// Make the rectangle relative to local
-		Component parent = getParent();
-		while (parent != null && !(parent instanceof Window)) {
-			x -= parent.getX();
-			y -= parent.getY();
-			parent = parent.getParent();
-		}
+		// TODO: Don't make these values hardcoded
+		x -= 10;
+		y -= 50;
 		
 		setBounds(x, y, w, h);
-		revalidateSelection();
 	}
 	
 	/**
 	 * The rectangle is relative to the parent components coordinates
 	 */
-	public Rectangle getScreenRelativeRectangle() {
+	public Rectangle getSelectedRectangle() {
 		var position = getLocation();
 		var size = getSize();
 		
-		// Make rectangle relative to global
-		Component parent = getParent();
-		while (parent != null && !(parent instanceof Window)) {
-			position.x += parent.getX();
-			position.y += parent.getY();
-			parent = parent.getParent();
-		}
+		// TODO: Don't make these values hardcoded
+		position.x += 10;
+		position.y += 50;
 		
 		// Remover border
-		return new Rectangle(position.x + BORDER, position.y + BORDER, size.width - 2 * BORDER, size.height - 2 * BORDER);
+		return new Rectangle(position.x + BORDER + 1, position.y + BORDER + 1, size.width - MIN_SIZE - 1, size.height - MIN_SIZE - 1);
 	}
 }

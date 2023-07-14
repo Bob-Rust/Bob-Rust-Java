@@ -1,13 +1,15 @@
 package com.bobrust.gui;
 
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.*;
 
 import javax.swing.*;
 
 import com.bobrust.lang.RustTranslator;
 import com.bobrust.settings.Settings;
 
+// TODO: This should be visible in the top of the screen when drawing the image
+//       This should be the same size as the RegionPickerDialog top
+//       Which is 50 pixels
 public class OverlayTopPanel extends JPanel {
 	private static final int ESTIMATE_DELAY_OFFSET = 14;
 	
@@ -15,19 +17,17 @@ public class OverlayTopPanel extends JPanel {
 	final JLabel generationInfo;
 	
 	public OverlayTopPanel() {
-		this.setBounds(150, 5, 10, 10);
-		this.setBackground(new Color(0x7f000000, true));
-		this.setLayout(null);
+		setLayout(new BorderLayout());
+		setBackground(new Color(0x333e48));
+		setDoubleBuffered(true);
 		
 		generationLabel = new JLabel("No active generation");
 		generationLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		generationLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-		generationLabel.setForeground(Color.lightGray);
 		generationLabel.setOpaque(false);
+		generationLabel.setForeground(Color.lightGray);
 		generationLabel.setFont(generationLabel.getFont().deriveFont(18.0f));
-		generationLabel.setBounds(0, 0, 440, 25);
-		generationLabel.setBackground(Color.blue);
-		this.add(generationLabel);
+		add(generationLabel, BorderLayout.NORTH);
 		
 		generationInfo = new JLabel("");
 		generationInfo.setHorizontalAlignment(SwingConstants.CENTER);
@@ -35,29 +35,35 @@ public class OverlayTopPanel extends JPanel {
 		generationInfo.setOpaque(false);
 		generationInfo.setForeground(Color.WHITE);
 		generationInfo.setFont(generationInfo.getFont().deriveFont(Font.BOLD, 16.0f));
-		generationInfo.setBounds(0, 20, 440, 20);
-		generationInfo.setBackground(Color.red);
-		this.add(generationInfo);
+		add(generationInfo, BorderLayout.CENTER);
 	}
 	
-	/**
-	 * This method will update the language of all elements in this component.
-	 */
-	public void updateLanguage() {
-		
-	}
-	
+	/*
 	public void setEstimatedGenerationLabel(int index, int maxShapes) {
 		generationLabel.setText("%d/%d shapes generated".formatted(index, maxShapes));
-		long time = (long)(index * 1.1 * (ESTIMATE_DELAY_OFFSET + 1000.0 / (double) Settings.SettingsClickInterval.get()));
+		long time = (long) (index * 1.1 * (ESTIMATE_DELAY_OFFSET + 1000.0 / (double) Settings.SettingsClickInterval.get()));
 		generationInfo.setText("Estimated %s".formatted(RustTranslator.getTimeMinutesMessage(time)));
 	}
+	*/
 	
 	public void setExactGenerationLabel(long time) {
 		generationInfo.setText("Time %s".formatted(RustTranslator.getTimeMinutesMessage(time)));
 	}
 	
+	/*
 	public void setRemainingTime(int index, int maxShapes, long timeLeft) {
+		generationLabel.setText("%d/%d shapes drawn".formatted(index, maxShapes));
+		generationInfo.setText("Time left %s".formatted(RustTranslator.getTimeMinutesMessage(timeLeft)));
+	}
+	*/
+	
+	public void setGeneratedShapes(int shapesUsed, int maxShapes) {
+		long time = (long) (shapesUsed * 1.1 * (ESTIMATE_DELAY_OFFSET + 1000.0 / (double) Settings.SettingsClickInterval.get()));
+		generationLabel.setText("%d/%d shapes used".formatted(shapesUsed, maxShapes));
+		generationInfo.setText("Estimated %s".formatted(RustTranslator.getTimeMinutesMessage(time)));
+	}
+	
+	public void setDrawnShapes(int index, int maxShapes, long timeLeft) {
 		generationLabel.setText("%d/%d shapes drawn".formatted(index, maxShapes));
 		generationInfo.setText("Time left %s".formatted(RustTranslator.getTimeMinutesMessage(timeLeft)));
 	}

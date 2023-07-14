@@ -30,7 +30,6 @@ public class SettingsDialog extends AbstractSettingsDialog {
 	
 	// Editor
 	final JButton btnResetEditor;
-	// final JButton btnResetSettings;
 	
 	private final java.util.List<IUpdateValue> applyEdits;
 	
@@ -95,25 +94,6 @@ public class SettingsDialog extends AbstractSettingsDialog {
 				}
 			}
 		);
-		
-		/*
-		btnResetSettings = addButtonField(
-			editorPane,
-			Type.EDITOR_RESETSETTINGS_LABEL,
-			Type.EDITOR_RESETSETTINGS_TOOLTIP,
-			Type.EDITOR_RESETSETTINGS_BUTTON,
-			e -> {
-				int dialogResult = JOptionPane.showConfirmDialog(dialog,
-					RustUI.getString(Type.EDITOR_RESETSETTINGSDIALOG_MESSAGE),
-					RustUI.getString(Type.EDITOR_RESETSETTINGSDIALOG_TITLE),
-					JOptionPane.YES_NO_OPTION
-				);
-				if (dialogResult == JOptionPane.YES_OPTION) {
-					gui.InternalSettings.reset();
-				}
-			}
-		);
-		*/
 		
 		addButtonField(debugPane, Type.DEBUG_OPENCONFIGDIRECTORY_LABEL, null, Type.DEBUG_OPENCONFIGDIRECTORY_BUTTON, e -> {
 			UrlUtils.openDirectory(new File("").getAbsoluteFile());

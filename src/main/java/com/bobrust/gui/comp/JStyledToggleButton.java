@@ -82,7 +82,6 @@ public class JStyledToggleButton extends JToggleButton {
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setColor(getBackground());
 
-		// TODO: Cache this value and only update when the component is resized.
 		RoundRectangle2D shape = new RoundRectangle2D.Float(
 			1, 2, getWidth() - 2, getHeight() - 4,
 			AppConstants.BUTTON_BORDER_RADIUS,

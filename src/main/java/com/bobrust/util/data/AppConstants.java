@@ -17,8 +17,6 @@ public interface AppConstants {
 	
 	// Used by BorstGenerator
 	boolean DEBUG_GENERATOR = false;
-	
-	// Used by BobRustPainter, BobRustDrawDialog
 	boolean DEBUG_DRAWN_COLORS = false;
 	
 	// Average canvas colors. Used as default colors

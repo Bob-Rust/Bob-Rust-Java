@@ -10,8 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.bobrust.generator.BorstColor;
+import com.bobrust.generator.BorstGenerator;
+import com.bobrust.generator.BorstUtils;
 import com.bobrust.generator.Circle;
-import com.bobrust.generator.Model;
 
 /**
  * Optimized class for rendering many circles
@@ -20,7 +21,7 @@ import com.bobrust.generator.Model;
  * 
  * @author HardCoded
  */
-public class BobRustShapeRender {
+public class ShapeRender {
 	/**
 	 * Each element in this list is 'cacheInterval' shapes apart
 	 */
@@ -29,7 +30,7 @@ public class BobRustShapeRender {
 	private BufferedImage canvas;
 	private int[] canvasPixels;
 	
-	public BobRustShapeRender(int cacheInterval) {
+	public ShapeRender(int cacheInterval) {
 		this.pixelBufferCache = new ArrayList<>();
 		this.cacheInterval = cacheInterval;
 	}
@@ -46,14 +47,13 @@ public class BobRustShapeRender {
 		canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		canvasPixels = ((DataBufferInt) canvas.getRaster().getDataBuffer()).getData();
 		Arrays.fill(canvasPixels, background);
+		
+		// TODO: If we continue a drawing we would already have a buffer
+		//       The first interval should be the new buffer
 		pixelBufferCache.add(canvasPixels.clone());
 	}
 	
-	public synchronized boolean hasCanvas() {
-		return canvas != null;
-	}
-	
-	public synchronized BufferedImage getImage(Model model, int shapes) {
+	public synchronized BufferedImage getImage(BorstGenerator.BorstData data, int shapes) {
 		int cacheIndex = shapes / cacheInterval;
 		
 		// The pixel buffer of the closest image
@@ -80,13 +80,17 @@ public class BobRustShapeRender {
 		Graphics2D g = canvas.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		for (int i = startIndex; i < shapes; i++) {
-			Circle circle = model.shapes.get(i);
-			BorstColor color = model.colors.get(i);
+			var blob = data.getBlobs().get(i);
+			int alpha = BorstUtils.ALPHAS[blob.alphaIndex];
 			
-			g.setColor(new Color(color.rgb | (model.alpha << 24), true));
-			int cd = circle.r;
-			g.fillOval(circle.x - cd / 2, circle.y - cd / 2, cd, cd);
-			
+			g.setColor(new Color(blob.color | (alpha << 24), true));
+			int cd = blob.size;
+			if (blob.shapeIndex == 3) {
+				cd *= 1.25;
+				g.fillRect(blob.x - cd / 2, blob.y - cd / 2, cd, cd);
+			} else {
+				g.fillOval(blob.x - cd / 2, blob.y - cd / 2, cd, cd);
+			}
 			// Cache every 'cacheInterval' shapes.
 			if ((i % cacheInterval) == cacheInterval - 1) {
 				pixelBufferCache.add(canvasPixels.clone());

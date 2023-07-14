@@ -42,7 +42,7 @@ public interface Settings {
 	@GuiElement(tab = GuiElement.Tab.Editor,
 		label = RustUI.Type.EDITOR_CALLBACKINTERVAL_LABEL,
 		tooltip = RustUI.Type.EDITOR_CALLBACKINTERVAL_TOOLTIP)
-	IntType EditorCallbackInterval = new IntType(20, 1, 99999);
+	IntType EditorCallbackInterval = new IntType(100, 1, 99999);
 	
 	StringType EditorImageDirectory = new StringType(System.getProperty("user.home"));
 	

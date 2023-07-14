@@ -42,7 +42,7 @@ public class JRandomPanel extends JPanel {
 		int distance = highest - lowest;
 		
 		Random random = new Random(seed);
-		for(int i = 0, len = pixels.length; i < len; i++) {
+		for (int i = 0, len = pixels.length; i < len; i++) {
 			int col = (int)(random.nextGaussian() * random.nextGaussian() * distance) + lowest;
 			col = col < lowest ? lowest : (col > highest ? highest:col);
 			pixels[i] = rgb | (col << 24);

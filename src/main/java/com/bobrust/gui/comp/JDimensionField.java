@@ -9,10 +9,10 @@ public class JDimensionField extends JPanel {
 	
 	public JDimensionField(Dimension def) {
 		setLayout(new BorderLayout());
-		widthField = new JIntegerField(def.width);
+		widthField = new JIntegerField(def.width, Integer.MIN_VALUE, Integer.MAX_VALUE);
 		widthField.setFocusable(true);
 		
-		heightField = new JIntegerField(def.height);
+		heightField = new JIntegerField(def.height, Integer.MIN_VALUE, Integer.MAX_VALUE);
 		heightField.setFocusable(true);
 		
 		add(widthField, BorderLayout.WEST);

@@ -56,13 +56,12 @@ public class RegionSelectionDialog extends JDialog {
 			panel.add(test, BorderLayout.CENTER);
 			
 			resizeComponent = new JResizeComponent();
-			resizeComponent.setBounds(100, 100, 200, 200);
-			resizeComponent.setEnabled(true);
 			test.add(resizeComponent);
 		}
 		
 		JPanel topTextPanel = new JPanel();
 		topTextPanel.setBackground(Color.red);
+		topTextPanel.setPreferredSize(new Dimension(0, 40));
 		panel.add(topTextPanel, BorderLayout.NORTH);
 		
 		// TODO: Make sure this label is always blocking some part of the top of the screen
@@ -107,7 +106,7 @@ public class RegionSelectionDialog extends JDialog {
 		return graphicsEnvironment.getDefaultScreenDevice().getDefaultConfiguration();
 	}
 	
-	public Region openDialog(boolean allowChangingMonitor, Image displayedImage, Rectangle rectangle) {
+	public Region openDialog(boolean allowChangingMonitor, Image displayedImage, Rectangle rect) {
 		if (allowChangingMonitor) {
 			selectMonitorTimer.start();
 		}
@@ -116,17 +115,22 @@ public class RegionSelectionDialog extends JDialog {
 			// Make it possible to select another monitor
 			GraphicsConfiguration config = getGraphicsConfiguration(getLocation());
 			setBounds(config.getBounds());
-			revalidate();
-			repaint();
+			getContentPane().revalidate();
 			
 			// Update resizeComponent with the specified image
+			if (rect.width < 0 || rect.height < 0) {
+				Rectangle screenBounds = config.getBounds();
+				rect.x = (screenBounds.width - 20 - 300) / 2;
+				rect.y = (screenBounds.height - 60 - 300) / 2;
+				rect.width = 300;
+				rect.height = 300;
+			}
 			resizeComponent.setImage(displayedImage);
-			resizeComponent.setScreenRelativeRectangle(rectangle);
+			resizeComponent.setSelectedRectangle(rect);
 			
 			// This blocks until the monitor has been selected
 			parent.setVisible(false);
 			setVisible(true);
-			
 			parent.setVisible(true);
 			dispose();
 			
@@ -135,7 +139,7 @@ public class RegionSelectionDialog extends JDialog {
 				config = getGraphicsConfiguration(getLocation());
 			}
 			
-			return new Region(config, resizeComponent.getScreenRelativeRectangle());
+			return new Region(config, resizeComponent.getSelectedRectangle());
 		} finally {
 			selectMonitorTimer.stop();
 		}

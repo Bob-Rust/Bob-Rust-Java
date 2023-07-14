@@ -4,6 +4,7 @@ import com.bobrust.gui.comp.JToolbarButton;
 import com.bobrust.gui.dialog.*;
 import com.bobrust.settings.Settings;
 import com.bobrust.util.ResourceUtil;
+import com.bobrust.util.UrlUtils;
 import com.bobrust.util.data.AppConstants;
 
 import javax.imageio.ImageIO;
@@ -25,13 +26,19 @@ public class ApplicationWindow extends JDialog {
 	private final RustFileDialog fileDialog;
 	private final SignPickerDialog signPickerDialog;
 	private final SettingsDialog settingsDialog;
-	private final DrawDialogNew drawDialog;
+	private final ScreenDrawDialog screenDrawDialog;
 	private final RegionSelectionDialog regionSelectionDialog;
 	
 	// Drawing variables
 	private GraphicsConfiguration monitor;
-	private final Rectangle canvasRect = new Rectangle();
-	private final Rectangle imageRect = new Rectangle();
+	private final Rectangle canvasRect = new Rectangle(-1, -1);
+	private final Rectangle imageRect = new Rectangle(-1, -1);
+	private Image drawImage;
+	
+	// State Toolbar Buttons
+	private JToolbarButton canvasAreaButton;
+	private JToolbarButton imageAreaButton;
+	private JToolbarButton drawButton;
 	
 	public ApplicationWindow() {
 		super(null, "BobRust", ModalityType.MODELESS);
@@ -55,7 +62,7 @@ public class ApplicationWindow extends JDialog {
 		regionSelectionDialog = new RegionSelectionDialog(this);
 		signPickerDialog = new SignPickerDialog(this);
 		settingsDialog = new SettingsDialog(this);
-		drawDialog = new DrawDialogNew(this);
+		screenDrawDialog = new ScreenDrawDialog(this);
 		
 		// Setup overlay UI
 		JPanel panel = new JPanel();
@@ -67,63 +74,81 @@ public class ApplicationWindow extends JDialog {
 		setContentPane(panel);
 	}
 	
-	private Image testImage;
 	private JPanel createToolbar() {
 		JPanel toolbarPanel = new JPanel();
-		// toolbarPanel.setLayout(new BoxLayout(toolbarPanel, BoxLayout.PAGE_AXIS));
 		toolbarPanel.setOpaque(false);
 		
-		int iconSize = 42;
-		toolbarPanel.add(createButton("/ui/settings_icon.png", "Open Settings", iconSize, 0xe0e0e0, false, e -> {
+		canvasAreaButton = createButton("/ui/crop_canvas.png", "Select Canvas Area", 0xe0e0e0,  e -> selectCanvasRegion());
+		imageAreaButton = createButton("/ui/image_select_icon.png", "Select Image Area", 0xe0e0e0, e -> selectImageRegion());
+		
+		drawButton = createButton("/ui/draw_icon.png", "Draw Image", 0xe0e0e0, e -> {
+			screenDrawDialog.openDialog(monitor, toolbarPanel.getLocationOnScreen());
+		});
+		
+		// Add toolbar items
+		toolbarPanel.add(createButton("/ui/settings_icon.png", "Open Settings", 0xe0e0e0, e -> {
 			settingsDialog.openDialog(toolbarPanel.getLocationOnScreen());
 		}));
-		toolbarPanel.add(createButton("/ui/upload_image.png", "Select Image", iconSize, 0xe0e0e0, false, e -> {
-			System.out.println(Settings.EditorImageDirectory.get());
-			File image = fileDialog.open(this, new FileNameExtensionFilter("Image Files", ImageIO.getReaderFileSuffixes()), "test", Settings.EditorImageDirectory.get());
-			try {
-				if (image != null) {
-					testImage = ImageIO.read(image);
-					Settings.EditorImageDirectory.set(image.getParent().toString());
-				}
-			} catch (IOException e2) {
-				e2.printStackTrace();
-			}
-		}));
-		toolbarPanel.add(createButton("/ui/canvas_icon.png", "Sign Type", iconSize, 0xe0e0e0, false, e -> {
+		toolbarPanel.add(createButton("/ui/upload_image.png", "Select Image", 0xe0e0e0, e -> importImage()));
+		toolbarPanel.add(createButton("/ui/canvas_icon.png", "Sign Type", 0xe0e0e0, e -> {
 			signPickerDialog.openSignDialog(toolbarPanel.getLocationOnScreen());
 			Settings.SettingsSign.set(signPickerDialog.getSelectedSign());
 		}));
-		toolbarPanel.add(createButton("/ui/crop_canvas.png", "Select Canvas Area", iconSize, 0xe0e0e0, false,  e -> {
-			var region = regionSelectionDialog.openDialog(true, null, canvasRect);
-			System.out.println(region);
-			monitor = region.monitor();
-			canvasRect.setBounds(region.selection());
-			
-			// TODO: This should move the image rect
-		}));
-		toolbarPanel.add(createButton("/ui/image_select_icon.png", "Select Image Area", iconSize, 0xe0e0e0, false, e -> {
-			var region = regionSelectionDialog.openDialog(false, testImage, imageRect);
-			System.out.println(region);
-			imageRect.setBounds(region.selection());
-		}));
-		// toolbarPanel.add(createButton("/ui/draw_play_icon.png", iconSize, 0x33ff66, false, e -> {}));
-		// toolbarPanel.add(createButton("/ui/draw_paused_icon.png", iconSize, 0xff6633, false, e -> {}));
-		toolbarPanel.add(createButton("/ui/draw_icon.png", "Draw Image", iconSize, 0xe0e0e0, false, e -> {
-			drawDialog.openDialog(monitor, toolbarPanel.getLocationOnScreen());
-		}));
-		toolbarPanel.add(createButton("/ui/sponsor_icon.png", "Donate", iconSize, 0xdb61a2, false, e -> {}));
+		toolbarPanel.add(canvasAreaButton);
+		toolbarPanel.add(imageAreaButton);
+		toolbarPanel.add(drawButton);
+		// toolbarPanel.add(createButton("/ui/draw_play_icon.png", "", 0x33ff66, e -> {}));
+		// toolbarPanel.add(createButton("/ui/draw_paused_icon.png", "", 0xff6633, e -> {}));
+		toolbarPanel.add(createButton("/ui/sponsor_icon.png", "Donate", 0xdb61a2, e -> UrlUtils.openDonationUrl()));
+		
+		canvasAreaButton.setEnabled(false);
+		imageAreaButton.setEnabled(false);
+		drawButton.setEnabled(false);
 		
 		return toolbarPanel;
 	}
 	
-	private JComponent createButton(String iconPath, String tooltip, int size, int rgb, boolean disable, ActionListener action) {
+	private void importImage() {
+		File image = fileDialog.open(
+			this,
+			new FileNameExtensionFilter("Image Files", ImageIO.getReaderFileSuffixes()),
+			"Open Image",
+			Settings.EditorImageDirectory.get()
+		);
+		
+		if (image == null) {
+			return;
+		}
+		
+		try {
+			drawImage = ImageIO.read(image);
+			canvasAreaButton.setEnabled(true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void selectCanvasRegion() {
+		var region = regionSelectionDialog.openDialog(true, null, canvasRect);
+		monitor = region.monitor();
+		canvasRect.setBounds(region.selection());
+		imageAreaButton.setEnabled(true);
+	}
+	
+	private void selectImageRegion() {
+		var region = regionSelectionDialog.openDialog(false, drawImage, imageRect);
+		imageRect.setBounds(region.selection());
+		drawButton.setEnabled(true);
+	}
+	
+	private JToolbarButton createButton(String iconPath, String tooltip, int rgb, ActionListener action) {
+		int size = 42;
 		Image icon = ResourceUtil.loadImageFromResources(iconPath);
 		icon = icon.getScaledInstance(size, size, Image.SCALE_SMOOTH);
 		
 		JToolbarButton button = new JToolbarButton(icon, rgb);
 		button.setBackground(new Color(0x302d5b));
 		button.setToolTipText(tooltip);
-		button.setEnabled(!disable);
 		button.addActionListener(action);
 		return button;
 	}
@@ -132,9 +157,23 @@ public class ApplicationWindow extends JDialog {
 		JLabel versionLabel = new JLabel("Version " + AppConstants.VERSION);
 		versionLabel.setForeground(new Color(0xcbcbcb));
 		
+		// TODO: Add an about us button in both the settings and here
+		
 		JPanel versionPanel = new JPanel();
 		versionPanel.setOpaque(false);
 		versionPanel.add(versionLabel);
 		return versionPanel;
+	}
+	
+	public Image getDrawImage() {
+		return drawImage;
+	}
+	
+	public Rectangle getCanvasRect() {
+		return canvasRect;
+	}
+	
+	public Rectangle getImageRect() {
+		return imageRect;
 	}
 }

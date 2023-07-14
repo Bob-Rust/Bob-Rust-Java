@@ -25,6 +25,11 @@ public class BlobList {
 		list.add(blob);
 	}
 	
+	public void assign(List<Blob> list, int offset, int count) {
+		this.list.clear();
+		this.list.addAll(list.subList(offset, offset + count));
+	}
+	
 	public List<Blob> getList() {
 		return list;
 	}

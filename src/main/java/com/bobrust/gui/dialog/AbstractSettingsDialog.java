@@ -41,12 +41,10 @@ public abstract class AbstractSettingsDialog {
 		gbc_label.gridy = y_pos;
 		tab.panel.add(lblLabel, gbc_label);
 		
-		JIntegerField intField = new JIntegerField(def);
+		JIntegerField intField = new JIntegerField(def, min, max);
 		lblLabel.setLabelFor(intField);
 		intField.setAlignmentX(Component.LEFT_ALIGNMENT);
 		intField.setFocusable(true);
-		intField.setMinimum(min);
-		intField.setMaximum(max);
 		intField.setMaximumSize(new Dimension(116, 20));
 		GridBagConstraints gbc_intField = new GridBagConstraints();
 		gbc_intField.fill = GridBagConstraints.HORIZONTAL;
