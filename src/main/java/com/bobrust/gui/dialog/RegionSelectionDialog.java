@@ -15,21 +15,25 @@ public class RegionSelectionDialog extends JDialog {
 	private final JDialog parent;
 	private final JResizeComponent resizeComponent;
 	private final Timer selectMonitorTimer;
+	private final boolean hideParent;
 	
-	public RegionSelectionDialog(JDialog parent) {
+	public RegionSelectionDialog(JDialog parent, boolean hideParent) {
 		super(parent, "", ModalityType.APPLICATION_MODAL);
 		this.parent = parent;
+		this.hideParent = hideParent;
 		
 		setUndecorated(true);
 		setFocusable(true);
 		setAlwaysOnTop(true);
 		setBackground(new Color(0x10000000, true));
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				// TODO Set state of region to no-change
 				dispose();
-				parent.setVisible(true);
+				if (hideParent) {
+					parent.setVisible(true);
+				}
 				RustWindowUtil.showWarningMessage(parent, "When closing the region dialog you should use 'Escape' or 'Enter' instead of pressing Alt+F4", "How to close the region selector");
 			}
 		});
@@ -64,8 +68,6 @@ public class RegionSelectionDialog extends JDialog {
 		topTextPanel.setPreferredSize(new Dimension(0, 40));
 		panel.add(topTextPanel, BorderLayout.NORTH);
 		
-		// TODO: Make sure this label is always blocking some part of the top of the screen
-		//       Make sure the font exists and will look similar on multiple systems!
 		JLabel topText = new JLabel("Press Escape or Enter to close");
 		topText.setHorizontalTextPosition(SwingConstants.CENTER);
 		topText.setFont(topText.getFont().deriveFont(20.0f));
@@ -106,14 +108,14 @@ public class RegionSelectionDialog extends JDialog {
 		return graphicsEnvironment.getDefaultScreenDevice().getDefaultConfiguration();
 	}
 	
-	public Region openDialog(boolean allowChangingMonitor, Image displayedImage, Rectangle rect) {
+	public Region openDialog(GraphicsConfiguration monitor, boolean allowChangingMonitor, Image displayedImage, Rectangle rect) {
 		if (allowChangingMonitor) {
 			selectMonitorTimer.start();
 		}
 		
 		try {
 			// Make it possible to select another monitor
-			GraphicsConfiguration config = getGraphicsConfiguration(getLocation());
+			GraphicsConfiguration config = monitor != null ? monitor : getGraphicsConfiguration(getLocation());
 			setBounds(config.getBounds());
 			getContentPane().revalidate();
 			
@@ -129,9 +131,13 @@ public class RegionSelectionDialog extends JDialog {
 			resizeComponent.setSelectedRectangle(rect);
 			
 			// This blocks until the monitor has been selected
-			parent.setVisible(false);
+			if (hideParent) {
+				parent.setVisible(false);
+			}
 			setVisible(true);
-			parent.setVisible(true);
+			if (hideParent) {
+				parent.setVisible(true);
+			}
 			dispose();
 			
 			if (allowChangingMonitor) {

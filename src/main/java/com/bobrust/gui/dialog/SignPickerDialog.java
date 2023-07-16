@@ -21,10 +21,11 @@ public class SignPickerDialog extends JDialog {
 	private Sign selectedSign;
 	
 	public SignPickerDialog(JDialog parent) {
-		super(parent, RustUI.getString(RustUI.Type.EDITOR_SIGNPICKERDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
+		super(parent, "Sign Picker", ModalityType.APPLICATION_MODAL);
 		setIconImage(AppConstants.DIALOG_ICON);
 		setSize(520, 670);
 		setResizable(false);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		
 		ButtonGroup buttonGroup = new ButtonGroup();
@@ -106,7 +107,6 @@ public class SignPickerDialog extends JDialog {
 	public void openSignDialog(Point point) {
 		setLocation(point);
 		setVisible(true);
-		dispose();
 	}
 
 	public Sign getSelectedSign() {

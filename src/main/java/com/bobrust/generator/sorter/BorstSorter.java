@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 import com.bobrust.generator.BorstUtils;
+import com.bobrust.util.data.AppConstants;
 
 public class BorstSorter {
 	private static final int MIN_SIZE = 8;
@@ -139,6 +140,7 @@ public class BorstSorter {
 	
 	public static BlobList sort(BlobList data, int size) {
 		try {
+			/*
 			Piece[] pieces = new Piece[data.size()];
 			map = new IntList[data.size()];
 			
@@ -147,6 +149,26 @@ public class BorstSorter {
 			}
 			
 			return new BlobList(Arrays.asList(sort0(pieces, size)));
+			*/
+			
+			long start = System.nanoTime();
+			int len = data.size();
+			List<Blob> blobs = new ArrayList<>();
+			for (int i = 0; i < data.size(); i += AppConstants.MAX_SORT_GROUP) {
+				Piece[] pieces = new Piece[Math.min(AppConstants.MAX_SORT_GROUP, len - i)];
+				for (int j = 0; j < pieces.length; j++) {
+					pieces[j] = new Piece(data.get(i + j), j);
+				}
+				map = new IntList[pieces.length];
+				blobs.addAll(Arrays.asList(sort0(pieces, size)));
+			}
+			
+			if (AppConstants.DEBUG_TIME) {
+				long time = System.nanoTime() - start;
+				AppConstants.LOGGER.info("BorstSorter.sort(data, size) took {} ms for {} shapes", time / 1000000.0, data.size());
+			}
+			
+			return new BlobList(blobs);
 		} finally {
 			map = null;
 		}

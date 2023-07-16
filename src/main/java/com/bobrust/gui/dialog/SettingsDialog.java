@@ -39,6 +39,7 @@ public class SettingsDialog extends AbstractSettingsDialog {
 		this.dialog.setIconImage(AppConstants.DIALOG_ICON);
 		this.dialog.setSize(300, 360);
 		this.dialog.setResizable(false);
+		this.dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		this.colorPicker = new RustColorPicker(dialog);
 		this.signPicker = new SignPickerDialog(dialog);
 		
@@ -282,7 +283,6 @@ public class SettingsDialog extends AbstractSettingsDialog {
 		// Show the dialog.
 		dialog.setLocation(point);
 		dialog.setVisible(true);
-		dialog.dispose();
 		
 		// Save all component values
 		for (IUpdateValue updaters : applyEdits) {

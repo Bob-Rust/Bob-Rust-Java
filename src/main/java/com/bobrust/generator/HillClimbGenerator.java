@@ -49,7 +49,7 @@ class HillClimbGenerator {
 		}
 		
 		if (maxLoops <= 0 && AppConstants.DEBUG_GENERATOR) {
-			System.out.println("Generator surpassed max shape generated buffer");
+			AppConstants.LOGGER.warn("HillClimbGenerator failed to find a better shape after {} tries", 4096);
 		}
 		
 		return bestState;

@@ -17,8 +17,12 @@ public class ScreenDrawDialog extends JDialog {
 	final ShapeRender shapeRender;
 	final ApplicationWindow parent;
 	
+	Rectangle canvasRect = new Rectangle();
+	Rectangle imageRect = new Rectangle();
+	
 	public ScreenDrawDialog(ApplicationWindow parent) {
 		super(null, "", ModalityType.MODELESS);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setIconImage(AppConstants.DIALOG_ICON);
 		setUndecorated(true);
 		setBackground(new Color(0, true));
@@ -45,15 +49,53 @@ public class ScreenDrawDialog extends JDialog {
 	}
 	
 	public void openDialog(GraphicsConfiguration monitor, Point location) {
+		// TODO: During testing this sometimes froze the application!
+		
+		// Create local variables for user selected areas
+		canvasRect.setRect(parent.getCanvasRect());
+		imageRect.setRect(parent.getImageRect());
+		
+		// Open the draw dialog
 		setBounds(monitor.getBounds());
 		parent.setVisible(false);
 		setVisible(true);
 		drawDialog.openDialog(monitor, location);
-		System.out.println("Sdd A");
 		parent.setVisible(true);
-		System.out.println("Sdd B");
 		dispose();
-		System.out.println("Sdd C");
+	}
+	
+	private double remap(double value, double a, double b, double c, double d) {
+		return c + (d - c) / (b - a) * (value - a);
+	}
+	
+	void updateCanvasRect(Rectangle updated) {
+		// Update the canvas rectangle
+		
+		var oc = parent.getCanvasRect();
+		var oi = parent.getImageRect();
+		
+		double nx0 = remap(
+			oi.x,
+			oc.x, oc.x + oc.width,
+			updated.x, updated.x + updated.width);
+		double ny0 = remap(
+			oi.y,
+			oc.y, oc.y + oc.height,
+			updated.y, updated.y + updated.height);
+		
+		double nx1 = remap(
+			oi.x + oi.width,
+			oc.x, oc.x + oc.width,
+			updated.x, updated.x + updated.width);
+		double ny1 = remap(
+			oi.y + oi.height,
+			oc.y, oc.y + oc.height,
+			updated.y, updated.y + updated.height);
+		
+		double w = nx1 - nx0;
+		double h = ny1 - ny0;
+		imageRect.setRect(nx0, ny0, w, h);
+		canvasRect.setRect(updated);
 	}
 	
 	private final BasicStroke backgroundStroke = new BasicStroke(3);
@@ -66,8 +108,6 @@ public class ScreenDrawDialog extends JDialog {
 		
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		var canvasRect = parent.getCanvasRect();
-		var imageRect = parent.getImageRect();
 		var oldStroke = g.getStroke();
 		
 		g.setStroke(backgroundStroke);
@@ -79,23 +119,24 @@ public class ScreenDrawDialog extends JDialog {
 		g.setColor(Color.white);
 		g.drawRoundRect(canvasRect.x - 1, canvasRect.y - 1, canvasRect.width + 1, canvasRect.height + 1, 2, 2);
 		
-		g.setColor(Color.cyan);
-		g.drawRoundRect(imageRect.x - 1, imageRect.y - 1, imageRect.width + 1, imageRect.height + 1, 2, 2);
-		
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		// g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER).derive(0.5f));
 		// g.drawImage(drawImage, imageRect.x, imageRect.y, imageRect.width, imageRect.height, null);
 		
 		var data = drawDialog.getBorstData();
-		// System.out.println("data: " + data);
 		if (data != null) {
 			synchronized (data) {
 				int shapes = data.getBlobs().size();
 				shapes = Math.min(drawDialog.shapesSlider.getValue(), shapes);
 				
 				BufferedImage shapeImage = shapeRender.getImage(data, shapes);
-				g.drawImage(shapeImage, canvasRect.x, canvasRect.y, canvasRect.width, canvasRect.height, null);
+				if (shapeImage != null) {
+					g.drawImage(shapeImage, canvasRect.x, canvasRect.y, canvasRect.width, canvasRect.height, null);
+				}
 			}
 		}
+		
+		g.setColor(Color.cyan);
+		g.drawRoundRect(imageRect.x - 1, imageRect.y - 1, imageRect.width + 1, imageRect.height + 1, 2, 2);
 	}
 }

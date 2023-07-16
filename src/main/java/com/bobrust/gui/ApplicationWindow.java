@@ -59,7 +59,7 @@ public class ApplicationWindow extends JDialog {
 		
 		// Setup member variables
 		fileDialog = new RustFileDialog();
-		regionSelectionDialog = new RegionSelectionDialog(this);
+		regionSelectionDialog = new RegionSelectionDialog(this, true);
 		signPickerDialog = new SignPickerDialog(this);
 		settingsDialog = new SettingsDialog(this);
 		screenDrawDialog = new ScreenDrawDialog(this);
@@ -129,14 +129,14 @@ public class ApplicationWindow extends JDialog {
 	}
 	
 	private void selectCanvasRegion() {
-		var region = regionSelectionDialog.openDialog(true, null, canvasRect);
+		var region = regionSelectionDialog.openDialog(null, true, null, canvasRect);
 		monitor = region.monitor();
 		canvasRect.setBounds(region.selection());
 		imageAreaButton.setEnabled(true);
 	}
 	
 	private void selectImageRegion() {
-		var region = regionSelectionDialog.openDialog(false, drawImage, imageRect);
+		var region = regionSelectionDialog.openDialog(monitor, false, drawImage, imageRect);
 		imageRect.setBounds(region.selection());
 		drawButton.setEnabled(true);
 	}

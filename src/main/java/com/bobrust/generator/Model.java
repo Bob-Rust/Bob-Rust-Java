@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Internal representation of the approximation model
  */
-class Model {
+public class Model {
 	private final Worker worker;
 	private final BorstImage target;
 	private final BorstImage context;

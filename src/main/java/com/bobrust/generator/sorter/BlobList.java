@@ -30,6 +30,10 @@ public class BlobList {
 		this.list.addAll(list.subList(offset, offset + count));
 	}
 	
+	public void reset() {
+		list.clear();
+	}
+	
 	public List<Blob> getList() {
 		return list;
 	}

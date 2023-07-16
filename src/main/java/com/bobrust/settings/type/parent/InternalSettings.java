@@ -2,7 +2,6 @@ package com.bobrust.settings.type.parent;
 
 import com.bobrust.lang.RustUI;
 import com.bobrust.settings.Settings;
-import com.bobrust.settings.RustSettingsImpl;
 import com.bobrust.util.RustWindowUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,10 +17,10 @@ import java.util.Properties;
 import java.util.function.Consumer;
 
 public class InternalSettings {
-	private static final Logger LOGGER = LogManager.getLogger(RustSettingsImpl.class);
+	private static final Logger LOGGER = LogManager.getLogger(InternalSettings.class);
 	private final Map<String, SettingsType<?>> settings;
 	private final Map<String, GuiElement> settingsMapping;
-	public final Properties properties; // TODO: Make private
+	private final Properties properties;
 	private Consumer<SettingsType<?>> listener;
 	
 	public InternalSettings() {

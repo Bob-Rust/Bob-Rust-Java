@@ -166,7 +166,8 @@ public class BobRustPainter {
 		// Make sure that we save the painting
 		clickPoint(robot, palette.getSaveButton(), 4, autoDelay);
 		
-		return true;
+		// Return the result
+		throw new PaintingInterrupted(drawnShapes, PaintingInterrupted.InterruptType.PaintingFinished);
 	}
 	
 	private Point transformPoint(Point point) {

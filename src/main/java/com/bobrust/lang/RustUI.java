@@ -46,7 +46,6 @@ public class RustUI {
 		SETTINGS_BACKGROUNDCOLOR_BUTTON("Background Color"),
 		SETTINGS_BACKGROUNDCOLOR_TOOLTIP("The background color of the canvas"),
 		
-		EDITOR_SIGNPICKERDIALOG_TITLE("Sign Picker"),
 		EDITOR_SETTINGSDIALOG_TITLE("Settings"),
 		EDITOR_TAB_GENERATOR("Generator"),
 		EDITOR_TAB_EDITOR("Editor"),
@@ -72,10 +71,6 @@ public class RustUI {
 		EDITOR_RESETEDITOR_TOOLTIP("Reset the editor colors"),
 		EDITOR_RESETEDITORDIALOG_TITLE("Warning"),
 		EDITOR_RESETEDITORDIALOG_MESSAGE("Are you sure you want to reset the editor?"),
-
-		EDITOR_COLORPICKER_BUTTON_DEFAULT("Default"),
-		EDITOR_COLORPICKER_BUTTON_CUSTOM("Custom"),
-		EDITOR_COLORPICKER_LABEL_CURRENTCOLOR("Current Color"),
 		
 		;
 		
@@ -93,7 +88,6 @@ public class RustUI {
 	}
 	
 	public static String getString(Type type) {
-		// TODO: Create language files
 		return type.defaultValue;
 	}
 }

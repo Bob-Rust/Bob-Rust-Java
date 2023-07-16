@@ -31,19 +31,7 @@ public class Main {
 		LOGGER.info("  AppVersion  : {}", AppConstants.VERSION);
 		LOGGER.info("");
 		
-		// TODO: Do not draw outside the image region +- the radius of the largest shape.
-		// TODO: Maybe remove the monitor button and only make it choose the screen you
-		//       expanded the window on?
-		// ----: Move the Monitor Button into the options.
-		// TODO: Add keybinds like F11 to minimize the tool.
-		// TODO: Maybe show the image at the bottom of the screen and add animations.
-		// MAYBE: Have it always generate the shape to a maximum of 99999 shapes.
-		//        This would remove all buttons and be recomputed when the one of
-		//        the following are changed:
-		//         * Image region
-		//         * Canvas region
-		//         * Current image
-		//         * Options
+		// TODO: Do not draw outside the image region +- the radius of the largest shape
 		
 		// Setup settings
 		File CONFIG_FILE = new File("bobrust.properties");
@@ -65,5 +53,22 @@ public class Main {
 			// Make application window visible
 			new ApplicationWindow().setVisible(true);
 		});
+		
+		/*
+		Thread aliveThread = new Thread(() -> {
+			while (true) {
+				try {
+					Thread.sleep(10000);
+				} catch (InterruptedException ignored) {
+					Thread.currentThread().interrupt();
+					break;
+				}
+				
+				System.out.println("Alive");
+			}
+		}, "Alive thread");
+		aliveThread.setDaemon(true);
+		aliveThread.start();
+		*/
 	}
 }

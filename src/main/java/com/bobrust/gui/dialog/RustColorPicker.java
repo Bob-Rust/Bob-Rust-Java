@@ -1,7 +1,6 @@
 package com.bobrust.gui.dialog;
 
 import java.awt.Color;
-import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
@@ -12,25 +11,24 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import com.bobrust.generator.BorstUtils;
-import com.bobrust.lang.RustUI;
-import com.bobrust.lang.RustUI.Type;
 import com.bobrust.settings.Settings;
 import com.bobrust.util.data.AppConstants;
 
 /**
  * A color picker that looks similar to the color picker in rust
  */
-public class RustColorPicker {
-	private final JDialog dialog;
+public class RustColorPicker extends JDialog {
 	private final JLabel colorLabel;
 	private Color selectedColor;
 	
 	public RustColorPicker(JDialog parent) {
+		super(parent, "Color picker", ModalityType.APPLICATION_MODAL);
 		this.selectedColor = Settings.SettingsBackground.get();
 		
-		dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
-		dialog.setSize(165, 340);
-		dialog.setResizable(false);
+		setSize(165, 340);
+		setIconImage(AppConstants.DIALOG_ICON);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		setResizable(false);
 		
 		Dimension panelSize = new Dimension(150, 301);
 		JPanel panel = new JPanel();
@@ -38,9 +36,9 @@ public class RustColorPicker {
 		panel.setMinimumSize(panelSize);
 		panel.setMaximumSize(panelSize);
 		panel.setLayout(null);
-		dialog.getContentPane().add(panel);
+		getContentPane().add(panel);
 
-		JLabel lblCurrentColor = new JLabel(RustUI.getString(Type.EDITOR_COLORPICKER_LABEL_CURRENTCOLOR));
+		JLabel lblCurrentColor = new JLabel("Current Color");
 		lblCurrentColor.setBorder(new EmptyBorder(0, 5, 0, 0));
 		lblCurrentColor.setForeground(Color.WHITE);
 		lblCurrentColor.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -78,12 +76,12 @@ public class RustColorPicker {
 		});
 		panel.add(lblColorPaletteImage);
 		
-		JButton btnCustomColor = new JButton(RustUI.getString(Type.EDITOR_COLORPICKER_BUTTON_CUSTOM));
+		JButton btnCustomColor = new JButton("Custom");
 		btnCustomColor.setOpaque(false);
 		btnCustomColor.setFocusable(false);
 		btnCustomColor.setBounds(-1, 279, 77, 23);
 		btnCustomColor.addActionListener((event) -> {
-			Color color = JColorChooser.showDialog(dialog, RustUI.getString(Type.EDITOR_COLORDIALOG_TITLE), selectedColor);
+			Color color = JColorChooser.showDialog(this, "Color picker", selectedColor);
 			if(color != null) {
 				selectedColor = color;
 				colorLabel.setBackground(selectedColor);
@@ -91,7 +89,7 @@ public class RustColorPicker {
 		});
 		panel.add(btnCustomColor);
 		
-		JButton btnDefaultColor = new JButton(RustUI.getString(Type.EDITOR_COLORPICKER_BUTTON_DEFAULT));
+		JButton btnDefaultColor = new JButton("Default");
 		btnDefaultColor.setOpaque(false);
 		btnDefaultColor.setFocusable(false);
 		btnDefaultColor.setBounds(74, 279, 77, 23);
@@ -101,7 +99,7 @@ public class RustColorPicker {
 		});
 		panel.add(btnDefaultColor);
 		
-		dialog.pack();
+		pack();
 	}
 
 	public Color openColorDialog(Point point) {
@@ -109,9 +107,8 @@ public class RustColorPicker {
 			colorLabel.setBackground(Settings.getSettingsBackgroundCalculated());
 		}
 		
-		dialog.setLocation(point);
-		dialog.setVisible(true);
+		setLocation(point);
+		setVisible(true);
 		return selectedColor;
 	}
-	
 }

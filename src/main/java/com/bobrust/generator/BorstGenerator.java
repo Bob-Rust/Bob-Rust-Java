@@ -1,5 +1,6 @@
 package com.bobrust.generator;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -14,21 +15,20 @@ import com.bobrust.util.data.AppConstants;
 public class BorstGenerator {
 	private static final Logger LOGGER = LogManager.getLogger(BorstGenerator.class);
 	private final Consumer<BorstData> callback;
-	private final BorstSettings settings;
 	private volatile Thread thread;
+	private volatile Model model;
 	
 	// Sent as a callback
 	private final BorstData data = new BorstData();
 	
-	public BorstGenerator(BorstSettings settings, Consumer<BorstData> callback) {
+	public BorstGenerator(Consumer<BorstData> callback) {
 		this.callback = Objects.requireNonNull(callback);
-		this.settings = Objects.requireNonNull(settings);
 	}
 	
 	/**
 	 * Start the generator
 	 */
-	public synchronized boolean start() {
+	public synchronized boolean start(Model previous, BufferedImage inputImage, int maxShapes, int callbackInterval, int background, int alpha) {
 		if (thread != null) {
 			LOGGER.warn("BorstGenerator has already been started! Restarting generator");
 			
@@ -42,17 +42,18 @@ public class BorstGenerator {
 			}
 		}
 		
-		if (settings.DirectImage == null) {
+		if (inputImage == null) {
 			LOGGER.error("Failed to load borst image");
 			return false;
 		}
 		
-		BorstImage image = new BorstImage(settings.DirectImage);
-		int length = settings.MaxShapes;
-		int interval = settings.CallbackInterval;
-		int background = settings.Background;
-		int alpha = BorstUtils.ALPHAS[settings.Alpha];
-		data.clear();
+		if (previous == null) {
+			BorstImage image = new BorstImage(inputImage);
+			model = new Model(image, background, alpha);
+			data.clear();
+		} else {
+			model = previous;
+		}
 		
 		Thread thread = new Thread(() -> {
 			if (AppConstants.DEBUG_DRAWN_COLORS) {
@@ -67,11 +68,11 @@ public class BorstGenerator {
 				return;
 			}
 			
-			Model model = new Model(image, background, alpha);
-			
+			// Start from previous position
+			int i = model.shapes.size();
 			try {
 				long begin = System.nanoTime();
-				for (int i = 0; i <= length; i++) {
+				for (; i <= maxShapes; i++) {
 					int n = model.processStep();
 					long end = System.nanoTime();
 					
@@ -81,7 +82,7 @@ public class BorstGenerator {
 						return;
 					}
 					
-					if ((i == length) || (i % interval) == 0) {
+					if ((i == maxShapes) || (i % callbackInterval) == 0) {
 						synchronized (data) {
 							data.update(model, i);
 							callback.accept(data);
@@ -102,11 +103,9 @@ public class BorstGenerator {
 					}
 				}
 			} finally {
-				// TODO: Handle if we were stopped early
 				synchronized (data) {
-					data.index = length;
-					data.done = true;
-					data.update(model, length);
+					data.index = i;
+					data.update(model, i);
 					callback.accept(data);
 				}
 			}
@@ -121,17 +120,23 @@ public class BorstGenerator {
 	 * Calling this method will close the thread created by this generator.
 	 * This method will wait until the thread is fully closed.
 	 */
-	public synchronized void stop() throws InterruptedException {
-		if (thread != null) {
+	public synchronized Model stop() {
+		var localModel = model;
+		var localThread = thread;
+		if (localThread != null) {
 			try {
 				// Interrupt the thread and join it to wait for it to close.
-				thread.interrupt();
-				thread.join();
+				localThread.interrupt();
+				localThread.join();
+			} catch (InterruptedException ignored) {
+				Thread.currentThread().interrupt();
 			} finally {
 				// Make sure that the thread keeps it's interrupted state.
 				thread = null;
 			}
 		}
+		
+		return localModel;
 	}
 	
 	/**
@@ -210,7 +215,6 @@ public class BorstGenerator {
 		private final List<Blob> blobs;
 		private int alpha;
 		private int index;
-		private boolean done;
 		
 		private BorstData() {
 			this.blobs = new ArrayList<>();
@@ -238,7 +242,6 @@ public class BorstGenerator {
 		}
 		
 		private synchronized void clear() {
-			this.done = false;
 			this.alpha = 0;
 			this.index = 0;
 			this.blobs.clear();

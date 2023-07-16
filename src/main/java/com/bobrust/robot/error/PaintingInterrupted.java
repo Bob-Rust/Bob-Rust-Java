@@ -31,6 +31,11 @@ public class PaintingInterrupted extends Exception {
 		/**
 		 * This is used when the painting was interrupted because of Thread.interrupt()
 		 */
-		ThreadInterrupted
+		ThreadInterrupted,
+		
+		/**
+		 * This is used when the painting has been finished
+		 */
+		PaintingFinished
 	}
 }

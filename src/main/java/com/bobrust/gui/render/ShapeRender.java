@@ -9,10 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.bobrust.generator.BorstColor;
 import com.bobrust.generator.BorstGenerator;
 import com.bobrust.generator.BorstUtils;
-import com.bobrust.generator.Circle;
 
 /**
  * Optimized class for rendering many circles
@@ -48,12 +46,14 @@ public class ShapeRender {
 		canvasPixels = ((DataBufferInt) canvas.getRaster().getDataBuffer()).getData();
 		Arrays.fill(canvasPixels, background);
 		
-		// TODO: If we continue a drawing we would already have a buffer
-		//       The first interval should be the new buffer
 		pixelBufferCache.add(canvasPixels.clone());
 	}
 	
 	public synchronized BufferedImage getImage(BorstGenerator.BorstData data, int shapes) {
+		if (pixelBufferCache.isEmpty()) {
+			return null;
+		}
+		
 		int cacheIndex = shapes / cacheInterval;
 		
 		// The pixel buffer of the closest image
@@ -91,6 +91,7 @@ public class ShapeRender {
 			} else {
 				g.fillOval(blob.x - cd / 2, blob.y - cd / 2, cd, cd);
 			}
+			
 			// Cache every 'cacheInterval' shapes.
 			if ((i % cacheInterval) == cacheInterval - 1) {
 				pixelBufferCache.add(canvasPixels.clone());
