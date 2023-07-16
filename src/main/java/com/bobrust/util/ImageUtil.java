@@ -3,7 +3,6 @@ package com.bobrust.util;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.imageio.ImageIO;
@@ -23,21 +22,25 @@ import org.apache.logging.log4j.Logger;
  * 
  * @author HardCoded
  */
-public class RustImageUtil {
-	private static final Logger LOGGER = LogManager.getLogger(RustImageUtil.class);
+public class ImageUtil {
+	private static final Logger LOGGER = LogManager.getLogger(ImageUtil.class);
 	private static final int[] iccCmykLut;
 	private static final int bits;
 	
 	static {
 		int[] lut = null;
-		try (InputStream stream = RustImageUtil.class.getResourceAsStream("/profiles/cmyk.png")) {
+		try (InputStream stream = ImageUtil.class.getResourceAsStream("/profiles/cmyk.png")) {
+			if (stream == null) {
+				throw new NullPointerException("Resource was not found");
+			}
+			
 			BufferedImage cmykLut = ImageIO.read(stream);
 			int w = cmykLut.getWidth();
 			int h = cmykLut.getHeight();
 			lut = new int[w * h];
 			cmykLut.getRGB(0, 0, w, h, lut, 0, w);
-		} catch (IOException e) {
-			LOGGER.error("Error loading cmyk lut: {}", e);
+		} catch (Exception e) {
+			LOGGER.error("Error loading cmyk lut", e);
 			LOGGER.throwing(e);
 			e.printStackTrace();
 		}
@@ -64,8 +67,8 @@ public class RustImageUtil {
 			int cr = ((col >> 16) & 255) >> d_shift;
 			int cg = ((col >> 8) & 255) >> d_shift;
 			int cb = (col & 255) >> d_shift;
-			int cidx = (cr << r_shift) | (cg << g_shift) | cb;
-			src[i] = lut[cidx] | (col & 0xff000000);
+			int lut_idx = (cr << r_shift) | (cg << g_shift) | cb;
+			src[i] = lut[lut_idx] | col;
 		}
 		
 		return image;
@@ -92,5 +95,13 @@ public class RustImageUtil {
 		g.dispose();
 		
 		return image;
+	}
+	
+	public static Image getSmoothScaledInstance(Image image, int width, int height) {
+		BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = result.createGraphics();
+		g.drawImage(image.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
+		g.dispose();
+		return result;
 	}
 }

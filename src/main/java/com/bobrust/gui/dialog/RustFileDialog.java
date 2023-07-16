@@ -54,8 +54,6 @@ public class RustFileDialog {
 	public static boolean hasLwjgl() {
 		return HAS_LWJGL;
 	}
-
-	private JFileChooser fileChooser;
 	
 	public RustFileDialog() {
 		
@@ -73,7 +71,6 @@ public class RustFileDialog {
 					filters.flip();
 					
 					String result = TinyFileDialogs.tinyfd_openFileDialog(title, directory + File.separatorChar, filters, fileFilter.getDescription(), false);
-					
 					if (result != null) {
 						return new File(result).getAbsoluteFile();
 					}
@@ -89,10 +86,7 @@ public class RustFileDialog {
 			t.printStackTrace();
 		}
 		
-		if (fileChooser == null) {
-			fileChooser = new JFileChooser();
-		}
-		
+		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setDialogTitle(title);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.setCurrentDirectory(new File(directory));

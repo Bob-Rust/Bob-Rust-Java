@@ -22,30 +22,11 @@ import com.bobrust.util.data.RustSigns;
 public interface Settings {
 	// Editor
 	@GuiElement(tab = GuiElement.Tab.Editor,
-		label = RustUI.Type.EDITOR_BORDERCOLOR_LABEL,
-		tooltip = RustUI.Type.EDITOR_BORDERCOLOR_TOOLTIP,
-		button = RustUI.Type.EDITOR_BORDERCOLOR_BUTTON)
-	ColorType EditorBorderColor = new ColorType(new Color(0xff3333));
-	
-	@GuiElement(tab = GuiElement.Tab.Editor,
-		label = RustUI.Type.EDITOR_TOOLBARCOLOR_LABEL,
-		tooltip = RustUI.Type.EDITOR_TOOLBARCOLOR_TOOLTIP,
-		button = RustUI.Type.EDITOR_TOOLBARCOLOR_BUTTON)
-	ColorType EditorToolbarColor = new ColorType(new Color(0x333333));
-	
-	@GuiElement(tab = GuiElement.Tab.Editor,
-		label = RustUI.Type.EDITOR_LABELCOLOR_LABEL,
-		tooltip = RustUI.Type.EDITOR_LABELCOLOR_TOOLTIP,
-		button = RustUI.Type.EDITOR_LABELCOLOR_BUTTON)
-	ColorType EditorLabelColor = new ColorType(Color.white);
-	
-	@GuiElement(tab = GuiElement.Tab.Editor,
 		label = RustUI.Type.EDITOR_CALLBACKINTERVAL_LABEL,
 		tooltip = RustUI.Type.EDITOR_CALLBACKINTERVAL_TOOLTIP)
 	IntType EditorCallbackInterval = new IntType(100, 1, 99999);
 	
 	StringType EditorImageDirectory = new StringType(System.getProperty("user.home"));
-	
 	
 	// Generator
 	@GuiElement(tab = GuiElement.Tab.Generator, type = GuiElement.Type.Custom,
@@ -64,7 +45,7 @@ public interface Settings {
 		label = RustUI.Type.SETTINGS_CUSTOMSIGNDIMENSION_LABEL,
 		tooltip = RustUI.Type.SETTINGS_CUSTOMSIGNDIMENSION_TOOLTIP)
 	SizeType SettingsSignDimension = new SizeType(
-		new Dimension(1, 1),
+		new Dimension(256, 256),
 		new Dimension(1, 1),
 		new Dimension(9999, 9999));
 	

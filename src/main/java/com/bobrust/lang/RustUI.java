@@ -12,19 +12,6 @@ public class RustUI {
 			"Try run the application as an Administrator if you want to fix this"
 		),
 		
-		ACTION_ABOUTME_TITLE("About me"),
-		ACTION_ABOUTME_MESSAGE(
-			"Created by HardCoded & Sekwah41\n" +
-			"\n" +
-			"HardCoded\n" +
-			"- Design\n" +
-			"- Sorting algorithm\n" +
-			"- Optimized generation\n" +
-			"\n" +
-			"Sekwah41\n" +
-			"- Initial generation"
-		),
-		
 		SETTINGS_CLICKINTERVAL_LABEL("Clicks per second"),
 		SETTINGS_CLICKINTERVAL_TOOLTIP("The amount of clicks per second"),
 		SETTINGS_AUTOSAVEINTERVAL_LABEL("Autosave Interval"),
@@ -55,22 +42,13 @@ public class RustUI {
 		DEBUG_OPENCONFIGDIRECTORY_LABEL("Open config directory"),
 		DEBUG_OPENCONFIGDIRECTORY_BUTTON("Config directory"),
 		
-		EDITOR_BORDERCOLOR_LABEL("Border Color"),
-		EDITOR_BORDERCOLOR_BUTTON("Border Color"),
-		EDITOR_BORDERCOLOR_TOOLTIP("The border color of the editor"),
-		EDITOR_TOOLBARCOLOR_LABEL("Toolbar Color"),
-		EDITOR_TOOLBARCOLOR_BUTTON("Toolbar Color"),
-		EDITOR_TOOLBARCOLOR_TOOLTIP("The toolbar color of the editor"),
-		EDITOR_LABELCOLOR_LABEL("Label Color"),
-		EDITOR_LABELCOLOR_BUTTON("Label Color"),
-		EDITOR_LABELCOLOR_TOOLTIP("The label color of the editor"),
 		EDITOR_CALLBACKINTERVAL_LABEL("Callback Interval"),
 		EDITOR_CALLBACKINTERVAL_TOOLTIP("The amount of shapes to generate before updating the screen"),
-		EDITOR_RESETEDITOR_LABEL("Reset Editor"),
-		EDITOR_RESETEDITOR_BUTTON("Reset Editor"),
-		EDITOR_RESETEDITOR_TOOLTIP("Reset the editor colors"),
-		EDITOR_RESETEDITORDIALOG_TITLE("Warning"),
-		EDITOR_RESETEDITORDIALOG_MESSAGE("Are you sure you want to reset the editor?"),
+		EDITOR_RESETSETTINGS_LABEL("Reset Settings"),
+		EDITOR_RESETSETTINGS_BUTTON("Reset Settings"),
+		EDITOR_RESETSETTINGS_TOOLTIP("Reset all the settings to default"),
+		EDITOR_RESETSETTINGSDIALOG_TITLE("Warning"),
+		EDITOR_RESETSETTINGSDIALOG_MESSAGE("Are you sure you want to reset all settings to default?"),
 		
 		;
 		

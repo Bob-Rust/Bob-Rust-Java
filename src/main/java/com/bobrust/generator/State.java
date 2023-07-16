@@ -19,28 +19,26 @@ class State {
 	}
 	
 	public float getEnergy() {
-		if(score < 0) {
-			score = worker.getEnergy(shape.getScanlines());
+		if (score < 0) {
+			score = worker.getEnergy(shape);
 		}
 
 		return score;
 	}
-
-	public State doMove() {
-		State oldState = getCopy();
+	
+	public void doMove(State old) {
+		old.fromValues(this);
 		shape.mutateShape();
-
 		score = -1;
-		return oldState;
-	}
-
-	public void undoMove(State oldState) {
-		shape = oldState.shape;
-		score = oldState.score;
 	}
 
 	public State getCopy() {
 		Circle shape_cope = new Circle(worker, shape.x, shape.y, shape.r);
 		return new State(worker, shape_cope, score);
 	}
-};
+	
+	public void fromValues(State state) {
+		shape.fromValues(state.shape);
+		score = state.score;
+	}
+}

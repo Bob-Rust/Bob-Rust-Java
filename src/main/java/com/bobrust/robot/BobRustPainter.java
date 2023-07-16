@@ -7,14 +7,12 @@ import java.util.function.BiConsumer;
 
 import com.bobrust.robot.error.PaintingInterrupted;
 import com.bobrust.settings.Settings;
-import com.bobrust.util.data.AppConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.bobrust.generator.BorstUtils;
 import com.bobrust.generator.sorter.Blob;
 import com.bobrust.generator.sorter.BlobList;
-import com.bobrust.util.RustUtil;
 import com.bobrust.util.Sign;
 
 public class BobRustPainter {
@@ -36,11 +34,11 @@ public class BobRustPainter {
 		this.palette = palette;
 	}
 	
-	public boolean startDrawing(GraphicsConfiguration monitor, Rectangle canvasArea, BlobList list, int offset, BiConsumer<Integer, Integer> renderCallback) throws PaintingInterrupted {
+	public boolean startDrawing(GraphicsConfiguration monitor, Rectangle canvasArea, BlobList list, BiConsumer<Integer, Integer> renderCallback) throws PaintingInterrupted {
 		// Reset values
 		this.drawnShapes = 0;
 		
-		if (list.size() <= offset) {
+		if (list.size() < 1) {
 			return true;
 		}
 		
@@ -71,11 +69,6 @@ public class BobRustPainter {
 		robot.setAutoDelay(0);
 		List<Blob> blobList = list.getList();
 		int count = blobList.size();
-		
-		// Calculate the total amount of presses needed
-		// For each autosave press there is one more click
-		int score = RustUtil.getScore(list, offset) + count + (count / Math.max(autosaveInterval, 1));
-		
 		int signWidth = signType.getWidth();
 		int signHeight = signType.getHeight();
 		
@@ -87,7 +80,7 @@ public class BobRustPainter {
 		int lastShape;
 		
 		{
-			Blob startBlob = blobList.get(offset);
+			Blob startBlob = blobList.get(0);
 			
 			// Make sure that we have selected the game
 			clickPoint(robot, palette.getFocusPoint(), 4, 50);
@@ -105,7 +98,7 @@ public class BobRustPainter {
 			lastShape = startBlob.shapeIndex;
 		}
 		
-		for (int i = offset, actions = 1; i < count; i++, actions++) {
+		for (int i = 0, actions = 1; i < count; i++, actions++) {
 			Blob blob = blobList.get(i);
 			
 			// Change the size
@@ -117,7 +110,7 @@ public class BobRustPainter {
 			
 			// Change the color
 			if (lastColor != blob.colorIndex) {
-				if (!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 5, autoDelay)) {
+				if (!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 8, autoDelay)) {
 					// LOGGER.warn("Potentially failed to change color! Will still keep try drawing");
 				}
 				

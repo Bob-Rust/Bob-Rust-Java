@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 import com.bobrust.generator.sorter.Blob;
@@ -19,7 +20,7 @@ public class BorstGenerator {
 	private volatile Model model;
 	
 	// Sent as a callback
-	private final BorstData data = new BorstData();
+	public final BorstData data = new BorstData();
 	
 	public BorstGenerator(Consumer<BorstData> callback) {
 		this.callback = Objects.requireNonNull(callback);
@@ -72,7 +73,7 @@ public class BorstGenerator {
 			int i = model.shapes.size();
 			try {
 				long begin = System.nanoTime();
-				for (; i <= maxShapes; i++) {
+				for (; i < maxShapes; i++) {
 					int n = model.processStep();
 					long end = System.nanoTime();
 					
@@ -82,7 +83,7 @@ public class BorstGenerator {
 						return;
 					}
 					
-					if ((i == maxShapes) || (i % callbackInterval) == 0) {
+					if ((i == maxShapes - 1) || (i % callbackInterval) == 0) {
 						synchronized (data) {
 							data.update(model, i);
 							callback.accept(data);
@@ -125,13 +126,12 @@ public class BorstGenerator {
 		var localThread = thread;
 		if (localThread != null) {
 			try {
-				// Interrupt the thread and join it to wait for it to close.
+				// Interrupt the thread and join it to wait for it to close
 				localThread.interrupt();
 				localThread.join();
 			} catch (InterruptedException ignored) {
 				Thread.currentThread().interrupt();
 			} finally {
-				// Make sure that the thread keeps it's interrupted state.
 				thread = null;
 			}
 		}
@@ -205,11 +205,7 @@ public class BorstGenerator {
 	/**
 	 * When accessing this object you must first synchronize with it
 	 * 
-	 * <pre>
-	 * synchronized (data) {
-	 *     
-	 * }
-	 * </pre>
+	 * <pre>synchronized (data);</pre>
 	 */
 	public static class BorstData {
 		private final List<Blob> blobs;
@@ -241,21 +237,21 @@ public class BorstGenerator {
 			}
 		}
 		
-		private synchronized void clear() {
+		private void clear() {
 			this.alpha = 0;
 			this.index = 0;
 			this.blobs.clear();
 		}
 		
-		public synchronized List<Blob> getBlobs() {
+		public List<Blob> getBlobs() {
 			return blobs;
 		}
 		
-		public synchronized int getAlpha() {
+		public int getAlpha() {
 			return alpha;
 		}
 		
-		public synchronized int getIndex() {
+		public int getIndex() {
 			return index;
 		}
 	}

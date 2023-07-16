@@ -12,9 +12,6 @@ import org.apache.logging.log4j.Logger;
 public interface AppConstants {
 	Logger LOGGER = LogManager.getLogger(AppConstants.class);
 	
-	// Used by JRandomPanel
-	boolean ENABLE_RANDOM_BACKGROUND = false;
-	
 	// Used by BorstGenerator
 	boolean DEBUG_GENERATOR = false;
 	boolean DEBUG_DRAWN_COLORS = false;

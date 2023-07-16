@@ -40,7 +40,7 @@ public class OverlayTopPanel extends JPanel {
 	}
 	
 	public void setGeneratedShapes(int shapesUsed, int maxShapes) {
-		long time = (long) (shapesUsed * 1.1 * (ESTIMATE_DELAY_OFFSET + 1000.0 / (double) Settings.SettingsClickInterval.get()));
+		long time = (long) (shapesUsed * 1.3 * (ESTIMATE_DELAY_OFFSET + 1000.0 / (double) Settings.SettingsClickInterval.get()));
 		generationLabel.setText("%d/%d shapes used".formatted(shapesUsed, maxShapes));
 		generationInfo.setText("Estimated %s".formatted(RustTranslator.getTimeMinutesMessage(time)));
 	}

@@ -127,6 +127,7 @@ public class RegionSelectionDialog extends JDialog {
 				rect.width = 300;
 				rect.height = 300;
 			}
+			resizeComponent.setUnfocused();
 			resizeComponent.setImage(displayedImage);
 			resizeComponent.setSelectedRectangle(rect);
 			

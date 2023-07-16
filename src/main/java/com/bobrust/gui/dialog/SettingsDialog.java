@@ -29,7 +29,7 @@ public class SettingsDialog extends AbstractSettingsDialog {
 	final JTabbedPane tabbedPane;
 	
 	// Editor
-	final JButton btnResetEditor;
+	final JButton btnResetSettings;
 	
 	private final java.util.List<IUpdateValue> applyEdits;
 	
@@ -74,21 +74,23 @@ public class SettingsDialog extends AbstractSettingsDialog {
 		}
 		
 		// Custom buttons
-		btnResetEditor = addButtonField(
+		btnResetSettings = addButtonField(
 			editorPane,
-			Type.EDITOR_RESETEDITOR_LABEL,
-			Type.EDITOR_RESETEDITOR_TOOLTIP,
-			Type.EDITOR_RESETEDITOR_BUTTON,
+			Type.EDITOR_RESETSETTINGS_LABEL,
+			Type.EDITOR_RESETSETTINGS_TOOLTIP,
+			Type.EDITOR_RESETSETTINGS_BUTTON,
 			e -> {
 				int dialogResult = JOptionPane.showConfirmDialog(dialog,
-					RustUI.getString(Type.EDITOR_RESETEDITORDIALOG_MESSAGE),
-					RustUI.getString(Type.EDITOR_RESETEDITORDIALOG_TITLE),
+					RustUI.getString(Type.EDITOR_RESETSETTINGSDIALOG_MESSAGE),
+					RustUI.getString(Type.EDITOR_RESETSETTINGSDIALOG_TITLE),
 					JOptionPane.YES_NO_OPTION
 				);
 				if (dialogResult == JOptionPane.YES_OPTION) {
-					Settings.EditorBorderColor.set(null);
-					Settings.EditorToolbarColor.set(null);
-					Settings.EditorLabelColor.set(null);
+					// Set all values to default
+					for (var key : settings.keySet()) {
+						SettingsType<?> setting = Settings.InternalSettings.getSetting(key);
+						setting.setDefault();
+					}
 					
 					// Update fields
 					updateComponentValues();
@@ -252,7 +254,7 @@ public class SettingsDialog extends AbstractSettingsDialog {
 		} else if (setting == Settings.SettingsSign) {
 			Point dialogLocation = new Point(dialog.getLocationOnScreen());
 			dialogLocation.x += 130;
-			signPicker.openSignDialog(dialogLocation);
+			signPicker.openSignDialog(dialogLocation, Settings.SettingsSign.get());
 			Settings.SettingsSign.set(signPicker.getSelectedSign());
 		} else {
 			LOGGER.warn("Custom action for setting '{}' is not defined", setting.getId());

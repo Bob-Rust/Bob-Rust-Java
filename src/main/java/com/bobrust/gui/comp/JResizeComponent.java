@@ -301,4 +301,10 @@ public class JResizeComponent extends JPanel implements MouseListener, MouseMoti
 		// Remover border
 		return new Rectangle(position.x + BORDER + 1, position.y + BORDER + 1, size.width - MIN_SIZE - 1, size.height - MIN_SIZE - 1);
 	}
+	
+	public void setUnfocused() {
+		isDragging = false;
+		graphicsCorner = -1;
+		selectedCorner = -1;
+	}
 }

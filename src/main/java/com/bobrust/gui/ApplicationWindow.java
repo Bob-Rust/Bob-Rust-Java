@@ -4,11 +4,13 @@ import com.bobrust.gui.comp.JToolbarButton;
 import com.bobrust.gui.dialog.*;
 import com.bobrust.settings.Settings;
 import com.bobrust.util.ResourceUtil;
+import com.bobrust.util.ImageUtil;
 import com.bobrust.util.UrlUtils;
 import com.bobrust.util.data.AppConstants;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
@@ -91,7 +93,7 @@ public class ApplicationWindow extends JDialog {
 		}));
 		toolbarPanel.add(createButton("/ui/upload_image.png", "Select Image", 0xe0e0e0, e -> importImage()));
 		toolbarPanel.add(createButton("/ui/canvas_icon.png", "Sign Type", 0xe0e0e0, e -> {
-			signPickerDialog.openSignDialog(toolbarPanel.getLocationOnScreen());
+			signPickerDialog.openSignDialog(toolbarPanel.getLocationOnScreen(), Settings.SettingsSign.get());
 			Settings.SettingsSign.set(signPickerDialog.getSelectedSign());
 		}));
 		toolbarPanel.add(canvasAreaButton);
@@ -144,7 +146,7 @@ public class ApplicationWindow extends JDialog {
 	private JToolbarButton createButton(String iconPath, String tooltip, int rgb, ActionListener action) {
 		int size = 42;
 		Image icon = ResourceUtil.loadImageFromResources(iconPath);
-		icon = icon.getScaledInstance(size, size, Image.SCALE_SMOOTH);
+		icon = ImageUtil.getSmoothScaledInstance(icon, size, size);
 		
 		JToolbarButton button = new JToolbarButton(icon, rgb);
 		button.setBackground(new Color(0x302d5b));
@@ -155,13 +157,53 @@ public class ApplicationWindow extends JDialog {
 	
 	private JPanel createVersion() {
 		JLabel versionLabel = new JLabel("Version " + AppConstants.VERSION);
+		versionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		versionLabel.setForeground(new Color(0xcbcbcb));
 		
-		// TODO: Add an about us button in both the settings and here
-		
+		JLabel aboutLabel = new JLabel("About us");
+		aboutLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		aboutLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		aboutLabel.setForeground(new Color(0xcbcbcb));
+		aboutLabel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				JEditorPane pane = new JEditorPane("text/html", "");
+				pane.setEditable(false);
+				pane.setOpaque(false);
+				pane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+				pane.setText(
+					"""
+					Created by HardCoded & Sekwah41<br><br>
+					
+					HardCoded<br>
+					- Design / UX<br>
+					- Sorting algorithm<br>
+					- Optimized generation<br><br>
+					
+					Sekwah41<br>
+					- Shape generation algorithm<br><br>
+					
+					Links:<br>
+					Github <a href="#blank">https://github.com/Bob-Rust/Bob-Rust-Java/</a>"""
+				);
+				pane.addHyperlinkListener(e2 -> {
+					if (e2.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+						UrlUtils.openGithubUrl();
+					}
+				});
+				
+				JOptionPane.showMessageDialog(ApplicationWindow.this,
+					pane,
+					"About us",
+					JOptionPane.INFORMATION_MESSAGE
+				);
+			}
+		});
 		JPanel versionPanel = new JPanel();
+		versionPanel.setLayout(new BoxLayout(versionPanel, BoxLayout.Y_AXIS));
 		versionPanel.setOpaque(false);
 		versionPanel.add(versionLabel);
+		versionPanel.add(aboutLabel);
 		return versionPanel;
 	}
 	

@@ -27,9 +27,9 @@ class Worker {
 		this.counter = 0;
 	}
 	
-	public float getEnergy(Scanline[] lines) {
+	public float getEnergy(Circle circle) {
 		this.counter++;
-		
-		return BorstCore.differencePartialThread(target, current, score, alpha, lines);
+		int cache_index = BorstUtils.getClosestSizeIndex(circle.r);
+		return BorstCore.differencePartialThread(target, current, score, alpha, cache_index, circle.x, circle.y);
 	}
 }

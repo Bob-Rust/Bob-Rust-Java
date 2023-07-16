@@ -1,16 +1,13 @@
 package com.bobrust.gui.render;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import com.bobrust.generator.BorstGenerator;
 import com.bobrust.generator.BorstUtils;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Optimized class for rendering many circles
@@ -23,10 +20,10 @@ public class ShapeRender {
 	/**
 	 * Each element in this list is 'cacheInterval' shapes apart
 	 */
-	private final List<int[]> pixelBufferCache;
+	private final List<byte[]> pixelBufferCache;
 	private final int cacheInterval;
 	private BufferedImage canvas;
-	private int[] canvasPixels;
+	private byte[] canvasPixels;
 	
 	public ShapeRender(int cacheInterval) {
 		this.pixelBufferCache = new ArrayList<>();
@@ -42,10 +39,13 @@ public class ShapeRender {
 	public synchronized void createCanvas(int width, int height, int background) {
 		reset();
 		
-		canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		canvasPixels = ((DataBufferInt) canvas.getRaster().getDataBuffer()).getData();
-		Arrays.fill(canvasPixels, background);
+		canvas = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+		Graphics2D g = canvas.createGraphics();
+		g.setColor(new Color(background));
+		g.fillRect(0, 0, width, height);
+		g.dispose();
 		
+		canvasPixels = ((DataBufferByte) canvas.getRaster().getDataBuffer()).getData();
 		pixelBufferCache.add(canvasPixels.clone());
 	}
 	
@@ -57,7 +57,7 @@ public class ShapeRender {
 		int cacheIndex = shapes / cacheInterval;
 		
 		// The pixel buffer of the closest image
-		int[] pixelBuffer;
+		byte[] pixelBuffer;
 		int startIndex;
 		
 		// If we do not have cached values up to this point

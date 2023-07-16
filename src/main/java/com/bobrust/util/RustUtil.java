@@ -24,13 +24,12 @@ public class RustUtil {
 	/**
 	 * Returns the amount of size and color changes between blobs.
 	 */
-	public static int getScore(BlobList list, int offset) {
+	public static int getScore(BlobList list) {
 		List<Blob> blobList = list.getList();
 		Blob last = null;
 		
 		int changes = 4;
-		for (int i = offset; i < blobList.size(); i++) {
-			Blob blob = blobList.get(i);
+		for (Blob blob : blobList) {
 			if (last != null) {
 				changes += (last.size != blob.size) ? 1 : 0;
 				changes += (last.color != blob.color) ? 1 : 0;
@@ -50,7 +49,7 @@ public class RustUtil {
 			list.add(data.getBlobs().get(i));
 		}
 		
-		LOGGER.info("Size change: {} / {}", getScore(list, 0), getScore(BorstSorter.sort(list), 0));
+		LOGGER.info("Size change: {} / {}", getScore(list), getScore(BorstSorter.sort(list)));
 	}
 
 	public static int clamp(int value, int min, int max) {

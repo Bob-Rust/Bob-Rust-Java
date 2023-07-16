@@ -21,7 +21,7 @@ public class ScreenDrawDialog extends JDialog {
 	Rectangle imageRect = new Rectangle();
 	
 	public ScreenDrawDialog(ApplicationWindow parent) {
-		super(null, "", ModalityType.MODELESS);
+		super(null, "BobRust - Draw", ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setIconImage(AppConstants.DIALOG_ICON);
 		setUndecorated(true);
@@ -29,7 +29,7 @@ public class ScreenDrawDialog extends JDialog {
 		
 		this.parent = parent;
 		this.topPanel = new OverlayTopPanel();
-		this.shapeRender = new ShapeRender(500);
+		this.shapeRender = new ShapeRender(2000);
 		this.drawDialog = new DrawDialog(this);
 		
 		setLayout(new BorderLayout());
@@ -62,6 +62,8 @@ public class ScreenDrawDialog extends JDialog {
 		drawDialog.openDialog(monitor, location);
 		parent.setVisible(true);
 		dispose();
+		
+		shapeRender.reset();
 	}
 	
 	private double remap(double value, double a, double b, double c, double d) {
@@ -123,16 +125,14 @@ public class ScreenDrawDialog extends JDialog {
 		// g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER).derive(0.5f));
 		// g.drawImage(drawImage, imageRect.x, imageRect.y, imageRect.width, imageRect.height, null);
 		
-		var data = drawDialog.getBorstData();
-		if (data != null) {
-			synchronized (data) {
-				int shapes = data.getBlobs().size();
-				shapes = Math.min(drawDialog.shapesSlider.getValue(), shapes);
-				
-				BufferedImage shapeImage = shapeRender.getImage(data, shapes);
-				if (shapeImage != null) {
-					g.drawImage(shapeImage, canvasRect.x, canvasRect.y, canvasRect.width, canvasRect.height, null);
-				}
+		synchronized (drawDialog.borstGenerator.data) {
+			final var data = drawDialog.borstGenerator.data;
+			int shapes = data.getBlobs().size();
+			shapes = Math.min(drawDialog.shapesSlider.getValue(), shapes);
+			
+			BufferedImage shapeImage = shapeRender.getImage(data, shapes);
+			if (shapeImage != null) {
+				g.drawImage(shapeImage, canvasRect.x, canvasRect.y, canvasRect.width, canvasRect.height, null);
 			}
 		}
 		

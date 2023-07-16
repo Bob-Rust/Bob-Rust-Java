@@ -4,14 +4,16 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import com.bobrust.gui.comp.JStyledToggleButton;
-import com.bobrust.lang.RustUI;
 import com.bobrust.settings.Settings;
+import com.bobrust.util.ImageUtil;
 import com.bobrust.util.data.AppConstants;
 import com.bobrust.util.data.RustSigns;
 import com.bobrust.util.Sign;
@@ -19,6 +21,7 @@ import com.bobrust.util.Sign;
 // TODO: Make it possible to use escape or enter to exit the dialog
 public class SignPickerDialog extends JDialog {
 	private Sign selectedSign;
+	private Map<Sign, JStyledToggleButton> buttonMap;
 	
 	public SignPickerDialog(JDialog parent) {
 		super(parent, "Sign Picker", ModalityType.APPLICATION_MODAL);
@@ -34,6 +37,7 @@ public class SignPickerDialog extends JDialog {
 		
 		Sign guiSign = Settings.SettingsSign.get();
 		selectedSign = guiSign;
+		this.buttonMap = new HashMap<>();
 		
 		for (Sign sign : RustSigns.SIGNS.values()) {
 			BufferedImage signImage = null;
@@ -50,7 +54,7 @@ public class SignPickerDialog extends JDialog {
 				continue;
 			}
 			
-			Image scaledImage = signImage.getScaledInstance(imageSize.width, imageSize.height, Image.SCALE_SMOOTH);
+			Image scaledImage = ImageUtil.getSmoothScaledInstance(signImage, imageSize.width, imageSize.height);
 			
 			JStyledToggleButton button = new JStyledToggleButton(fancyName(sign.getName()));
 			button.setHoverColor(new Color(240, 240, 240));
@@ -64,6 +68,7 @@ public class SignPickerDialog extends JDialog {
 			button.setMaximumSize(buttonSize);
 			button.addActionListener((event) -> selectedSign = sign);
 			getContentPane().add(button);
+			buttonMap.put(sign, button);
 			
 			buttonGroup.add(button);
 			getContentPane().add(button);
@@ -104,7 +109,19 @@ public class SignPickerDialog extends JDialog {
 		};
 	}
 
-	public void openSignDialog(Point point) {
+	public void openSignDialog(Point point, Sign selectedSign) {
+		// Update reference
+		this.selectedSign = selectedSign;
+		
+		for (JStyledToggleButton button : buttonMap.values()) {
+			button.setSelected(false);
+		}
+		
+		JStyledToggleButton selectedButton = buttonMap.get(selectedSign);
+		if (selectedButton != null) {
+			selectedButton.setSelected(true);
+		}
+		
 		setLocation(point);
 		setVisible(true);
 	}

@@ -24,17 +24,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
-// TODO: The draw dialog is going to start the borst generator and update the UI to see the new changes
-//       The draw dialog should have a way to keep drawing even if you need to stop. If the process stopped
-//       the user should be able to select the canvas again and all shapes should be properly updated
-//       The image rect should not be able to be updated inside the draw dialog
-
-// TODO: 1. Show the generation live on the screen
-//          1. The user should not be able to hide it but to minimize in case you want to do stuff in the game
-//       2. If the generation is paused the user should be able to play it for were it last left of
-//          1. The user will need access to the canvas region mover
-//          2. The image region should move relative to the canvas region
-//          3. The draw script should continue with the new values
 public class DrawDialog extends JDialog {
 	private static final Logger LOGGER = LogManager.getLogger(DrawDialog.class);
 	private static final Dimension REGULAR = new Dimension(320, 200);
@@ -54,14 +43,11 @@ public class DrawDialog extends JDialog {
 	private final JLabel maxShapeLabel;
 	
 	// Borst stuff
-	private final BorstGenerator borstGenerator;
 	private GraphicsConfiguration monitor;
 	private Model previousBorstModel;
 	private int drawnShapes;
-	private BlobList previouslyUsed = new BlobList(); // We need to continue using these instructions
-	
-	// TODO: This field should become final
-	private BorstGenerator.BorstData lastData;
+	private final BlobList previouslyUsed = new BlobList(); // We need to continue using these instructions
+	final BorstGenerator borstGenerator;
 	
 	public DrawDialog(ScreenDrawDialog parent) {
 		super(parent, "Draw Settings", ModalityType.APPLICATION_MODAL);
@@ -133,7 +119,7 @@ public class DrawDialog extends JDialog {
 				maxShapesField.setText(Integer.toString(value));
 			}
 			
-			parent.topPanel.setGeneratedShapes(shapesSlider.getValue(), lastData.getIndex());
+			parent.topPanel.setGeneratedShapes(shapesSlider.getValue(), borstGenerator.data.getIndex());
 			parent.repaint();
 		});
 		panel.add(shapesSlider);
@@ -173,16 +159,14 @@ public class DrawDialog extends JDialog {
 		exactTimeButton.setFocusable(false);
 		exactTimeButton.addActionListener((event) -> {
 			int count = shapesSlider.getValue();
-			
-			// TODO: Make sure that lastData is not null
-			// TODO: Synchronize on object first
-			
-			int actions = RustUtil.getScore(BorstSorter.sort(RustUtil.convertToList(lastData, 0, count)), 0);
+			int actions;
+			synchronized (borstGenerator.data) {
+				 actions = RustUtil.getScore(BorstSorter.sort(RustUtil.convertToList(borstGenerator.data, 0, count)));
+			}
 			int totalClicks = actions + count;
 			
-			System.out.println("Actions: " + totalClicks);
-			int interval = clickIntervalField.getNumberValue();
-			parent.topPanel.setExactGenerationLabel((long)(totalClicks * (1000.0 / (double)interval)));
+			int interval = Settings.SettingsClickInterval.get();
+			parent.topPanel.setExactGenerationLabel((long) (totalClicks * (1000.0 / (double)interval)));
 		});
 		rootPanel.add(exactTimeButton);
 		
@@ -227,30 +211,23 @@ public class DrawDialog extends JDialog {
 				int count = shapesSlider.getValue();
 				BlobList list;
 				
-				// TODO: Make sure 'lastData' is not null
-				synchronized (lastData) {
+				synchronized (borstGenerator.data) {
 					// TODO: 'previouslyUsed' should start at 'drawnShapes'
 					int previouslyComputed = previouslyUsed.size();
 					if (previouslyComputed <= drawnShapes || previouslyComputed <= count) {
 						// Fill the previouslyUsed list with new data
 						int missing = count - previouslyComputed;
-						BlobList missingList = BorstSorter.sort(RustUtil.convertToList(lastData, count - missing, missing));
+						BlobList missingList = BorstSorter.sort(RustUtil.convertToList(borstGenerator.data, count - missing, missing));
 						previouslyUsed.getList().addAll(missingList.getList());
 					}
-					
-					
-					list = new BlobList();
-					list.assign(previouslyUsed.getList(), drawnShapes, count - drawnShapes);
-					// System.out.println(previouslyUsed.size() + ", " + drawnShapes + ", " + list.size());
-					// System.out.println(lastData.getBlobs().size());
-					// count = lastData.getBlobs().size();
-					// list = BorstSorter.sort(RustUtil.convertToList(lastData, drawnShapes, count));
 				}
 				
+				list = new BlobList();
+				list.assign(previouslyUsed.getList(), drawnShapes, count - drawnShapes);
 				updateTimeRemaining(0, count - drawnShapes);
 				
 				start = -1;
-				if (!rustPainter.startDrawing(monitor, parent.parent.getCanvasRect(), list, 0, this::updateTimeRemaining)) {
+				if (!rustPainter.startDrawing(monitor, parent.canvasRect, list, this::updateTimeRemaining)) {
 					LOGGER.warn("The user stopped the drawing process early");
 				}
 			} catch (PaintingInterrupted e) {
@@ -328,14 +305,12 @@ public class DrawDialog extends JDialog {
 		try {
 			// overlay.colorRegion.setLocation(paletteLocation.x, paletteLocation.y + 132 + 100);
 			Point paletteScreenLocation = new Point(screenBounds.x + paletteLocation.x, screenBounds.y + paletteLocation.y);
-			
 			if (rustPalette.analyse(this, screenshot, screenBounds, paletteScreenLocation)) {
-				// Found the palette
 				LOGGER.info("Found the color palette ({}, {})", paletteScreenLocation.x, paletteScreenLocation.y);
 				return true;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.throwing(e);
 		}
 		
 		LOGGER.warn("User needs to manually select the color palette");
@@ -346,7 +321,7 @@ public class DrawDialog extends JDialog {
 		Sign signType = Settings.SettingsSign.get();
 		Color bgColor = Settings.getSettingsBackgroundCalculated();
 		
-		BufferedImage scaled = RustImageUtil.getScaledInstance(
+		BufferedImage scaled = ImageUtil.getScaledInstance(
 			parent.parent.getDrawImage(),
 			parent.parent.getCanvasRect(),
 			parent.parent.getImageRect(),
@@ -358,7 +333,7 @@ public class DrawDialog extends JDialog {
 		
 		// Apply the ICC cmyk lut filter
 		if (Settings.SettingsUseICCConversion.get()) {
-			scaled = RustImageUtil.applyFilters(scaled);
+			scaled = ImageUtil.applyFilters(scaled);
 		}
 		
 		drawnShapes += offset;
@@ -381,7 +356,6 @@ public class DrawDialog extends JDialog {
 	}
 	
 	private void onBorstData(BorstGenerator.BorstData data) {
-		lastData = data;
 		parent.repaint();
 		
 		if (shapesSlider.getValue() == shapesSlider.getMaximum()) {
@@ -393,10 +367,6 @@ public class DrawDialog extends JDialog {
 		
 		parent.topPanel.setGeneratedShapes(shapesSlider.getValue(), data.getIndex());
 		maxShapeLabel.setText(Integer.toString(data.getIndex()));
-	}
-	
-	public BorstGenerator.BorstData getBorstData() {
-		return lastData;
 	}
 	
 	public void openDialog(GraphicsConfiguration monitor, Point point) {
@@ -419,12 +389,5 @@ public class DrawDialog extends JDialog {
 		setSize(REGULAR);
 		setVisible(true);
 		borstGenerator.stop();
-		
-		try {
-			Settings.SettingsClickInterval.set(Integer.parseInt(clickIntervalField.getText()));
-		} catch (NumberFormatException e) {
-			LOGGER.warn("Invalid click interval '{}'", clickIntervalField.getText());
-			clickIntervalField.setText(Integer.toString(Settings.SettingsClickInterval.get()));
-		}
 	}
 }

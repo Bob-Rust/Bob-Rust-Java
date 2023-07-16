@@ -3,13 +3,13 @@ package com.bobrust.util;
 import java.awt.Desktop;
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class UrlUtils {
 	private static final Logger LOGGER = LogManager.getLogger(UrlUtils.class);
+	private static final String GITHUB_URL = "https://github.com/Bob-Rust/Bob-Rust-Java/";
 	private static final String ISSUE_URL = "https://github.com/Bob-Rust/Bob-Rust-Java/issues/new";
 	private static final String DONATION_URL = "https://ko-fi.com/hard_coded";
 	
@@ -43,6 +43,10 @@ public class UrlUtils {
 		return false;
 	}
 	
+	public static boolean openGithubUrl() {
+		return openUrl(GITHUB_URL);
+	}
+	
 	public static boolean openIssueUrl() {
 		return openUrl(ISSUE_URL);
 	}
@@ -53,14 +57,5 @@ public class UrlUtils {
 	
 	public static boolean openDirectory(File path) {
 		return openFileDirectory(path);
-	}
-	
-	public static File getJarPath() {
-		try {
-			return new File(UrlUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 }
