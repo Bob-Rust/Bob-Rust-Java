@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 import com.bobrust.generator.sorter.Blob;
@@ -62,7 +61,6 @@ public class BorstGenerator {
 					data.blobs.clear();
 					data.blobs.addAll(generateDebugDrawList());
 					data.index = data.blobs.size();
-					data.alpha = 0;
 					callback.accept(data);
 				}
 				
@@ -209,7 +207,6 @@ public class BorstGenerator {
 	 */
 	public static class BorstData {
 		private final List<Blob> blobs;
-		private int alpha;
 		private int index;
 		
 		private BorstData() {
@@ -218,7 +215,6 @@ public class BorstGenerator {
 		
 		private synchronized void update(Model model, int index) {
 			this.index = index;
-			this.alpha = model.alpha;
 			
 			// For all new elements
 			var shapes = model.shapes;
@@ -238,17 +234,12 @@ public class BorstGenerator {
 		}
 		
 		private void clear() {
-			this.alpha = 0;
 			this.index = 0;
 			this.blobs.clear();
 		}
 		
 		public List<Blob> getBlobs() {
 			return blobs;
-		}
-		
-		public int getAlpha() {
-			return alpha;
 		}
 		
 		public int getIndex() {

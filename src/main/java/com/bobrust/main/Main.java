@@ -31,8 +31,6 @@ public class Main {
 		LOGGER.info("  AppVersion  : {}", AppConstants.VERSION);
 		LOGGER.info("");
 		
-		// TODO: Do not draw outside the image region +- the radius of the largest shape
-		
 		// Setup settings
 		File CONFIG_FILE = new File("bobrust.properties");
 		Settings.InternalSettings.init(CONFIG_FILE);
@@ -53,22 +51,5 @@ public class Main {
 			// Make application window visible
 			new ApplicationWindow().setVisible(true);
 		});
-		
-		/*
-		Thread aliveThread = new Thread(() -> {
-			while (true) {
-				try {
-					Thread.sleep(10000);
-				} catch (InterruptedException ignored) {
-					Thread.currentThread().interrupt();
-					break;
-				}
-				
-				System.out.println("Alive");
-			}
-		}, "Alive thread");
-		aliveThread.setDaemon(true);
-		aliveThread.start();
-		*/
 	}
 }

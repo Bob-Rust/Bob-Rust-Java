@@ -109,11 +109,8 @@ public class BobRustPainter {
 			}
 			
 			// Change the color
-			if (lastColor != blob.colorIndex) {
-				if (!clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 8, autoDelay)) {
-					// LOGGER.warn("Potentially failed to change color! Will still keep try drawing");
-				}
-				
+			if (lastColor != blob.colorIndex) { // Without 20 here it will not work
+				clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 20, autoDelay);
 				lastColor = blob.colorIndex;
 				actions++;
 			}
@@ -145,7 +142,7 @@ public class BobRustPainter {
 			int sy = (int) ty + displayY;
 			
 			lastPoint.setLocation(sx, sy);
-			clickPointScaled(robot, lastPoint, autoDelay);
+			clickPointScaledDrawColor(robot, lastPoint, autoDelay);
 			
 			if ((i % autosaveInterval) == 0) {
 				clickPoint(robot, palette.getSaveButton(), autoDelay);
@@ -179,7 +176,7 @@ public class BobRustPainter {
 	/**
 	 * Click a point on the screen with a scaled point
 	 */
-	private void clickPointScaled(Robot robot, Point point, double delay) throws PaintingInterrupted {
+	private void clickPointScaledDrawColor(Robot robot, Point point, double delay) throws PaintingInterrupted {
 		double time = System.nanoTime() / 1000000.0;
 		
 		robot.mouseMove(point.x, point.y);
@@ -246,7 +243,7 @@ public class BobRustPainter {
 		}
 	}
 	
-	private boolean clickColor(Robot robot, Point point, int maxAttempts, double delay) throws PaintingInterrupted {
+	private void clickColor(Robot robot, Point point, int maxAttempts, double delay) throws PaintingInterrupted {
 		Point colorPreview = palette.getColorPreview();
 		Color before = robot.getPixelColor(colorPreview.x, colorPreview.y);
 		
@@ -256,28 +253,9 @@ public class BobRustPainter {
 			
 			Color after = robot.getPixelColor(colorPreview.x, colorPreview.y);
 			if (!before.equals(after)) {
-				return true;
+				return;
 			}
 		}
-		
-		return false;
-	}
-	
-	private boolean clickColorTest(Robot robot, Point point, int maxAttempts, double delay) throws PaintingInterrupted {
-		Point colorPreview = palette.getColorPreview();
-		Color before = robot.getPixelColor(colorPreview.x, colorPreview.y);
-		
-		// Make sure that we press the size
-		while (maxAttempts-- > 0) {
-			clickPointScaled(robot, point, delay);
-			
-			Color after = robot.getPixelColor(colorPreview.x, colorPreview.y);
-			if (!before.equals(after)) {
-				return true;
-			}
-		}
-		
-		return false;
 	}
 	
 	/**
