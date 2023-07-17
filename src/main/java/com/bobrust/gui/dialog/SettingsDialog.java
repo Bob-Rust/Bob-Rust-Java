@@ -7,7 +7,7 @@ import com.bobrust.settings.type.*;
 import com.bobrust.settings.type.parent.GuiElement;
 import com.bobrust.settings.type.parent.SettingsType;
 import com.bobrust.util.UrlUtils;
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,29 +19,29 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
-public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
-	private static final Logger LOGGER = LogManager.getLogger(BobRustSettingsDialog.class);
-	private final BobRustSignPicker signPicker;
-	private final BobRustColorPicker colorPicker;
+public class SettingsDialog extends AbstractSettingsDialog {
+	private static final Logger LOGGER = LogManager.getLogger(SettingsDialog.class);
+	private final SignPickerDialog signPicker;
+	private final RustColorPicker colorPicker;
 	private final JDialog dialog;
 	
 	// TabbedPane
 	final JTabbedPane tabbedPane;
 	
 	// Editor
-	final JButton btnResetEditor;
-	// final JButton btnResetSettings;
+	final JButton btnResetSettings;
 	
 	private final java.util.List<IUpdateValue> applyEdits;
 	
-	public BobRustSettingsDialog(JDialog parent) {
+	public SettingsDialog(JDialog parent) {
 		this.applyEdits = new ArrayList<>();
 		this.dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SETTINGSDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
-		this.dialog.setIconImage(RustConstants.DIALOG_ICON);
+		this.dialog.setIconImage(AppConstants.DIALOG_ICON);
 		this.dialog.setSize(300, 360);
 		this.dialog.setResizable(false);
-		this.signPicker = new BobRustSignPicker(dialog);
-		this.colorPicker = new BobRustColorPicker(dialog);
+		this.dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		this.colorPicker = new RustColorPicker(dialog);
+		this.signPicker = new SignPickerDialog(dialog);
 		
 		dialog.getContentPane().setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.X_AXIS));
 		
@@ -74,29 +74,6 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 		}
 		
 		// Custom buttons
-		btnResetEditor = addButtonField(
-			editorPane,
-			Type.EDITOR_RESETEDITOR_LABEL,
-			Type.EDITOR_RESETEDITOR_TOOLTIP,
-			Type.EDITOR_RESETEDITOR_BUTTON,
-			e -> {
-				int dialogResult = JOptionPane.showConfirmDialog(dialog,
-					RustUI.getString(Type.EDITOR_RESETEDITORDIALOG_MESSAGE),
-					RustUI.getString(Type.EDITOR_RESETEDITORDIALOG_TITLE),
-					JOptionPane.YES_NO_OPTION
-				);
-				if (dialogResult == JOptionPane.YES_OPTION) {
-					Settings.EditorBorderColor.set(null);
-					Settings.EditorToolbarColor.set(null);
-					Settings.EditorLabelColor.set(null);
-					
-					// Update fields
-					updateComponentValues();
-				}
-			}
-		);
-		
-		/*
 		btnResetSettings = addButtonField(
 			editorPane,
 			Type.EDITOR_RESETSETTINGS_LABEL,
@@ -109,11 +86,17 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 					JOptionPane.YES_NO_OPTION
 				);
 				if (dialogResult == JOptionPane.YES_OPTION) {
-					gui.InternalSettings.reset();
+					// Set all values to default
+					for (var key : settings.keySet()) {
+						SettingsType<?> setting = Settings.InternalSettings.getSetting(key);
+						setting.setDefault();
+					}
+					
+					// Update fields
+					updateComponentValues();
 				}
 			}
 		);
-		*/
 		
 		addButtonField(debugPane, Type.DEBUG_OPENCONFIGDIRECTORY_LABEL, null, Type.DEBUG_OPENCONFIGDIRECTORY_BUTTON, e -> {
 			UrlUtils.openDirectory(new File("").getAbsoluteFile());
@@ -271,7 +254,7 @@ public class BobRustSettingsDialog extends AbstractBobRustSettingsDialog {
 		} else if (setting == Settings.SettingsSign) {
 			Point dialogLocation = new Point(dialog.getLocationOnScreen());
 			dialogLocation.x += 130;
-			signPicker.openSignDialog(dialogLocation);
+			signPicker.openSignDialog(dialogLocation, Settings.SettingsSign.get());
 			Settings.SettingsSign.set(signPicker.getSelectedSign());
 		} else {
 			LOGGER.warn("Custom action for setting '{}' is not defined", setting.getId());

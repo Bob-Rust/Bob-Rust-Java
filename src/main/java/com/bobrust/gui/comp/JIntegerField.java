@@ -11,16 +11,14 @@ import javax.swing.text.NumberFormatter;
 public class JIntegerField extends JFormattedTextField {
 	private final NumberFormatter formatter;
 	
-	public JIntegerField(int value) {
+	public JIntegerField(int value, int min, int max) {
 		NumberFormat format = NumberFormat.getIntegerInstance(Locale.US);
 		format.setGroupingUsed(false);
 		
-		// TODO: Make so that if someone types a value that would be greater
-		//       than the maximum it converts the value to the max.
 		formatter = new NumberFormatter(format);
 		formatter.setValueClass(Integer.class);
-		formatter.setMinimum(0);
-		formatter.setMaximum(99999);
+		formatter.setMinimum(min);
+		formatter.setMaximum(max);
 		formatter.setAllowsInvalid(false);
 		formatter.setCommitsOnValidEdit(true);
 		formatter.setOverwriteMode(false);

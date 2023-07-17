@@ -3,7 +3,6 @@ package com.bobrust.util;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.imageio.ImageIO;
@@ -23,21 +22,25 @@ import org.apache.logging.log4j.Logger;
  * 
  * @author HardCoded
  */
-public class RustImageUtil {
-	private static final Logger LOGGER = LogManager.getLogger(RustImageUtil.class);
+public class ImageUtil {
+	private static final Logger LOGGER = LogManager.getLogger(ImageUtil.class);
 	private static final int[] iccCmykLut;
 	private static final int bits;
 	
 	static {
 		int[] lut = null;
-		try (InputStream stream = RustImageUtil.class.getResourceAsStream("/profiles/cmyk.png")) {
+		try (InputStream stream = ImageUtil.class.getResourceAsStream("/profiles/cmyk.png")) {
+			if (stream == null) {
+				throw new NullPointerException("Resource was not found");
+			}
+			
 			BufferedImage cmykLut = ImageIO.read(stream);
 			int w = cmykLut.getWidth();
 			int h = cmykLut.getHeight();
 			lut = new int[w * h];
 			cmykLut.getRGB(0, 0, w, h, lut, 0, w);
-		} catch (IOException e) {
-			LOGGER.error("Error loading cmyk lut: {}", e);
+		} catch (Exception e) {
+			LOGGER.error("Error loading cmyk lut", e);
 			LOGGER.throwing(e);
 			e.printStackTrace();
 		}
@@ -46,9 +49,9 @@ public class RustImageUtil {
 		bits = Integer.numberOfTrailingZeros(lut.length) / 3;
 	}
 	
-	public static BufferedImage applyFilters(BufferedImage scaled) {
+	public static BufferedImage applyFilters(Image scaled) {
 		// Create a new Image that has a backing int buffer
-		BufferedImage image = new BufferedImage(scaled.getWidth(), scaled.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		BufferedImage image = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
 		g.drawImage(scaled, 0, 0, null);
 		g.dispose();
@@ -64,26 +67,19 @@ public class RustImageUtil {
 			int cr = ((col >> 16) & 255) >> d_shift;
 			int cg = ((col >> 8) & 255) >> d_shift;
 			int cb = (col & 255) >> d_shift;
-			int cidx = (cr << r_shift) | (cg << g_shift) | cb;
-			src[i] = lut[cidx] | (col & 0xff000000);
+			int lut_idx = (cr << r_shift) | (cg << g_shift) | cb;
+			src[i] = lut[lut_idx] | col;
 		}
 		
 		return image;
 	}
 	
-	public static BufferedImage getScaledInstance(BufferedImage source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, ScalingType scalingType) {
-		Object hint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
-		switch (scalingType) {
-			case Nearest -> {
-				hint = RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
-			}
-			case Bilinear -> {
-				hint = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
-			}
-			case Bicubic -> {
-				hint = RenderingHints.VALUE_INTERPOLATION_BICUBIC;
-			}
-		}
+	public static BufferedImage getScaledInstance(Image source, Rectangle canvasRect, Rectangle imageRect, int width, int height, Color bgColor, ScalingType scalingType) {
+		Object hint = switch (scalingType) {
+			case Nearest -> RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
+			case Bilinear -> RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+			case Bicubic -> RenderingHints.VALUE_INTERPOLATION_BICUBIC;
+		};
 		
 		int dst_x1 = ((imageRect.x - canvasRect.x) * width) / canvasRect.width;
 		int dst_y1 = ((imageRect.y - canvasRect.y) * height) / canvasRect.height;
@@ -95,9 +91,17 @@ public class RustImageUtil {
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
 		g.setColor(bgColor);
 		g.fillRect(0, 0, width, height);
-		g.drawImage(source, dst_x1, dst_y1, dst_x2, dst_y2, 0, 0, source.getWidth(), source.getHeight(), null);
+		g.drawImage(source, dst_x1, dst_y1, dst_x2, dst_y2, 0, 0, source.getWidth(null), source.getHeight(null), null);
 		g.dispose();
 		
 		return image;
+	}
+	
+	public static Image getSmoothScaledInstance(Image image, int width, int height) {
+		BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = result.createGraphics();
+		g.drawImage(image.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
+		g.dispose();
+		return result;
 	}
 }

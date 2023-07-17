@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 import com.bobrust.generator.BorstUtils;
+import com.bobrust.util.data.AppConstants;
 
 public class BorstSorter {
 	private static final int MIN_SIZE = 8;
@@ -139,6 +140,7 @@ public class BorstSorter {
 	
 	public static BlobList sort(BlobList data, int size) {
 		try {
+			/*
 			Piece[] pieces = new Piece[data.size()];
 			map = new IntList[data.size()];
 			
@@ -147,6 +149,26 @@ public class BorstSorter {
 			}
 			
 			return new BlobList(Arrays.asList(sort0(pieces, size)));
+			*/
+			
+			long start = System.nanoTime();
+			int len = data.size();
+			List<Blob> blobs = new ArrayList<>();
+			for (int i = 0; i < data.size(); i += AppConstants.MAX_SORT_GROUP) {
+				Piece[] pieces = new Piece[Math.min(AppConstants.MAX_SORT_GROUP, len - i)];
+				for (int j = 0; j < pieces.length; j++) {
+					pieces[j] = new Piece(data.get(i + j), j);
+				}
+				map = new IntList[pieces.length];
+				blobs.addAll(Arrays.asList(sort0(pieces, size)));
+			}
+			
+			if (AppConstants.DEBUG_TIME) {
+				long time = System.nanoTime() - start;
+				AppConstants.LOGGER.info("BorstSorter.sort(data, size) took {} ms for {} shapes", time / 1000000.0, data.size());
+			}
+			
+			return new BlobList(blobs);
 		} finally {
 			map = null;
 		}
@@ -180,7 +202,7 @@ public class BorstSorter {
 		// Takes 1500 ms for 60000 shapes
 		while(++i < array.length) {
 			Blob last = out[i - 1];
-			int index = find_best_fast_cache(last.getSizeIndex(), last.getColorIndex(), start, cache, array);
+			int index = find_best_fast_cache(last.sizeIndex, last.colorIndex, start, cache, array);
 			out[i] = array[index].blob;
 			array[index] = null;
 			
@@ -206,8 +228,8 @@ public class BorstSorter {
 		for(Piece piece : array) {
 			if(piece == null) continue;
 			
-			int color = piece.blob.getColorIndex();
-			int size = piece.blob.getSizeIndex();
+			int color = piece.blob.colorIndex;
+			int size = piece.blob.sizeIndex;
 			
 			/* all */ {
 				IntList list = list_all[size + color * 6];
@@ -305,7 +327,7 @@ public class BorstSorter {
 			int s1 = s.size;
 			
 			// If both the size and the color is equal of the two blobs
-			// then they are indistinguishable from eachother.
+			// then they are indistinguishable from each other.
 			if(s1 == s2 && s.color == blob.color) continue;
 			
 			int x = s.x - blob.x;

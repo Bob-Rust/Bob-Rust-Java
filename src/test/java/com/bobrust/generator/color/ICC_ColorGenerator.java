@@ -22,8 +22,6 @@ import javax.imageio.ImageIO;
  * @author HardCoded
  */
 public class ICC_ColorGenerator {
-	// TODO: Make all colors more saturated
-	
 	private static int lerp(int a, int b, double index) {
 		int ar = (a >> 16) & 0xff;
 		int ag = (a >> 8) & 0xff;

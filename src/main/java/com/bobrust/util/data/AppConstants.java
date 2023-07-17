@@ -9,17 +9,14 @@ import com.bobrust.util.ResourceUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public interface RustConstants {
-	Logger LOGGER = LogManager.getLogger(RustConstants.class);
-	
-	// Used by JRandomPanel
-	boolean ENABLE_RANDOM_BACKGROUND = false;
+public interface AppConstants {
+	Logger LOGGER = LogManager.getLogger(AppConstants.class);
 	
 	// Used by BorstGenerator
 	boolean DEBUG_GENERATOR = false;
-	
-	// Used by BobRustPainter, BobRustDrawDialog
 	boolean DEBUG_DRAWN_COLORS = false;
+	boolean DEBUG_TIME = false;
+	int MAX_SORT_GROUP = 1000; // Max 1000 elements per sort
 	
 	// Average canvas colors. Used as default colors
 	Color CANVAS_AVERAGE = new Color(0xb3aba0); // 0x8f887c);

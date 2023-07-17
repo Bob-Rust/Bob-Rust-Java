@@ -13,10 +13,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class AbstractBobRustSettingsDialog {
+public abstract class AbstractSettingsDialog {
 	protected final List<TabbedPane> tabbedPanes;
 	
-	public AbstractBobRustSettingsDialog() {
+	public AbstractSettingsDialog() {
 		this.tabbedPanes = new ArrayList<>();
 	}
 	
@@ -41,12 +41,10 @@ public abstract class AbstractBobRustSettingsDialog {
 		gbc_label.gridy = y_pos;
 		tab.panel.add(lblLabel, gbc_label);
 		
-		JIntegerField intField = new JIntegerField(def);
+		JIntegerField intField = new JIntegerField(def, min, max);
 		lblLabel.setLabelFor(intField);
 		intField.setAlignmentX(Component.LEFT_ALIGNMENT);
 		intField.setFocusable(true);
-		intField.setMinimum(min);
-		intField.setMaximum(max);
 		intField.setMaximumSize(new Dimension(116, 20));
 		GridBagConstraints gbc_intField = new GridBagConstraints();
 		gbc_intField.fill = GridBagConstraints.HORIZONTAL;
@@ -187,7 +185,7 @@ public abstract class AbstractBobRustSettingsDialog {
 	}
 	
 	protected static class TabbedPane {
-		protected static final int MAX_HEIGHT = 10;
+		protected static final int MAX_HEIGHT = 11;
 		
 		protected final JTabbedPane tabbedPane;
 		protected final RustUI.Type title;

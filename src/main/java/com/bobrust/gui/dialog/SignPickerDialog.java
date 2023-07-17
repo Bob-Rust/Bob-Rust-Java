@@ -1,34 +1,35 @@
 package com.bobrust.gui.dialog;
 
 import java.awt.*;
-import java.awt.Dialog.ModalityType;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import com.bobrust.gui.comp.JStyledToggleButton;
-import com.bobrust.lang.RustUI;
-import com.bobrust.lang.RustUI.Type;
 import com.bobrust.settings.Settings;
+import com.bobrust.util.ImageUtil;
+import com.bobrust.util.data.AppConstants;
 import com.bobrust.util.data.RustSigns;
 import com.bobrust.util.Sign;
 
-import static com.bobrust.util.data.RustConstants.*;
-import static com.bobrust.util.data.RustConstants.TOWN_POST_AVERAGE;
-
-public class BobRustSignPicker {
-	private final JDialog dialog;
+// TODO: Make it possible to use escape or enter to exit the dialog
+public class SignPickerDialog extends JDialog {
 	private Sign selectedSign;
+	private Map<Sign, JStyledToggleButton> buttonMap;
 	
-	public BobRustSignPicker(JDialog parent) {
-		dialog = new JDialog(parent, RustUI.getString(Type.EDITOR_SIGNPICKERDIALOG_TITLE), ModalityType.APPLICATION_MODAL);
-		dialog.setSize(520, 670);
-		dialog.setResizable(false);
-		dialog.getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+	public SignPickerDialog(JDialog parent) {
+		super(parent, "Sign Picker", ModalityType.APPLICATION_MODAL);
+		setIconImage(AppConstants.DIALOG_ICON);
+		setSize(520, 670);
+		setResizable(false);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		
 		ButtonGroup buttonGroup = new ButtonGroup();
 		Dimension buttonSize = new Dimension(120, 120);
@@ -36,11 +37,12 @@ public class BobRustSignPicker {
 		
 		Sign guiSign = Settings.SettingsSign.get();
 		selectedSign = guiSign;
+		this.buttonMap = new HashMap<>();
 		
 		for (Sign sign : RustSigns.SIGNS.values()) {
 			BufferedImage signImage = null;
 			
-			try (InputStream stream = BobRustSignPicker.class.getResourceAsStream("/signs/%s.png".formatted(sign.getName()))) {
+			try (InputStream stream = SignPickerDialog.class.getResourceAsStream("/signs/%s.png".formatted(sign.getName()))) {
 				if (stream != null) {
 					signImage = ImageIO.read(stream);
 				}
@@ -52,7 +54,7 @@ public class BobRustSignPicker {
 				continue;
 			}
 			
-			Image scaledImage = signImage.getScaledInstance(imageSize.width, imageSize.height, Image.SCALE_SMOOTH);
+			Image scaledImage = ImageUtil.getSmoothScaledInstance(signImage, imageSize.width, imageSize.height);
 			
 			JStyledToggleButton button = new JStyledToggleButton(fancyName(sign.getName()));
 			button.setHoverColor(new Color(240, 240, 240));
@@ -65,10 +67,11 @@ public class BobRustSignPicker {
 			button.setMinimumSize(buttonSize);
 			button.setMaximumSize(buttonSize);
 			button.addActionListener((event) -> selectedSign = sign);
-			dialog.getContentPane().add(button);
+			getContentPane().add(button);
+			buttonMap.put(sign, button);
 			
 			buttonGroup.add(button);
-			dialog.getContentPane().add(button);
+			getContentPane().add(button);
 			
 			if (guiSign == sign) {
 				button.setSelected(true);
@@ -106,9 +109,21 @@ public class BobRustSignPicker {
 		};
 	}
 
-	public void openSignDialog(Point point) {
-		dialog.setLocation(point);
-		dialog.setVisible(true);
+	public void openSignDialog(Point point, Sign selectedSign) {
+		// Update reference
+		this.selectedSign = selectedSign;
+		
+		for (JStyledToggleButton button : buttonMap.values()) {
+			button.setSelected(false);
+		}
+		
+		JStyledToggleButton selectedButton = buttonMap.get(selectedSign);
+		if (selectedButton != null) {
+			selectedButton.setSelected(true);
+		}
+		
+		setLocation(point);
+		setVisible(true);
 	}
 
 	public Sign getSelectedSign() {

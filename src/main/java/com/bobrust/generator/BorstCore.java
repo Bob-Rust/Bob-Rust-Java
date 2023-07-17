@@ -1,24 +1,33 @@
 package com.bobrust.generator;
 
 class BorstCore {
-	static BorstColor computeColor(BorstImage target, BorstImage current, Scanline[] lines, int alpha) {
+	static BorstColor computeColor(BorstImage target, BorstImage current, int alpha, int size, int x_offset, int y_offset) {
 		long rsum_1 = 0;
 		long gsum_1 = 0;
 		long bsum_1 = 0;
-
+		
 		long rsum_2 = 0;
 		long gsum_2 = 0;
 		long bsum_2 = 0;
-
+		
 		int count = 0;
 		int w = target.width;
+		int h = target.height;
 		
+		final Scanline[] lines = CircleCache.CIRCLE_CACHE[size];
 		final int len = lines.length;
-		for(int i = 0; i < len; i++) {
+		for (int i = 0; i < len; i++) {
 			Scanline line = lines[i];
-			int idx = line.y * w;
-
-			for(int x = line.x1; x <= line.x2; x++) {
+			int y = line.y + y_offset;
+			if (y < 0 || y >= h) {
+				continue;
+			}
+			
+			int xs = Math.max(line.x1 + x_offset, 0);
+			int xe = Math.min(line.x2 + x_offset, w - 1);
+			int idx = y * w;
+			
+			for (int x = xs; x <= xe; x++) {
 				int tt = target.pixels[idx + x];
 				int cc = current.pixels[idx + x];
 				
@@ -30,7 +39,7 @@ class BorstCore {
 				gsum_2 += (cc >>>  8) & 0xff;
 				bsum_2 += (cc       ) & 0xff;
 			}
-
+			
 			count += (line.x2 - line.x1 + 1);
 		}
 		
@@ -48,30 +57,30 @@ class BorstCore {
 		
 		return BorstUtils.getClosestColor((alpha << 24) | (r << 16) | (g << 8) | (b));
 	}
-
-	static void copyLinesReplaceRegion(BorstImage dst, BorstImage src, Scanline[] lines) {
-		int w = dst.width;
-		int len = lines.length;
-		for(int i = 0; i < len; i++) {
-			Scanline line = lines[i];
-			int idx = line.x1 + line.y * w;
-			
-			System.arraycopy(src.pixels, idx, dst.pixels, idx, line.x2 - line.x1 + 1);
-		}
-	}
-
-	static void drawLines(BorstImage im, BorstColor c, Scanline[] lines, int alpha) {
+	
+	static void drawLines(BorstImage im, BorstColor c, int alpha, int size, int x_offset, int y_offset) {
 		int cr = c.r * alpha;
 		int cg = c.g * alpha;
 		int cb = c.b * alpha;
 		int pa = 255 - alpha;
 		int w = im.width;
+		int h = im.height;
+		
+		final Scanline[] lines = CircleCache.CIRCLE_CACHE[size];
 		final int len = lines.length;
-		for(int i = 0; i < len; i++) {
+		for (int i = 0; i < len; i++) {
 			Scanline line = lines[i];
+			int y = line.y + y_offset;
+			if (y < 0 || y >= h) {
+				continue;
+			}
 			
-			for(int x = line.x1; x <= line.x2; x++) {
-				int a = im.pixels[line.y * w + x];
+			int xs = Math.max(line.x1 + x_offset, 0);
+			int xe = Math.min(line.x2 + x_offset, w - 1);
+			int idx = y * w;
+			
+			for (int x = xs; x <= xe; x++) {
+				int a = im.pixels[idx + x];
 				int a_a = (a >>> 24) & 0xff;
 				int a_r = (a >>> 16) & 0xff;
 				int a_g = (a >>>  8) & 0xff;
@@ -82,7 +91,7 @@ class BorstCore {
 				int ab = (cb + (a_b * pa)) >>> 8;
 				int aa = 255 - (((255 - a_a) * pa) >>> 8);
 				
-				im.pixels[line.y * w + x] = (aa << 24) | (ar << 16) | (ag << 8) | (ab);
+				im.pixels[idx + x] = (aa << 24) | (ar << 16) | (ag << 8) | (ab);
 			}
 		}
 	}
@@ -119,18 +128,26 @@ class BorstCore {
 		return (float)(Math.sqrt(total / (w * h * 4.0)) / 255.0);
 	}
 	
-	static float differencePartial(BorstImage target, BorstImage before, BorstImage after, float score, Scanline[] lines) {
+	static float differencePartial(BorstImage target, BorstImage before, BorstImage after, float score, int size, int x_offset, int y_offset) {
 		int w = target.width;
 		int h = target.height;
 		double denom = (w * h * 4.0);
 		long total = (long)(Math.pow(score * 255, 2) * denom);
 		
+		final Scanline[] lines = CircleCache.CIRCLE_CACHE[size];
 		final int len = lines.length;
-		for(int i = 0; i < len; i++) {
+		for (int i = 0; i < len; i++) {
 			Scanline line = lines[i];
-			int idx = line.y * w;
+			int y = line.y + y_offset;
+			if (y < 0 || y >= h) {
+				continue;
+			}
 			
-			for(int x = line.x1; x <= line.x2; x++) {
+			int xs = Math.max(line.x1 + x_offset, 0);
+			int xe = Math.min(line.x2 + x_offset, w - 1);
+			int idx = y * w;
+			
+			for (int x = xs; x <= xe; x++) {
 				int tt = target.pixels[idx + x];
 				int bb = before.pixels[idx + x];
 				int aa = after.pixels[idx + x];
@@ -168,10 +185,9 @@ class BorstCore {
 		return (float)(Math.sqrt(total / denom) / 255.0);
 	}
 	
-	static float differencePartialThread(BorstImage target, BorstImage before, float score, int alpha, Scanline[] lines) {
-		BorstColor color = BorstCore.computeColor(target, before, lines, alpha);
+	static float differencePartialThread(BorstImage target, BorstImage before, float score, int alpha, int size, int x_offset, int y_offset) {
+		BorstColor color = BorstCore.computeColor(target, before, alpha, size, x_offset, y_offset);
 		
-		final int len = lines.length;
 		final int h = target.height;
 		final int w = target.width;
 		
@@ -183,11 +199,21 @@ class BorstCore {
 		final int cb = color.b * alpha;
 		final int pa = 255 - alpha;
 		
-		for(int i = 0; i < len; i++) {
+		final Scanline[] lines = CircleCache.CIRCLE_CACHE[size];
+		final int len = lines.length;
+		
+		for (int i = 0; i < len; i++) {
 			Scanline line = lines[i];
-			int idx = line.y * w;
+			int y = line.y + y_offset;
+			if (y < 0 || y >= h) {
+				continue;
+			}
 			
-			for(int x = line.x1; x <= line.x2; x++) {
+			int xs = Math.max(line.x1 + x_offset, 0);
+			int xe = Math.min(line.x2 + x_offset, w - 1);
+			int idx = y * w;
+			
+			for (int x = xs; x <= xe; x++) {
 				int tt = target.pixels[idx + x];
 				int bb = before.pixels[idx + x];
 				

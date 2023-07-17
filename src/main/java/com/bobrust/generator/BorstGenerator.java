@@ -1,33 +1,35 @@
 package com.bobrust.generator;
 
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
+import com.bobrust.generator.sorter.Blob;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.bobrust.util.data.RustConstants;
+import com.bobrust.util.data.AppConstants;
 
 public class BorstGenerator {
 	private static final Logger LOGGER = LogManager.getLogger(BorstGenerator.class);
 	private final Consumer<BorstData> callback;
-	private final BorstSettings settings;
 	private volatile Thread thread;
-	private volatile int index;
+	private volatile Model model;
 	
-	private BorstGenerator(BorstSettings settings, Consumer<BorstData> callback) {
+	// Sent as a callback
+	public final BorstData data = new BorstData();
+	
+	public BorstGenerator(Consumer<BorstData> callback) {
 		this.callback = Objects.requireNonNull(callback);
-		this.settings = Objects.requireNonNull(settings);
-	}
-	
-	public synchronized boolean isRunning() {
-		return thread != null;
 	}
 	
 	/**
 	 * Start the generator
 	 */
-	public synchronized boolean start() {
+	public synchronized boolean start(Model previous, BufferedImage inputImage, int maxShapes, int callbackInterval, int background, int alpha) {
 		if (thread != null) {
 			LOGGER.warn("BorstGenerator has already been started! Restarting generator");
 			
@@ -41,26 +43,37 @@ public class BorstGenerator {
 			}
 		}
 		
-		if (settings.DirectImage == null) {
+		if (inputImage == null) {
 			LOGGER.error("Failed to load borst image");
 			return false;
 		}
 		
-		BorstImage image = new BorstImage(settings.DirectImage);
-		int length = settings.MaxShapes;
-		int interval = settings.CallbackInterval;
-		int background = settings.Background;
-		int alpha = BorstUtils.ALPHAS[settings.Alpha];
+		if (previous == null) {
+			BorstImage image = new BorstImage(inputImage);
+			model = new Model(image, background, alpha);
+			data.clear();
+		} else {
+			model = previous;
+		}
 		
 		Thread thread = new Thread(() -> {
-			this.index = 0;
+			if (AppConstants.DEBUG_DRAWN_COLORS) {
+				synchronized (data) {
+					data.blobs.clear();
+					data.blobs.addAll(generateDebugDrawList());
+					data.index = data.blobs.size();
+					data.alpha = 0;
+					callback.accept(data);
+				}
+				
+				return;
+			}
 			
-			Model model = new Model(image, background, alpha);
-			BorstData data = new BorstData(model);
-			
+			// Start from previous position
+			int i = model.shapes.size();
 			try {
 				long begin = System.nanoTime();
-				for (int i = 0; i <= length; i++) {
+				for (; i < maxShapes; i++) {
 					int n = model.processStep();
 					long end = System.nanoTime();
 					
@@ -70,12 +83,13 @@ public class BorstGenerator {
 						return;
 					}
 					
-					this.index = i;
-					if ((i == length) || (i % interval) == 0) {
-						data.index = i;
-						callback.accept(data);
+					if ((i == maxShapes - 1) || (i % callbackInterval) == 0) {
+						synchronized (data) {
+							data.update(model, i);
+							callback.accept(data);
+						}
 						
-						if (RustConstants.DEBUG_GENERATOR) {
+						if (AppConstants.DEBUG_GENERATOR) {
 							double time = (end - begin) / 1000000000.0;
 							double sps = i / time;
 							
@@ -90,9 +104,11 @@ public class BorstGenerator {
 					}
 				}
 			} finally {
-				data.index = length;
-				data.done = true;
-				callback.accept(data);
+				synchronized (data) {
+					data.index = i;
+					data.update(model, i);
+					callback.accept(data);
+				}
 			}
 		}, "Borst Generator Thread");
 		this.thread = thread;
@@ -105,65 +121,138 @@ public class BorstGenerator {
 	 * Calling this method will close the thread created by this generator.
 	 * This method will wait until the thread is fully closed.
 	 */
-	public synchronized void stop() throws InterruptedException {
-		if (thread != null) {
+	public synchronized Model stop() {
+		var localModel = model;
+		var localThread = thread;
+		if (localThread != null) {
 			try {
-				// Interrupt the thread and join it to wait for it to close.
-				thread.interrupt();
-				thread.join();
+				// Interrupt the thread and join it to wait for it to close
+				localThread.interrupt();
+				localThread.join();
+			} catch (InterruptedException ignored) {
+				Thread.currentThread().interrupt();
 			} finally {
-				// Make sure that the thread keeps it's interrupted state.
 				thread = null;
 			}
 		}
+		
+		return localModel;
 	}
 	
-	public class BorstData {
-		private final Model model;
+	/**
+	 * Generate a debug set of drawable blobs
+	 * 
+	 * This is used for calibrating the shape sizes
+	 */
+	private List<Blob> generateDebugDrawList() {
+		List<Blob> list = new ArrayList<>();
+		
+		int xo = 64;
+		int yo = 64;
+		int ml = 32;
+		
+		// Draw shape sizes
+		for (int shape = 0; shape < 2; shape++) {
+			for (int size = 0; size < 6; size++) {
+				int x = size * ml + xo;
+				int y = shape * ml + yo;
+				list.add(Blob.of(
+					x,
+					y,
+					BorstUtils.SIZES[size],
+					0,
+					BorstUtils.ALPHAS[5],
+					shape == 0
+						? AppConstants.CIRCLE_SHAPE
+						: AppConstants.SQUARE_SHAPE
+				));
+			}
+		}
+		
+		// Draw alpha
+		for (int alpha = 0; alpha < 6; alpha++) {
+			int x = (alpha) * ml + xo;
+			int y = 3 * ml + yo;
+			
+			list.add(Blob.of(
+				x,
+				y,
+				BorstUtils.SIZES[5],
+				0,
+				BorstUtils.ALPHAS[alpha],
+				AppConstants.SQUARE_SHAPE
+			));
+		}
+		
+		// Draw colors
+		int maxWidth = 16;
+		for (int color = 0; color < BorstUtils.COLORS.length; color++) {
+			int x = (color % maxWidth) * ml + (7) * ml + xo;
+			int y = (color / maxWidth) * ml + yo;
+			list.add(Blob.of(
+				x,
+				y,
+				BorstUtils.SIZES[5],
+				BorstUtils.COLORS[color].rgb,
+				BorstUtils.ALPHAS[5],
+				AppConstants.SQUARE_SHAPE
+			));
+		}
+		
+		return list;
+	}
+	
+	/**
+	 * When accessing this object you must first synchronize with it
+	 * 
+	 * <pre>synchronized (data);</pre>
+	 */
+	public static class BorstData {
+		private final List<Blob> blobs;
+		private int alpha;
 		private int index;
-		private boolean done;
 		
-		private BorstData(Model model) {
-			this.model = model;
+		private BorstData() {
+			this.blobs = new ArrayList<>();
 		}
 		
-		public BorstGenerator getGenerator() {
-			return BorstGenerator.this;
+		private synchronized void update(Model model, int index) {
+			this.index = index;
+			this.alpha = model.alpha;
+			
+			// For all new elements
+			var shapes = model.shapes;
+			var colors = model.colors;
+			for (int i = blobs.size(); i < shapes.size(); i++) {
+				var shape = shapes.get(i);
+				var color = colors.get(i);
+				blobs.add(Blob.of(
+					shape.x,
+					shape.y,
+					shape.r,
+					color.rgb,
+					model.alpha,
+					AppConstants.CIRCLE_SHAPE
+				));
+			}
 		}
 		
-		public BorstSettings getSettings() {
-			return BorstGenerator.this.settings;
+		private void clear() {
+			this.alpha = 0;
+			this.index = 0;
+			this.blobs.clear();
 		}
 		
-		public Model getModel() {
-			return model;
+		public List<Blob> getBlobs() {
+			return blobs;
+		}
+		
+		public int getAlpha() {
+			return alpha;
 		}
 		
 		public int getIndex() {
 			return index;
-		}
-		
-		public boolean isDone() {
-			return done;
-		}
-	}
-	
-	public static class BorstGeneratorBuilder {
-		private Consumer<BorstData> callback;
-		private BorstSettings settings;
-		
-		public BorstGeneratorBuilder setCallback(Consumer<BorstData> consumer) {
-			this.callback = consumer;
-			return this;
-		}
-		
-		public BorstGeneratorBuilder setSettings(BorstSettings settings) {
-			this.settings = settings;
-			return this;
-		}
-		
-		public BorstGenerator create() {
-			return new BorstGenerator(settings, callback);
 		}
 	}
 }

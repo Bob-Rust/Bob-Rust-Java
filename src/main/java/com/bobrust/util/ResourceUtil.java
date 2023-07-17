@@ -1,5 +1,6 @@
 package com.bobrust.util;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -12,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ResourceUtil {
+	private static final Logger LOGGER = LogManager.getLogger(ResourceUtil.class);
+	
 	private ResourceUtil() {
 		
 	}
@@ -27,6 +30,10 @@ public class ResourceUtil {
 		}
 		
 		return stream;
+	}
+	
+	public static BufferedImage loadImageFromResources(String path) {
+		return loadImageFromResources(path, LOGGER);
 	}
 	
 	public static BufferedImage loadImageFromResources(String path, Logger logger) {
