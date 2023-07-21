@@ -40,7 +40,7 @@ class BorstCore {
 				bsum_2 += (cc       ) & 0xff;
 			}
 			
-			count += (line.x2 - line.x1 + 1);
+			count += (xe - xs + 1);
 		}
 		
 		int pd = 65280 / alpha; // (255 << 8) / alpha;
