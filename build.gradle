@@ -17,11 +17,13 @@ repositories {
 project.ext {
     lwjglVersion = '3.2.3'
     log4jVersion = '2.17.1'
+    gsonVersion  = '2.10.1'
+
     majorVersion = '0'
-    minorVersion = '4'
+    minorVersion = '5'
 }
 
-version = "${majorVersion}.${minorVersion}.${getBuildId()}"
+version = "${majorVersion}.${minorVersion}.${getBuildId()}" + ""
 group = "Bob-Rust-Java"
 description = "Bob-Rust-Java"
 java.sourceCompatibility = JavaVersion.VERSION_16
@@ -70,6 +72,15 @@ dependencies {
     
     packImpl "org.apache.logging.log4j:log4j-api:$log4jVersion"
     packImpl "org.apache.logging.log4j:log4j-core:$log4jVersion"
+
+    packImpl "com.google.code.gson:gson:$gsonVersion"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 

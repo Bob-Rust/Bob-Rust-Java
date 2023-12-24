@@ -1,5 +1,4 @@
 # gradle
-
 .gradle/
 build/
 out/
@@ -7,7 +6,6 @@ classes/
 logs/
 
 # idea
-
 .idea/
 *.iml
 *.ipr
@@ -18,15 +16,11 @@ logs/
 target/
 
 # vscode
-
-.settings/
 .vscode/
 bin/
 .classpath
 .project
 
 # project
-logs/
 bobrust.properties
-.project
-.classpath
+hs_err_pid*.log

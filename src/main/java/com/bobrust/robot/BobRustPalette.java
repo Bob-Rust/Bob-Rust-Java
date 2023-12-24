@@ -20,11 +20,24 @@ public class BobRustPalette {
 	private static final Logger LOGGER = LogManager.getLogger(BobRustPalette.class);
 	private final Map<BorstColor, Point> colorMap;
 	private Map<BorstColor, Point> colorMapCopy;
+	
+	@Deprecated
 	private Point panel_offset;
+	
+	@Deprecated
 	private Point preview_middle;
+	
+	// Button configuration map
+	private GraphicsConfiguration monitor;
+	private ButtonConfiguration buttonConfig;
 	
 	public BobRustPalette() {
 		colorMap = new HashMap<>();
+	}
+	
+	public void setData(GraphicsConfiguration monitor, ButtonConfiguration config) {
+		this.monitor = Objects.requireNonNull(monitor);
+		this.buttonConfig = Objects.requireNonNull(config);
 	}
 	
 	/**
@@ -148,12 +161,8 @@ public class BobRustPalette {
 		colorMapCopy = null;
 		preview_middle = null;
 		panel_offset = null;
-		opacityButtons = null;
 		shapeButtons = null;
 		sizeButtons = null;
-		
-		focusPoint = null;
-		saveButton = null;
 	}
 	
 	public boolean hasPalette() {
@@ -170,72 +179,78 @@ public class BobRustPalette {
 		return new Point(panel_offset.x + x, panel_offset.y + y);
 	}
 	
-	// Returns a spot were the bot can press without changing any state of the game
-	private Point focusPoint;
-	public Point getFocusPoint() {
-		if (focusPoint == null) {
-			focusPoint = point(12, 24);
-		}
-		return focusPoint;
-	}
-	
 	public Point getColorPreview() {
-		return preview_middle;
+		return buttonConfig.colorPreview.with(monitor);
 	}
 	
-//	public Point getClearButton() {
-//		return point(55, 24);
-//	}
+	// Returns a spot were the bot can press without changing any state of the game
+	public Point getFocusPoint() {
+		// point(12, 24);
+		return buttonConfig.focus.with(monitor);
+	}
 	
-	private Point saveButton;
+	public Point getClearButton() {
+		// point(55, 24);
+		return buttonConfig.clearCanvas.with(monitor);
+	}
+	
 	public Point getSaveButton() {
-		if (saveButton == null) {
-			saveButton = point(95, 24);
-		}
-		return saveButton;
+		// point(95, 24);
+		return buttonConfig.saveImage.with(monitor);
 	}
 	
 //	public Point getUpdateButton() {
-//		return point(75, 469);
-//	}
-//	
-//	public Point getCancelButton() {
-//		return point(75, 505);
+//		// point(75, 469);
+//		return buttonConfig.saveImage;
 //	}
 	
-	public Point getAlphaButton(int index) {
-		Point[] array = getOpacityButtons();
-		return array[index];
+	public Point getAlphaButtonOld(int index) {
+		Point a = buttonConfig.opacity_0.with(monitor);
+		Point b = buttonConfig.opacity_1.with(monitor);
+		
+		// 256 on this span
+		double step = (b.x - a.x) / 256.0;
+		
+		return new Point(
+			a.x + (int) (step * BorstUtils.ALPHAS[index]),
+			a.y
+		);
+		
+		// Point[] array = getOpacityButtons();
+		// return array[index];
 	}
 	
-	public Point getSizeButton(int index) {
+	public Point getSizeButtonOld(int index) {
+		// TODO: Fix
 		Point[] array = getSizeButtons();
 		return array[index];
 	}
 	
-	public Point getShapeButton(int index) {
+	public Point getShapeButtonOld(int index) {
+		// TODO: Fix
 		Point[] array = getShapeButtons();
 		return array[index];
 	}
 	
 	public Point getColorButton(BorstColor color) {
+		// TODO: Fix
 		return colorMap.get(color);
 	}
 	
-	private Point[] opacityButtons;
-	private Point[] getOpacityButtons() {
-		if (opacityButtons == null) {
-			opacityButtons = new Point[] {
-				point( 22, 138),
-				point( 43, 138),
-				point( 64, 138),
-				point( 85, 138),
-				point(106, 138),
-				point(127, 138),
-			};
-		}
-		return opacityButtons;
-	}
+//	private Point[] opacityButtons;
+//	private Point[] getOpacityButtons() {
+//		if (opacityButtons == null) {
+//			opacityButtons = new Point[] {
+//				point( 22, 138),
+//				point( 43, 138),
+//				point( 64, 138),
+//				point( 85, 138),
+//				point(106, 138),
+//				point(127, 138),
+//			};
+//		}
+//		return opacityButtons;
+//	}
 	
 	private Point[] sizeButtons;
 	private Point[] getSizeButtons() {
