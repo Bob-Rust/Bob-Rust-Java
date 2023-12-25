@@ -4,13 +4,14 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 
-import javax.swing.*;
-
+import com.bobrust.util.data.AppConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.bobrust.generator.BorstColor;
 import com.bobrust.generator.BorstUtils;
+
+import com.bobrust.robot.ButtonConfiguration.*;
 
 /**
  * Used to analyse the gui of rust to get information about the game
@@ -21,12 +22,6 @@ public class BobRustPalette {
 	private final Map<BorstColor, Point> colorMap;
 	private Map<BorstColor, Point> colorMapCopy;
 	
-	@Deprecated
-	private Point panel_offset;
-	
-	@Deprecated
-	private Point preview_middle;
-	
 	// Button configuration map
 	private GraphicsConfiguration monitor;
 	private ButtonConfiguration buttonConfig;
@@ -35,42 +30,79 @@ public class BobRustPalette {
 		colorMap = new HashMap<>();
 	}
 	
-	public void setData(GraphicsConfiguration monitor, ButtonConfiguration config) {
+	public synchronized boolean initWith(BufferedImage screenshot, GraphicsConfiguration monitor) {
 		this.monitor = Objects.requireNonNull(monitor);
-		this.buttonConfig = Objects.requireNonNull(config);
-	}
-	
-	/**
-	 * Find the palette in the provided screenshot.
-	 * 
-	 * TODO: Make this method more general and work for more inputs.
-	 *       Where the color palette might not even be to the right of the screen.
-	 */
-	public Point findPalette(BufferedImage screenshot) {
-		int screen_width = screenshot.getWidth();
-		int screen_height = screenshot.getHeight();
+		this.buttonConfig = createAutomaticConfiguration(3, screenshot);
 		
-		int x = screen_width - 60;
+		Point a = this.buttonConfig.color_topLeft.with(monitor);
+		Point b = this.buttonConfig.color_botRight.with(monitor);
 		
-		Point palette_marker = null;
-		for (int i = 0; i < screen_height - 45; i++) {
-			// 15 per box
-			
-			if ((screenshot.getRGB(x, i) & 0xffffff) == 0xc0c0c0
-			&& (screenshot.getRGB(x, i + 15) & 0xffffff) == 0xff8634
-			&& (screenshot.getRGB(x, i + 30) & 0xffffff) == 0xffd734) {
-				palette_marker = new Point(x, i);
-				break;
+		var rect = monitor.getBounds();
+		final int color_width  = 4;
+		final int color_height = 16;
+		for (int x = 0; x < color_width; x++) {
+			for (int y = 0; y < color_height; y++) {
+				int x_pos = a.x + ((b.x - a.x) * x) / (color_width - 1);
+				int y_pos = a.y + ((b.y - a.y) * y) / (color_height - 1);
+				
+				int rgb = screenshot.getRGB(x_pos, y_pos);
+				BorstColor color = BorstUtils.getClosestColor(rgb);
+				
+				Point localPoint = new Point(x_pos, y_pos);
+				localPoint.translate(rect.x, rect.y);
+				
+				colorMap.putIfAbsent(color, localPoint);
 			}
 		}
 		
-		if (palette_marker != null) {
-			int point_x = screen_width - 150;
-			int point_y = palette_marker.y - 15;
-			return new Point(point_x, point_y);
+		for (BorstColor color : BorstUtils.COLORS) {
+			if (!colorMap.containsKey(color)) {
+				LOGGER.warn("Could not find all colors in the color palette. Found {}/{} colors", colorMap.size(), BorstUtils.COLORS.length);
+				return false;
+			}
 		}
 		
-		return null;
+		return true;
+	}
+	
+	public static ButtonConfiguration createAutomaticConfiguration(int version, BufferedImage screenshot) {
+		// Only supported version
+		return createAutomaticV3(screenshot);
+	}
+	
+	public static ButtonConfiguration createAutomaticV3(BufferedImage screenshot) {
+		int screen_width = screenshot.getWidth();
+		int screen_height = screenshot.getHeight();
+		
+		// Rust keep the height aspect ratio this means we can figure out almost exact point's on the screen
+		
+		// Delete button starts ( 24, 24), size (72, 72) on a (1080 height)
+		// Next   button starts (120, 24), size (72, 72) offset (96, 0)
+		// Next   button starts (216, 24), size (72, 72) offset (96, 0)
+		
+		ButtonConfiguration config = new ButtonConfiguration();
+		
+		final double btnOffset = 96;
+		config.clearCanvas     = Coordinate.fromSide(24 + 36 + btnOffset * 0, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, screen_width, screen_height);
+		config.saveToDesktop   = Coordinate.fromSide(24 + 36 + btnOffset * 1, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, screen_width, screen_height);
+		config.saveImage       = Coordinate.fromSide(24 + 36 + btnOffset * 2, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, screen_width, screen_height);
+		config.clearRotation   = Coordinate.fromSide(24 + 36 + btnOffset * 5, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, screen_width, screen_height);
+		
+		// The right toolbar is size (374, 1080) on (1080 height)
+		config.tool_paintBrush = Coordinate.fromSide(374 - 140, 84 , Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
+		config.brush_circle    = Coordinate.fromSide(374 - 144, 214, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
+		config.brush_square    = Coordinate.fromSide(374 - 192, 214, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
+		config.size_1          = Coordinate.fromSide(374 - 140, 283, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
+		config.size_32         = Coordinate.fromSide(374 - 289, 283, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
+		config.opacity_0       = Coordinate.fromSide(374 - 140, 368, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
+		config.opacity_1       = Coordinate.fromSide(374 - 289, 368, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
+		config.color_topLeft   = Coordinate.fromSide(374 - 62 , 481, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
+		config.color_botRight  = Coordinate.fromSide(374 - 308, 889, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
+		
+		config.focus           = Coordinate.fromSide(474, 102, Coordinate.SIDE_BOT_RIGHT, 1920, 1080, screen_width, screen_height);
+		config.colorPreview    = config.focus;
+		
+		return config;
 	}
 	
 	@SuppressWarnings("unused")
@@ -89,6 +121,9 @@ public class BobRustPalette {
 		LOGGER.info(sb);
 	}
 	
+	// TODO: Remove this code
+	/*
+	@Deprecated
 	public synchronized boolean analyse(JDialog dialog, BufferedImage bi, Rectangle screenBounds, Point screenOffset) {
 		this.panel_offset = new Point(screenOffset.x, screenOffset.y - 152);
 		// (-215, -67) from screen corner
@@ -151,6 +186,7 @@ public class BobRustPalette {
 			return false;
 		}
 	}
+	*/
 	
 	public Map<BorstColor, Point> getColorMap() {
 		return colorMapCopy;
@@ -159,124 +195,59 @@ public class BobRustPalette {
 	public void reset() {
 		colorMap.clear();
 		colorMapCopy = null;
-		preview_middle = null;
-		panel_offset = null;
-		shapeButtons = null;
-		sizeButtons = null;
-	}
-	
-	public boolean hasPalette() {
-		/*
-		 * Because the color map is the only required value
-		 * we can assume that if the map has enough elements
-		 * then we have the palette.
-		 */
-		return colorMap.size() == BorstUtils.COLORS.length;
-	}
-	
-	private Point point(int x, int y) {
-		// TODO: Use non screen relative points.
-		return new Point(panel_offset.x + x, panel_offset.y + y);
 	}
 	
 	public Point getColorPreview() {
 		return buttonConfig.colorPreview.with(monitor);
 	}
 	
-	// Returns a spot were the bot can press without changing any state of the game
 	public Point getFocusPoint() {
-		// point(12, 24);
 		return buttonConfig.focus.with(monitor);
 	}
 	
 	public Point getClearButton() {
-		// point(55, 24);
 		return buttonConfig.clearCanvas.with(monitor);
 	}
 	
 	public Point getSaveButton() {
-		// point(95, 24);
 		return buttonConfig.saveImage.with(monitor);
 	}
 	
-//	public Point getUpdateButton() {
-//		// point(75, 469);
-//		return buttonConfig.saveImage;
-//	}
-	
-	public Point getAlphaButtonOld(int index) {
+	public Point getAlphaButton(int index) {
 		Point a = buttonConfig.opacity_0.with(monitor);
 		Point b = buttonConfig.opacity_1.with(monitor);
 		
 		// 256 on this span
 		double step = (b.x - a.x) / 256.0;
 		
+		// TODO: Check if the opacity is the same as in the precomputed array
 		return new Point(
 			a.x + (int) (step * BorstUtils.ALPHAS[index]),
 			a.y
 		);
+	}
+	
+	public Point getSizeButton(int index) {
+		Point a = buttonConfig.size_1.with(monitor);
+		Point b = buttonConfig.size_32.with(monitor);
 		
-		// Point[] array = getOpacityButtons();
-		// return array[index];
+		// TODO: Check if the size is the same as the precomputed array
+		double step = (b.x - a.x) / (double) (BorstUtils.SIZES.length - 1);
+		return new Point(
+			a.x + (int) (step * index),
+			a.y
+		);
 	}
 	
-	public Point getSizeButtonOld(int index) {
-		// TODO: Fix
-		Point[] array = getSizeButtons();
-		return array[index];
-	}
-	
-	public Point getShapeButtonOld(int index) {
-		// TODO: Fix
-		Point[] array = getShapeButtons();
-		return array[index];
+	public Point getShapeButton(int index) {
+		return switch (index) {
+			case AppConstants.CIRCLE_SHAPE -> buttonConfig.brush_circle.with(monitor);
+			case AppConstants.SQUARE_SHAPE -> buttonConfig.brush_square.with(monitor);
+			default -> throw new RuntimeException("Invalid shape button index = " + index);
+		};
 	}
 	
 	public Point getColorButton(BorstColor color) {
-		// TODO: Fix
 		return colorMap.get(color);
-	}
-	
-//	private Point[] opacityButtons;
-//	private Point[] getOpacityButtons() {
-//		if (opacityButtons == null) {
-//			opacityButtons = new Point[] {
-//				point( 22, 138),
-//				point( 43, 138),
-//				point( 64, 138),
-//				point( 85, 138),
-//				point(106, 138),
-//				point(127, 138),
-//			};
-//		}
-//		return opacityButtons;
-//	}
-	
-	private Point[] sizeButtons;
-	private Point[] getSizeButtons() {
-		if (sizeButtons == null) {
-			sizeButtons = new Point[] {
-				point( 25, 62),
-				point( 45, 62),
-				point( 65, 62),
-				point( 85, 62),
-				point(105, 62),
-				point(125, 62),
-			};
-		}
-		return sizeButtons;
-	}
-	
-	private Point[] shapeButtons;
-	private Point[] getShapeButtons() {
-		if (shapeButtons == null) {
-			shapeButtons = new Point[] {
-				point( 27, 100), // Soft halo
-				point( 59, 100), // Circle
-				point( 91, 100), // Strong halo
-				point(123, 100), // Square
-			};
-		}
-		return shapeButtons;
 	}
 }

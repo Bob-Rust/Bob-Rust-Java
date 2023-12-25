@@ -150,8 +150,6 @@ public class DrawDialog extends JDialog {
 		clickIntervalField.setAlignmentX(0.0f);
 		clickIntervalField.addActionListener((event) -> {
 			Settings.SettingsClickInterval.set(clickIntervalField.getNumberValue());
-			// overlay.setEstimatedGenerationLabel(maxShapesField.getNumberValue(), Settings.SettingsMaxShapes.get());
-			// overlay.repaint();
 		});
 		clickIntervalPanel.add(clickIntervalField);
 		
@@ -296,12 +294,18 @@ public class DrawDialog extends JDialog {
 			return false;
 		}
 		
-		// Check for bright red on the edge of the screen
-		Point paletteLocation = rustPalette.findPalette(screenshot);
-		if (paletteLocation == null) {
+		if (!rustPalette.initWith(screenshot, monitor)) {
+			LOGGER.warn("User needs to manually select the color palette");
 			return false;
 		}
 		
+		LOGGER.info("Found the color palette ({}, {})", 0, 0);
+		
+		if (true) {
+			return true;
+		}
+		
+		/*
 		try {
 			// overlay.colorRegion.setLocation(paletteLocation.x, paletteLocation.y + 132 + 100);
 			Point paletteScreenLocation = new Point(screenBounds.x + paletteLocation.x, screenBounds.y + paletteLocation.y);
@@ -312,6 +316,7 @@ public class DrawDialog extends JDialog {
 		} catch (Exception e) {
 			LOGGER.throwing(e);
 		}
+		*/
 		
 		LOGGER.warn("User needs to manually select the color palette");
 		return false;

@@ -87,9 +87,9 @@ public class BobRustPainter {
 			
 			// Select first color to prevent exception
 			clickPoint(robot, palette.getColorButton(BorstUtils.getClosestColor(startBlob.color)), 4, 50);
-			clickPoint(robot, palette.getSizeButtonOld(startBlob.sizeIndex), 4, 50);
-			clickPoint(robot, palette.getAlphaButtonOld(startBlob.alphaIndex), 4, 50);
-			clickPoint(robot, palette.getShapeButtonOld(startBlob.shapeIndex), 4, 50);
+			clickPoint(robot, palette.getSizeButton(startBlob.sizeIndex), 4, 50);
+			clickPoint(robot, palette.getAlphaButton(startBlob.alphaIndex), 4, 50);
+			clickPoint(robot, palette.getShapeButton(startBlob.shapeIndex), 4, 50);
 			
 			// Fill in last color information
 			lastColor = startBlob.colorIndex;
@@ -103,7 +103,7 @@ public class BobRustPainter {
 			
 			// Change the size
 			if (lastSize != blob.sizeIndex) {
-				clickSize(robot, palette.getSizeButtonOld(blob.sizeIndex), 20, autoDelay);
+				clickSlider(robot, palette.getSizeButton(blob.sizeIndex), 20, autoDelay);
 				lastSize = blob.sizeIndex;
 				actions++;
 			}
@@ -117,14 +117,14 @@ public class BobRustPainter {
 			
 			// Change the alpha
 			if (lastAlpha != blob.alphaIndex) {
-				clickSize(robot, palette.getAlphaButtonOld(blob.alphaIndex), 20, autoDelay);
+				clickSlider(robot, palette.getAlphaButton(blob.alphaIndex), 20, autoDelay);
 				lastAlpha = blob.alphaIndex;
 				actions++;
 			}
 			
 			// Change the shape
 			if (lastShape != blob.shapeIndex) {
-				clickSize(robot, palette.getShapeButtonOld(blob.shapeIndex), 20, autoDelay);
+				clickSlider(robot, palette.getShapeButton(blob.shapeIndex), 20, autoDelay);
 				lastShape = blob.shapeIndex;
 				actions++;
 			}
@@ -231,13 +231,15 @@ public class BobRustPainter {
 		}
 	}
 	
-	private void clickSize(Robot robot, Point point, int maxAttempts, double delay) throws PaintingInterrupted {
+	private void clickSlider(Robot robot, Point point, int maxAttempts, double delay) throws PaintingInterrupted {
 		// Make sure that we press the size
 		while (maxAttempts-- > 0) {
 			clickPoint(robot, point, delay);
 			
-			Color after = robot.getPixelColor(point.x, point.y + 8);
-			if (after.getGreen() > 120) {
+			// TODO: Potential bugs. Because rust uses those weird random patterns this might not work anymore :/
+			Color after    = robot.getPixelColor(point.x, point.y);
+			Color afterOne = robot.getPixelColor(point.x + 1, point.y);
+			if (after.getGreen() > 120 && afterOne.getGreen() < 120) {
 				return;
 			}
 		}

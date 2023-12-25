@@ -28,6 +28,7 @@ public class Main {
 		LOGGER.info("  JavaVersion : {}", System.getProperty("java.version"));
 		LOGGER.info("  Threads     : {}", Runtime.getRuntime().availableProcessors());
 		LOGGER.info("  Lwjgl       : {}", hasLwjgl);
+		LOGGER.info("  Environment : {}", AppConstants.IS_IDE ? "IDE" : "Executable");
 		LOGGER.info("  AppVersion  : {}", AppConstants.VERSION);
 		LOGGER.info("");
 		

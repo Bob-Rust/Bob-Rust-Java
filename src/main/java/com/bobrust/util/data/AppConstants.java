@@ -12,7 +12,14 @@ import org.apache.logging.log4j.Logger;
 public interface AppConstants {
 	Logger LOGGER = LogManager.getLogger(AppConstants.class);
 	
+	// Used to debug
+	boolean IS_IDE = !AppConstants.class.getProtectionDomain()
+		.getCodeSource()
+		.getLocation()
+		.getPath().endsWith(".jar");
+
 	// Used by BorstGenerator
+	boolean DEBUG_AUTO_IMAGE = true;
 	boolean DEBUG_GENERATOR = false;
 	boolean DEBUG_DRAWN_COLORS = false;
 	boolean DEBUG_TIME = false;

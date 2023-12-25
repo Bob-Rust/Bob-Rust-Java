@@ -77,6 +77,26 @@ public class ApplicationWindow extends JDialog {
 		panel.add(createToolbar(), BorderLayout.CENTER);
 		panel.add(createVersion(), BorderLayout.SOUTH);
 		setContentPane(panel);
+		
+		// If we are running from an IDE then we want to add some debug stuff
+		if (AppConstants.IS_IDE && AppConstants.DEBUG_AUTO_IMAGE) {
+			canvasAreaButton.setEnabled(true);
+			imageAreaButton.setEnabled(true);
+			drawButton.setEnabled(true);
+			
+			monitor = GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getDefaultScreenDevice()
+				.getDefaultConfiguration();
+			
+			canvasRect.setRect(98, 170, 1348, 671);
+			imageRect.setRect(473, 172, 691, 669);
+			
+			try {
+				drawImage = ImageIO.read(new File("src/test/resources/draw-test/draw_0.png"));
+			} catch (IOException e) {
+				LOGGER.error("Could not find image", e);
+			}
+		}
 	}
 	
 	private JPanel createToolbar() {
@@ -149,12 +169,14 @@ public class ApplicationWindow extends JDialog {
 		monitor = region.monitor();
 		canvasRect.setBounds(region.selection());
 		imageAreaButton.setEnabled(true);
+		System.out.println(canvasRect);
 	}
 	
 	private void selectImageRegion() {
 		var region = regionSelectionDialog.openDialog(monitor, false, drawImage, imageRect);
 		imageRect.setBounds(region.selection());
 		drawButton.setEnabled(true);
+		System.out.println(imageRect);
 	}
 	
 	private JToolbarButton createButton(String iconPath, String tooltip, int rgb, ActionListener action) {
