@@ -169,14 +169,31 @@ public class ApplicationWindow extends JDialog {
 		monitor = region.monitor();
 		canvasRect.setBounds(region.selection());
 		imageAreaButton.setEnabled(true);
-		System.out.println(canvasRect);
+		
+		if (region.hasChanged()) {
+			LOGGER.info("Selected canvas region [ monitor={}, size=[x={}, y={}, width={}, height={}] ]",
+				region.monitor().getDevice(),
+				region.selection().x,
+				region.selection().y,
+				region.selection().width,
+				region.selection().height
+			);
+		}
 	}
 	
 	private void selectImageRegion() {
 		var region = regionSelectionDialog.openDialog(monitor, false, drawImage, imageRect);
 		imageRect.setBounds(region.selection());
 		drawButton.setEnabled(true);
-		System.out.println(imageRect);
+		
+		if (region.hasChanged()) {
+			LOGGER.info("Selected image region [ size=[x={}, y={}, width={}, height={}] ]",
+				region.selection().x,
+				region.selection().y,
+				region.selection().width,
+				region.selection().height
+			);
+		}
 	}
 	
 	private JToolbarButton createButton(String iconPath, String tooltip, int rgb, ActionListener action) {

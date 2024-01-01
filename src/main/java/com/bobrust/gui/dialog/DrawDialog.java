@@ -300,26 +300,7 @@ public class DrawDialog extends JDialog {
 		}
 		
 		LOGGER.info("Found the color palette ({}, {})", 0, 0);
-		
-		if (true) {
-			return true;
-		}
-		
-		/*
-		try {
-			// overlay.colorRegion.setLocation(paletteLocation.x, paletteLocation.y + 132 + 100);
-			Point paletteScreenLocation = new Point(screenBounds.x + paletteLocation.x, screenBounds.y + paletteLocation.y);
-			if (rustPalette.analyse(this, screenshot, screenBounds, paletteScreenLocation)) {
-				LOGGER.info("Found the color palette ({}, {})", paletteScreenLocation.x, paletteScreenLocation.y);
-				return true;
-			}
-		} catch (Exception e) {
-			LOGGER.throwing(e);
-		}
-		*/
-		
-		LOGGER.warn("User needs to manually select the color palette");
-		return false;
+		return true;
 	}
 	
 	private void startGeneration(int offset) {

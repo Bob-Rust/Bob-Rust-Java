@@ -51,6 +51,10 @@ public class ButtonConfiguration {
 			this(x, y, true);
 		}
 		
+		public static Coordinate from(double x, double y) {
+			return new Coordinate((int) x, (int) y, true);
+		}
+		
 		public Point with(GraphicsConfiguration config) {
 			return new Point(
 				(int) (x),

@@ -1,6 +1,7 @@
 package com.bobrust.unit.test;
 
 import com.bobrust.robot.BobRustPalette;
+import com.bobrust.robot.BobRustPaletteGenerator;
 import com.bobrust.robot.ButtonConfiguration;
 import com.bobrust.util.RustWindowUtil;
 import org.junit.jupiter.api.Disabled;
@@ -84,20 +85,25 @@ public class PaletteButtonConfigurationTest {
 		BobRustPalette palette = new BobRustPalette();
 		for (BufferedImage image : IMAGES) {
 			GraphicsConfiguration monitor = new DummyConfiguration(0, 0, image.getWidth(), image.getHeight());
-			assertTrue(palette.initWith(image, monitor), "Monitor size %dx%xd palette found".formatted(image.getWidth(), image.getHeight()));
+			boolean valid = palette.initWith(image, monitor);
+			
+			if (!valid) {
+				test(image, 0);
+			}
+			
+			assertTrue(valid, "Monitor size %dx%d palette found".formatted(image.getWidth(), image.getHeight()));
 		}
 	}
 	
 	@Disabled
 	@Test
 	public void checkAutomaticPalette() {
-		test(0);
-		test(1);
+		test(IMAGES.get(0), 0);
+		test(IMAGES.get(1), 1);
 	}
 	
-	private void test(int index) {
-		BufferedImage source = IMAGES.get(index);
-		var config = BobRustPalette.createAutomaticV3(source);
+	private void test(BufferedImage source, int index) {
+		var config = BobRustPaletteGenerator.createAutomaticV3(source);
 		System.out.println(config.serialize());
 		
 		BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);
