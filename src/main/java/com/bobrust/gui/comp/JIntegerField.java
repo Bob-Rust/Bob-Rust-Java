@@ -1,83 +1,112 @@
 package com.bobrust.gui.comp;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.text.NumberFormat;
-import java.util.Locale;
-
 import javax.swing.*;
-import javax.swing.text.NumberFormatter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
+import java.awt.event.*;
 
-public class JIntegerField extends JFormattedTextField {
-	private final NumberFormatter formatter;
+public class JIntegerField extends JTextField {
+	private int minimumValue;
+	private int maximumValue;
+	
+	// Last valid value when focus lost or when enter was pressed
+	private int lastValidValue;
+	private boolean hasBeeped;
 	
 	public JIntegerField(int value, int min, int max) {
-		NumberFormat format = NumberFormat.getIntegerInstance(Locale.US);
-		format.setGroupingUsed(false);
+		this.maximumValue = max;
+		this.minimumValue = min;
+		this.lastValidValue = value;
 		
-		formatter = new NumberFormatter(format);
-		formatter.setValueClass(Integer.class);
-		formatter.setMinimum(min);
-		formatter.setMaximum(max);
-		formatter.setAllowsInvalid(false);
-		formatter.setCommitsOnValidEdit(true);
-		formatter.setOverwriteMode(false);
-		formatter.setFormat(format);
+		setText("" + value);
+		setForeground(Color.black);
 		
-		setFormatterFactory(new AbstractFormatterFactory() {
+		getDocument().addDocumentListener(new DocumentListener() {
 			@Override
-			public AbstractFormatter getFormatter(JFormattedTextField tf) {
-				return formatter;
-			}
-		});
-		
-		getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterAction");
-		getActionMap().put("enterAction", new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JIntegerField.this.fireActionPerformed();
-			}
-		});
-		
-		Object backspaceKey = getInputMap().get(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0));
-		Action backspaceAction = getActionMap().get(backspaceKey);
-		
-		getActionMap().put(backspaceKey, new AbstractAction() {
-			public boolean isDelegate() {
-				return getText().length() != 1;
+			public void insertUpdate(DocumentEvent e) {
+				update();
 			}
 			
 			@Override
-			public boolean accept(Object sender) {
-				if (isDelegate()) {
-					return backspaceAction.accept(sender);
-				} else {
-					return super.accept(sender);
-				}
+			public void removeUpdate(DocumentEvent e) {
+				update();
 			}
 			
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (isDelegate()) {
-					backspaceAction.actionPerformed(e);
-				} else {
-					JIntegerField.this.selectAll();
-				}
+			public void changedUpdate(DocumentEvent e) {
+				update();
+			}
+			
+			public void update() {
+				processInput(getText(), false);
 			}
 		});
 		
-		setText(Integer.toString(value));
+		addActionListener(e -> processInput(getText(), true));
+		addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				processInput(getText(), true);
+			}
+		});
+	}
+	
+	private void processInput(String text, boolean enter) {
+		boolean invalid;
+		int value = 0;
+		try {
+			value = Integer.parseInt(text);
+			invalid = value < minimumValue || value > maximumValue;
+		} catch (NumberFormatException ignore) {
+			invalid = true;
+		}
+		
+		setForeground(invalid
+			? Color.red
+			: Color.black);
+		
+		if (invalid) {
+			if (!text.isEmpty() && !hasBeeped) {
+				Toolkit.getDefaultToolkit().beep();
+				hasBeeped = true;
+			}
+		} else {
+			hasBeeped = false;
+		}
+		
+		if (enter) {
+			if (!invalid) {
+				lastValidValue = value;
+			}
+			
+			setText("" + lastValidValue);
+			setForeground(Color.black);
+			hasBeeped = false;
+		}
 	}
 	
 	public void setMinimum(int value) {
-		formatter.setMinimum(value);
+		minimumValue = value;
 	}
 	
 	public void setMaximum(int value) {
-		formatter.setMaximum(value);
+		maximumValue = value;
 	}
 	
-	public int getNumberValue() throws NumberFormatException {
-		return Integer.parseInt(this.getText());
+	public int getMinimumValue() {
+		return minimumValue;
+	}
+	
+	public int getMaximumValue() {
+		return maximumValue;
+	}
+	
+	public void setValue(int value) {
+		this.lastValidValue = Math.max(minimumValue, Math.min(maximumValue, value));
+	}
+	
+	public int getNumberValue() {
+		return lastValidValue;
 	}
 }

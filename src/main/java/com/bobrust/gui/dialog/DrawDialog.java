@@ -12,6 +12,7 @@ import com.bobrust.robot.error.PaintingInterrupted;
 import com.bobrust.settings.Settings;
 import com.bobrust.util.*;
 import com.bobrust.util.data.AppConstants;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -225,13 +226,24 @@ public class DrawDialog extends JDialog {
 				updateTimeRemaining(0, count - drawnShapes);
 				
 				start = -1;
+				LOGGER.info("Start drawing");
+				LOGGER.info("- Alpha Index    : {}", Settings.SettingsAlpha.get());
+				LOGGER.info("- Click Interval : {}", Settings.SettingsClickInterval.get());
+				LOGGER.info("- Scaling        : {}", Settings.SettingsScaling.get());
+				LOGGER.info("- Sign Type      : {}", Settings.SettingsSign.get().getName());
 				if (!rustPainter.startDrawing(monitor, parent.canvasRect, list, this::updateTimeRemaining)) {
 					LOGGER.warn("The user stopped the drawing process early");
 				}
 			} catch (PaintingInterrupted e) {
-				LOGGER.warn("The user stopped the drawing process early");
-				LOGGER.warn("Type   : {}", e.getInterruptType());
-				LOGGER.warn("Shapes : {}", e.getDrawnShapes());
+				boolean finished = e.getInterruptType() == PaintingInterrupted.InterruptType.PaintingFinished;
+				Level level = finished
+					? Level.INFO
+					: Level.WARN;
+				LOGGER.log(level, finished
+					? "Painting process finished"
+					: "The user stopped the drawing process early");
+				LOGGER.log(level, "- Type   : {}", e.getInterruptType());
+				LOGGER.log(level, "- Shapes : {}", e.getDrawnShapes());
 				offsetShapes = e.getDrawnShapes();
 			} catch (Exception e) {
 				LOGGER.throwing(e);
