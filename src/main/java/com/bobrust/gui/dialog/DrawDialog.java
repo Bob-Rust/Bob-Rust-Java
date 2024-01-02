@@ -296,13 +296,10 @@ public class DrawDialog extends JDialog {
 	}
 	
 	private boolean findColorPalette() {
-		// The bounds of the screen
-		Rectangle screenBounds = monitor.getBounds();
-		
 		// Take a screenshot
 		BufferedImage screenshot = RustWindowUtil.captureScreenshot(monitor);
 		if (screenshot == null) {
-			LOGGER.info("Failed to take screenshot. Was null");
+			LOGGER.warn("Failed to take screenshot. Was null");
 			return false;
 		}
 		
@@ -311,7 +308,7 @@ public class DrawDialog extends JDialog {
 			return false;
 		}
 		
-		LOGGER.info("Found the color palette ({}, {})", 0, 0);
+		LOGGER.info("Found the color palette");
 		return true;
 	}
 	

@@ -103,7 +103,7 @@ public class PaletteButtonConfigurationTest {
 	}
 	
 	private void test(BufferedImage source, int index) {
-		var config = BobRustPaletteGenerator.createAutomaticV3(source);
+		var config = BobRustPaletteGenerator.createAutomaticV3(source.getWidth(), source.getHeight(), source);
 		System.out.println(config.serialize());
 		
 		BufferedImage copy = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);

@@ -1,7 +1,12 @@
 package com.bobrust.experiment;
 
+import com.bobrust.robot.BobRustPaletteGenerator;
+import com.bobrust.robot.ButtonConfiguration;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.lang.reflect.Modifier;
 
 public class RustLayoutV3 extends JPanel {
 	public static void main(String[] args) {
@@ -32,8 +37,9 @@ public class RustLayoutV3 extends JPanel {
 	}
 	
 	@Override
-	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
+	protected void paintComponent(Graphics gr) {
+		super.paintComponent(gr);
+		Graphics2D g = (Graphics2D) gr;
 		
 		int screen_width = getWidth();
 		int screen_height = getHeight();
@@ -107,5 +113,34 @@ public class RustLayoutV3 extends JPanel {
 		int previewStartY = screen_height - padding * 2 - previewSize;
 		g.setColor(Color.darkGray);
 		g.fillRect(previewStartX, previewStartY, previewSize, previewSize);
+		
+		var config = BobRustPaletteGenerator.createAutomaticV3(screen_width, screen_height, null);
+		g.setColor(Color.red);
+		g.setStroke(new BasicStroke(3.0f));
+		
+		for (var field : config.getClass().getDeclaredFields()) {
+			if ((field.getModifiers() & (Modifier.PRIVATE | Modifier.STATIC)) != 0) {
+				continue;
+			}
+			
+			try {
+				String name = field.getName();
+				var value = (ButtonConfiguration.Coordinate) field.get(config);
+				
+				g.setColor(Color.red);
+				g.drawRect(value.x() - 20, value.y() - 20, 40, 40);
+				
+				g.setColor(Color.black);
+				g.fillOval(value.x() - 3, value.y() - 3, 6, 6);
+				
+				g.setColor(Color.white);
+				g.fillOval(value.x() - 2, value.y() - 2, 4, 4);
+				
+				g.setColor(Color.white);
+				g.drawString("" + name, value.x() - 20, value.y() - 20 - 6);
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

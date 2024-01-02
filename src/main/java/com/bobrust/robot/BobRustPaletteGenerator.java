@@ -12,7 +12,11 @@ public class BobRustPaletteGenerator {
 	
 	public static ButtonConfiguration createAutomaticConfiguration(int version, BufferedImage screenshot) {
 		// Only supported version
-		return BobRustPaletteGenerator.createAutomaticV3(screenshot);
+		return BobRustPaletteGenerator.createAutomaticV3(
+			screenshot.getWidth(),
+			screenshot.getHeight(),
+			screenshot
+		);
 	}
 	
 	private static double transformV3(int x, int source, int target, int height) {
@@ -30,15 +34,12 @@ public class BobRustPaletteGenerator {
 		);
 	}
 	
-	public static ButtonConfiguration createAutomaticV3(BufferedImage screenshot) {
-		int screen_width = screenshot.getWidth();
-		int screen_height = screenshot.getHeight();
-		
+	public static ButtonConfiguration createAutomaticV3(int width, int height, BufferedImage screen) {
 		ButtonConfiguration config = new ButtonConfiguration();
 		
 		// Top bar buttons
-		int topPadding = (int) transformV3(24, 1920, screen_width, screen_height);
-		int topStep    = (int) transformV3(96, 1920, screen_width, screen_height);
+		int topPadding = (int) transformV3(24, 1920, width, height);
+		int topStep    = (int) transformV3(96, 1920, width, height);
 		int topSize    = topStep - topPadding;
 		
 		config.clearCanvas     = Coordinate.from(topPadding + topStep * 0 + topSize / 2.0, topPadding + topSize / 2.0);
@@ -46,8 +47,9 @@ public class BobRustPaletteGenerator {
 		config.saveImage       = Coordinate.from(topPadding + topStep * 2 + topSize / 2.0, topPadding + topSize / 2.0);
 		config.clearRotation   = Coordinate.from(topPadding + topStep * 5 + topSize / 2.0, topPadding + topSize / 2.0);
 		
-		double rightWidth = transformV3(375, 1920, screen_width, screen_height);
-		int rightStartX = (int) (screen_width - rightWidth);
+		double rightWidthValue = transformV3(375, 1920, width, height);
+		int rightStartX = (int) (width - rightWidthValue);
+		int rightWidth  = width - rightStartX;
 		
 		int padding = (int) (rightWidth * 0.0316711590296);
 		int rightButtonWidth = (int) (rightWidth - padding * 4);
@@ -66,7 +68,7 @@ public class BobRustPaletteGenerator {
 		int brushHeight = (int) (rightBrushRatio * rightBoxWidth);
 		int boxHeaderHeight = (int) (rightBoxHeaderRatio * rightBoxWidth);
 		
-		int availableHeight = screen_height - toolsHeight - brushHeight - rightButtonHeight * 2 - padding * 8;
+		int availableHeight = height - toolsHeight - brushHeight - rightButtonHeight * 2 - padding * 8;
 		int colorHeight = Math.min(availableHeight, (int) (rightColorMaxRatio * rightBoxWidth));
 		int offsetY = (availableHeight - colorHeight) / 2;
 		
@@ -101,19 +103,17 @@ public class BobRustPaletteGenerator {
 		config.color_botRight  = Coordinate.from(colorBox.x + colorBox.width - colorBox.width / 8.0, colorBox.y + colorBox.height - colorBox.height / 32.0);
 		
 		// Preview box
-		int previewSize = (int) transformV3(150, 1920, screen_width, screen_height);
-		int previewStartX = rightStartX - padding * 2 - previewSize;
-		int previewStartY = screen_height - padding * 2 - previewSize;
-		config.colorPreview = Coordinate.from(previewStartX + previewSize / 2.0, previewStartY + previewSize / 2.0);
+		double previewOffset = transformV3(3, 1920, width, height);
+		int previewSize = (int) transformV3(150, 1920, width, height);
+		int previewStartX = rightStartX - padding * 2 - previewSize - 1;
+		int previewStartY = height - padding * 2 - previewSize - 1;
+		config.colorPreview = Coordinate.from(previewStartX + previewSize / 2.0, previewStartY + previewSize / 2.0 - previewOffset);
 		config.focus        = config.colorPreview;
 		
 		return config;
 	}
 	
-	public static ButtonConfiguration old_createAutomaticV3(BufferedImage screenshot) {
-		int screen_width = screenshot.getWidth();
-		int screen_height = screenshot.getHeight();
-		
+	public static ButtonConfiguration old_createAutomaticV3(int width, int height, BufferedImage screen) {
 		// Rust keep the height aspect ratio this means we can figure out almost exact point's on the screen
 		
 		// Delete button starts ( 24, 24), size (72, 72) on a (1080 height)
@@ -123,28 +123,25 @@ public class BobRustPaletteGenerator {
 		ButtonConfiguration config = new ButtonConfiguration();
 		
 		final double btnOffset = 96;
-		config.clearCanvas     = Coordinate.fromSide(24 + 36 + btnOffset * 0, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, screen_width, screen_height);
-		config.saveToDesktop   = Coordinate.fromSide(24 + 36 + btnOffset * 1, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, screen_width, screen_height);
-		config.saveImage       = Coordinate.fromSide(24 + 36 + btnOffset * 2, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, screen_width, screen_height);
-		config.clearRotation   = Coordinate.fromSide(24 + 36 + btnOffset * 5, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, screen_width, screen_height);
+		config.clearCanvas     = Coordinate.fromSide(24 + 36 + btnOffset * 0, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, width, height);
+		config.saveToDesktop   = Coordinate.fromSide(24 + 36 + btnOffset * 1, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, width, height);
+		config.saveImage       = Coordinate.fromSide(24 + 36 + btnOffset * 2, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, width, height);
+		config.clearRotation   = Coordinate.fromSide(24 + 36 + btnOffset * 5, 24 + 36, Coordinate.SIDE_TOP_LEFT, 1920, 1080, width, height);
 		
 		// The right toolbar is size (374, 1080) on (1080 height)
-		config.tool_paintBrush = Coordinate.fromSide(374 - 140, 84 , Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
-		config.brush_circle    = Coordinate.fromSide(374 - 144, 214, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
-		config.brush_square    = Coordinate.fromSide(374 - 192, 214, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
-		config.size_1          = Coordinate.fromSide(374 - 140, 283, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
-		config.size_32         = Coordinate.fromSide(374 - 289, 283, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
-		config.opacity_0       = Coordinate.fromSide(374 - 140, 368, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
-		config.opacity_1       = Coordinate.fromSide(374 - 289, 368, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
-		config.color_topLeft   = Coordinate.fromSide(374 - 62 , 481, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
-		config.color_botRight  = Coordinate.fromSide(374 - 308, 889, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, screen_width, screen_height);
+		config.tool_paintBrush = Coordinate.fromSide(374 - 140, 84 , Coordinate.SIDE_TOP_RIGHT, 1920, 1080, width, height);
+		config.brush_circle    = Coordinate.fromSide(374 - 144, 214, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, width, height);
+		config.brush_square    = Coordinate.fromSide(374 - 192, 214, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, width, height);
+		config.size_1          = Coordinate.fromSide(374 - 140, 283, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, width, height);
+		config.size_32         = Coordinate.fromSide(374 - 289, 283, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, width, height);
+		config.opacity_0       = Coordinate.fromSide(374 - 140, 368, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, width, height);
+		config.opacity_1       = Coordinate.fromSide(374 - 289, 368, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, width, height);
+		config.color_topLeft   = Coordinate.fromSide(374 - 62 , 481, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, width, height);
+		config.color_botRight  = Coordinate.fromSide(374 - 308, 889, Coordinate.SIDE_TOP_RIGHT, 1920, 1080, width, height);
 		
-		config.focus           = Coordinate.fromSide(474, 102, Coordinate.SIDE_BOT_RIGHT, 1920, 1080, screen_width, screen_height);
-		config.colorPreview    = config.focus;
+		config.colorPreview    = Coordinate.fromSide(474, 102, Coordinate.SIDE_BOT_RIGHT, 1920, 1080, width, height);
+		config.focus           = config.colorPreview;
 		
-		// Right side  188x599 . 3.18617
-		// Right side  234x749 . 3.20000
-		// Right side  351x904 . 2.575
 		return config;
 	}
 	
