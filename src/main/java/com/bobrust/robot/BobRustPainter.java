@@ -7,6 +7,7 @@ import java.util.function.BiConsumer;
 
 import com.bobrust.robot.error.PaintingInterrupted;
 import com.bobrust.settings.Settings;
+import com.bobrust.util.debug.DebugUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,6 +21,7 @@ public class BobRustPainter {
 	
 	// The maximum distance the mouse can be from the correct position
 	private static final double MAXIMUM_DISPLACEMENT = 10;
+	private static final boolean ALLOW_PRESSES = true;
 	
 	private final BobRustPalette palette;
 	private int displayX;
@@ -103,7 +105,7 @@ public class BobRustPainter {
 			
 			// Change the size
 			if (lastSize != blob.sizeIndex) {
-				clickSize(robot, palette.getSizeButton(blob.sizeIndex), 20, autoDelay);
+				clickSlider(robot, palette.getSizeButton(blob.sizeIndex), 20, autoDelay);
 				lastSize = blob.sizeIndex;
 				actions++;
 			}
@@ -117,14 +119,14 @@ public class BobRustPainter {
 			
 			// Change the alpha
 			if (lastAlpha != blob.alphaIndex) {
-				clickSize(robot, palette.getAlphaButton(blob.alphaIndex), 20, autoDelay);
+				clickSlider(robot, palette.getAlphaButton(blob.alphaIndex), 20, autoDelay);
 				lastAlpha = blob.alphaIndex;
 				actions++;
 			}
 			
 			// Change the shape
 			if (lastShape != blob.shapeIndex) {
-				clickSize(robot, palette.getShapeButton(blob.shapeIndex), 20, autoDelay);
+				clickSlider(robot, palette.getShapeButton(blob.shapeIndex), 20, autoDelay);
 				lastShape = blob.shapeIndex;
 				actions++;
 			}
@@ -186,10 +188,14 @@ public class BobRustPainter {
 		
 		int maxAttempts = 3;
 		do {
-			robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+			if (ALLOW_PRESSES) {
+				robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+			}
 			addTimeDelay(time + delay * 2.0);
 			
-			robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+			if (ALLOW_PRESSES) {
+				robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+			}
 			addTimeDelay(time + delay * 3.0);
 			
 			Color after = robot.getPixelColor(point.x, point.y);
@@ -219,10 +225,14 @@ public class BobRustPainter {
 		robot.mouseMove(point.x, point.y);
 		addTimeDelay(time + delay);
 		
-		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+		if (ALLOW_PRESSES) {
+			robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+		}
 		addTimeDelay(time + delay * 2.0);
-
-		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+		
+		if (ALLOW_PRESSES) {
+			robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+		}
 		addTimeDelay(time + delay * 3.0);
 		
 		double distance = point.distance(MouseInfo.getPointerInfo().getLocation());
@@ -231,13 +241,26 @@ public class BobRustPainter {
 		}
 	}
 	
-	private void clickSize(Robot robot, Point point, int maxAttempts, double delay) throws PaintingInterrupted {
+	private void clickSlider(Robot robot, Point point, int maxAttempts, double delay) throws PaintingInterrupted {
 		// Make sure that we press the size
 		while (maxAttempts-- > 0) {
 			clickPoint(robot, point, delay);
 			
-			Color after = robot.getPixelColor(point.x, point.y + 8);
-			if (after.getGreen() > 120) {
+			/*
+			DebugUtil.debugShowImage(
+				robot.createScreenCapture(new Rectangle(
+					point.x - 20,
+					point.y - 20,
+					40, 40
+				)),
+				1
+			);
+			*/
+			
+			// TODO: Potential bugs. Because rust uses those weird random patterns this might not work anymore :/
+			Color after    = robot.getPixelColor(point.x - 1, point.y);
+			Color afterOne = robot.getPixelColor(point.x + 1, point.y);
+			if (after.getGreen() > 120 && afterOne.getGreen() < 120) {
 				return;
 			}
 		}

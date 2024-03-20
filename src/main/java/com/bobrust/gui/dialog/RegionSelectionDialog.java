@@ -7,6 +7,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Objects;
 
 /**
  * A dialog that allows you to select a region
@@ -141,16 +142,20 @@ public class RegionSelectionDialog extends JDialog {
 			}
 			dispose();
 			
+			boolean hasConfigChanged = false;
 			if (allowChangingMonitor) {
 				// Update result value
-				config = getGraphicsConfiguration(getLocation());
+				var nextConfig = getGraphicsConfiguration(getLocation());
+				hasConfigChanged = !Objects.equals(nextConfig, config);
+				config = nextConfig;
 			}
 			
-			return new Region(config, resizeComponent.getSelectedRectangle());
+			var nextRect = resizeComponent.getSelectedRectangle();
+			return new Region(config, nextRect, !nextRect.equals(rect) || hasConfigChanged);
 		} finally {
 			selectMonitorTimer.stop();
 		}
 	}
 	
-	public static record Region(GraphicsConfiguration monitor, Rectangle selection) { }
+	public static record Region(GraphicsConfiguration monitor, Rectangle selection, boolean hasChanged) { }
 }

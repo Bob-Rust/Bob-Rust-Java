@@ -4,8 +4,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 
-import javax.swing.*;
-
+import com.bobrust.util.data.AppConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,44 +19,72 @@ public class BobRustPalette {
 	private static final Logger LOGGER = LogManager.getLogger(BobRustPalette.class);
 	private final Map<BorstColor, Point> colorMap;
 	private Map<BorstColor, Point> colorMapCopy;
-	private Point panel_offset;
-	private Point preview_middle;
+	
+	// Button configuration map
+	private GraphicsConfiguration monitor;
+	private ButtonConfiguration buttonConfig;
 	
 	public BobRustPalette() {
 		colorMap = new HashMap<>();
 	}
 	
-	/**
-	 * Find the palette in the provided screenshot.
-	 * 
-	 * TODO: Make this method more general and work for more inputs.
-	 *       Where the color palette might not even be to the right of the screen.
-	 */
-	public Point findPalette(BufferedImage screenshot) {
-		int screen_width = screenshot.getWidth();
-		int screen_height = screenshot.getHeight();
+	public synchronized boolean initWith(BufferedImage screenshot, GraphicsConfiguration monitor) {
+		this.monitor = Objects.requireNonNull(monitor);
+		this.buttonConfig = BobRustPaletteGenerator.createAutomaticConfiguration(3, screenshot);
 		
-		int x = screen_width - 60;
+		Point a = this.buttonConfig.color_topLeft.with(monitor);
+		Point b = this.buttonConfig.color_botRight.with(monitor);
 		
-		Point palette_marker = null;
-		for (int i = 0; i < screen_height - 45; i++) {
-			// 15 per box
-			
-			if ((screenshot.getRGB(x, i) & 0xffffff) == 0xc0c0c0
-			&& (screenshot.getRGB(x, i + 15) & 0xffffff) == 0xff8634
-			&& (screenshot.getRGB(x, i + 30) & 0xffffff) == 0xffd734) {
-				palette_marker = new Point(x, i);
-				break;
+		var rect = monitor.getBounds();
+		final int color_width  = 4;
+		final int color_height = 16;
+		for (int x = 0; x < color_width; x++) {
+			for (int y = 0; y < color_height; y++) {
+				int x_pos = a.x + ((b.x - a.x) * x) / (color_width - 1);
+				int y_pos = a.y + ((b.y - a.y) * y) / (color_height - 1);
+				
+				int rgb = screenshot.getRGB(x_pos, y_pos);
+				BorstColor color = BorstUtils.getClosestColor(rgb);
+				
+				Point localPoint = new Point(x_pos, y_pos);
+				localPoint.translate(rect.x, rect.y);
+				
+				colorMap.putIfAbsent(color, localPoint);
 			}
 		}
 		
-		if (palette_marker != null) {
-			int point_x = screen_width - 150;
-			int point_y = palette_marker.y - 15;
-			return new Point(point_x, point_y);
+		/*
+		{
+			var image = screenshot.getSubimage(a.x, a.y, b.x - a.x, b.y - a.y);
+			Graphics2D g = image.createGraphics();
+			g.drawImage(image, 0, 0, null);
+			g.setColor(Color.white);
+			for (Map.Entry<BorstColor, Point> entry : colorMap.entrySet()) {
+				Point point = entry.getValue();
+				Point sc = new Point(point.x, point.y);
+				sc.translate(-rect.x, -rect.y);
+				g.drawOval(sc.x - 15, sc.y - 7, 30, 15);
+			}
+			g.dispose();
+			
+			javax.swing.JOptionPane.showConfirmDialog(
+				null,
+				new javax.swing.JLabel(new javax.swing.ImageIcon(image)),
+				"Debug Image Palette",
+				javax.swing.JOptionPane.OK_CANCEL_OPTION,
+				javax.swing.JOptionPane.PLAIN_MESSAGE
+			);
+		}
+		*/
+		
+		for (BorstColor color : BorstUtils.COLORS) {
+			if (!colorMap.containsKey(color)) {
+				LOGGER.warn("Could not find all colors in the color palette. Found {}/{} colors", colorMap.size(), BorstUtils.COLORS.length);
+				return false;
+			}
 		}
 		
-		return null;
+		return true;
 	}
 	
 	@SuppressWarnings("unused")
@@ -76,69 +103,6 @@ public class BobRustPalette {
 		LOGGER.info(sb);
 	}
 	
-	public synchronized boolean analyse(JDialog dialog, BufferedImage bi, Rectangle screenBounds, Point screenOffset) {
-		this.panel_offset = new Point(screenOffset.x, screenOffset.y - 152);
-		// (-215, -67) from screen corner
-		this.preview_middle = new Point(screenBounds.x + screenBounds.width - 215, screenBounds.y + screenBounds.height - 67);
-		this.colorMap.clear();
-		
-		Point screenLocation = screenBounds.getLocation();
-		Rectangle rect = new Rectangle(panel_offset.x - screenLocation.x, panel_offset.y - screenLocation.y, 150, 570);
-		BufferedImage image;
-		try {
-			image = bi.getSubimage(rect.x, rect.y, rect.width, rect.height);
-		} catch (Exception e) {
-			return false;
-		}
-		
-		// 128x240 (4x16 colors)
-		// tiles   (16 x 32)
-		// Set<Integer> colors = new LinkedHashSet<>();
-		for (int x = 0; x < 4; x++) {
-			for (int y = 0; y < 16; y++) {
-				int x_pos = 27 + x * 32;
-				int y_pos = 172 + y * 15;
-				
-				int rgb = image.getRGB(x_pos, y_pos);
-				// colors.add(rgb);
-				BorstColor color = BorstUtils.getClosestColor(rgb);
-				colorMap.putIfAbsent(color, point(x_pos, y_pos));
-			}
-		}
-		// debugGenerateColorMap(colors);
-		
-		{
-			Point zero = point(0, 0);
-			Graphics2D g = image.createGraphics();
-			g.drawImage(image, 0, 0, null);
-			g.setColor(Color.white);
-			for (Map.Entry<BorstColor, Point> entry : colorMap.entrySet()) {
-				Point point = entry.getValue();
-				Point sc = new Point(point.x, point.y);
-				g.drawOval(sc.x - 15 - zero.x, sc.y - 7 - zero.y, 30, 15);
-			}
-			g.dispose();
-			// JOptionPane.showConfirmDialog(dialog, new JLabel(new ImageIcon(test)), "Debug Image Palette", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-		}
-		
-		for (BorstColor color : BorstUtils.COLORS) {
-			if (!colorMap.containsKey(color)) {
-				LOGGER.warn("Could not find all colors in the color palette. Found {}/{} colors", colorMap.size(), BorstUtils.COLORS.length);
-				return false;
-			}
-		}
-		
-		this.colorMapCopy = Map.copyOf(colorMap);
-		
-		int dialogResult = JOptionPane.showConfirmDialog(dialog, new JLabel(new ImageIcon(image)), "Is this the color palette?", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
-		if (dialogResult == JOptionPane.YES_OPTION) {
-			// We got the color palette
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
 	public Map<BorstColor, Point> getColorMap() {
 		return colorMapCopy;
 	}
@@ -146,122 +110,59 @@ public class BobRustPalette {
 	public void reset() {
 		colorMap.clear();
 		colorMapCopy = null;
-		preview_middle = null;
-		panel_offset = null;
-		opacityButtons = null;
-		shapeButtons = null;
-		sizeButtons = null;
-		
-		focusPoint = null;
-		saveButton = null;
-	}
-	
-	public boolean hasPalette() {
-		/*
-		 * Because the color map is the only required value
-		 * we can assume that if the map has enough elements
-		 * then we have the palette.
-		 */
-		return colorMap.size() == BorstUtils.COLORS.length;
-	}
-	
-	private Point point(int x, int y) {
-		// TODO: Use non screen relative points.
-		return new Point(panel_offset.x + x, panel_offset.y + y);
-	}
-	
-	// Returns a spot were the bot can press without changing any state of the game
-	private Point focusPoint;
-	public Point getFocusPoint() {
-		if (focusPoint == null) {
-			focusPoint = point(12, 24);
-		}
-		return focusPoint;
 	}
 	
 	public Point getColorPreview() {
-		return preview_middle;
+		return buttonConfig.colorPreview.with(monitor);
 	}
 	
-//	public Point getClearButton() {
-//		return point(55, 24);
-//	}
+	public Point getFocusPoint() {
+		return buttonConfig.focus.with(monitor);
+	}
 	
-	private Point saveButton;
+	public Point getClearButton() {
+		return buttonConfig.clearCanvas.with(monitor);
+	}
+	
 	public Point getSaveButton() {
-		if (saveButton == null) {
-			saveButton = point(95, 24);
-		}
-		return saveButton;
+		return buttonConfig.saveImage.with(monitor);
 	}
-	
-//	public Point getUpdateButton() {
-//		return point(75, 469);
-//	}
-//	
-//	public Point getCancelButton() {
-//		return point(75, 505);
-//	}
 	
 	public Point getAlphaButton(int index) {
-		Point[] array = getOpacityButtons();
-		return array[index];
+		Point a = buttonConfig.opacity_0.with(monitor);
+		Point b = buttonConfig.opacity_1.with(monitor);
+		
+		// 256 on this span
+		double step = (b.x - a.x) / 256.0;
+		
+		// TODO: Check if the opacity is the same as in the precomputed array
+		return new Point(
+			a.x + (int) (step * BorstUtils.ALPHAS[index]),
+			a.y
+		);
 	}
 	
 	public Point getSizeButton(int index) {
-		Point[] array = getSizeButtons();
-		return array[index];
+		Point a = buttonConfig.size_1.with(monitor);
+		Point b = buttonConfig.size_32.with(monitor);
+		
+		// TODO: Check if the size is the same as the precomputed array
+		double step = (b.x - a.x) / (double) (BorstUtils.SIZES.length - 1);
+		return new Point(
+			a.x + (int) (step * index),
+			a.y
+		);
 	}
 	
 	public Point getShapeButton(int index) {
-		Point[] array = getShapeButtons();
-		return array[index];
+		return switch (index) {
+			case AppConstants.CIRCLE_SHAPE -> buttonConfig.brush_circle.with(monitor);
+			case AppConstants.SQUARE_SHAPE -> buttonConfig.brush_square.with(monitor);
+			default -> throw new RuntimeException("Invalid shape button index = " + index);
+		};
 	}
 	
 	public Point getColorButton(BorstColor color) {
 		return colorMap.get(color);
-	}
-	
-	private Point[] opacityButtons;
-	private Point[] getOpacityButtons() {
-		if (opacityButtons == null) {
-			opacityButtons = new Point[] {
-				point( 22, 138),
-				point( 43, 138),
-				point( 64, 138),
-				point( 85, 138),
-				point(106, 138),
-				point(127, 138),
-			};
-		}
-		return opacityButtons;
-	}
-	
-	private Point[] sizeButtons;
-	private Point[] getSizeButtons() {
-		if (sizeButtons == null) {
-			sizeButtons = new Point[] {
-				point( 25, 62),
-				point( 45, 62),
-				point( 65, 62),
-				point( 85, 62),
-				point(105, 62),
-				point(125, 62),
-			};
-		}
-		return sizeButtons;
-	}
-	
-	private Point[] shapeButtons;
-	private Point[] getShapeButtons() {
-		if (shapeButtons == null) {
-			shapeButtons = new Point[] {
-				point( 27, 100), // Soft halo
-				point( 59, 100), // Circle
-				point( 91, 100), // Strong halo
-				point(123, 100), // Square
-			};
-		}
-		return shapeButtons;
 	}
 }

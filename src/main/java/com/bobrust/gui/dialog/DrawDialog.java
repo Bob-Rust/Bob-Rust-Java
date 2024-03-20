@@ -12,6 +12,7 @@ import com.bobrust.robot.error.PaintingInterrupted;
 import com.bobrust.settings.Settings;
 import com.bobrust.util.*;
 import com.bobrust.util.data.AppConstants;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -150,8 +151,6 @@ public class DrawDialog extends JDialog {
 		clickIntervalField.setAlignmentX(0.0f);
 		clickIntervalField.addActionListener((event) -> {
 			Settings.SettingsClickInterval.set(clickIntervalField.getNumberValue());
-			// overlay.setEstimatedGenerationLabel(maxShapesField.getNumberValue(), Settings.SettingsMaxShapes.get());
-			// overlay.repaint();
 		});
 		clickIntervalPanel.add(clickIntervalField);
 		
@@ -227,13 +226,24 @@ public class DrawDialog extends JDialog {
 				updateTimeRemaining(0, count - drawnShapes);
 				
 				start = -1;
+				LOGGER.info("Start drawing");
+				LOGGER.info("- Alpha Index    : {}", Settings.SettingsAlpha.get());
+				LOGGER.info("- Click Interval : {}", Settings.SettingsClickInterval.get());
+				LOGGER.info("- Scaling        : {}", Settings.SettingsScaling.get());
+				LOGGER.info("- Sign Type      : {}", Settings.SettingsSign.get().getName());
 				if (!rustPainter.startDrawing(monitor, parent.canvasRect, list, this::updateTimeRemaining)) {
 					LOGGER.warn("The user stopped the drawing process early");
 				}
 			} catch (PaintingInterrupted e) {
-				LOGGER.warn("The user stopped the drawing process early");
-				LOGGER.warn("Type   : {}", e.getInterruptType());
-				LOGGER.warn("Shapes : {}", e.getDrawnShapes());
+				boolean finished = e.getInterruptType() == PaintingInterrupted.InterruptType.PaintingFinished;
+				Level level = finished
+					? Level.INFO
+					: Level.WARN;
+				LOGGER.log(level, finished
+					? "Painting process finished"
+					: "The user stopped the drawing process early");
+				LOGGER.log(level, "- Type   : {}", e.getInterruptType());
+				LOGGER.log(level, "- Shapes : {}", e.getDrawnShapes());
 				offsetShapes = e.getDrawnShapes();
 			} catch (Exception e) {
 				LOGGER.throwing(e);
@@ -286,35 +296,20 @@ public class DrawDialog extends JDialog {
 	}
 	
 	private boolean findColorPalette() {
-		// The bounds of the screen
-		Rectangle screenBounds = monitor.getBounds();
-		
 		// Take a screenshot
 		BufferedImage screenshot = RustWindowUtil.captureScreenshot(monitor);
 		if (screenshot == null) {
-			LOGGER.info("Failed to take screenshot. Was null");
+			LOGGER.warn("Failed to take screenshot. Was null");
 			return false;
 		}
 		
-		// Check for bright red on the edge of the screen
-		Point paletteLocation = rustPalette.findPalette(screenshot);
-		if (paletteLocation == null) {
+		if (!rustPalette.initWith(screenshot, monitor)) {
+			LOGGER.warn("User needs to manually select the color palette");
 			return false;
 		}
 		
-		try {
-			// overlay.colorRegion.setLocation(paletteLocation.x, paletteLocation.y + 132 + 100);
-			Point paletteScreenLocation = new Point(screenBounds.x + paletteLocation.x, screenBounds.y + paletteLocation.y);
-			if (rustPalette.analyse(this, screenshot, screenBounds, paletteScreenLocation)) {
-				LOGGER.info("Found the color palette ({}, {})", paletteScreenLocation.x, paletteScreenLocation.y);
-				return true;
-			}
-		} catch (Exception e) {
-			LOGGER.throwing(e);
-		}
-		
-		LOGGER.warn("User needs to manually select the color palette");
-		return false;
+		LOGGER.info("Found the color palette");
+		return true;
 	}
 	
 	private void startGeneration(int offset) {

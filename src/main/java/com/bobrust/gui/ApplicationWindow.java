@@ -3,10 +3,10 @@ package com.bobrust.gui;
 import com.bobrust.gui.comp.JToolbarButton;
 import com.bobrust.gui.dialog.*;
 import com.bobrust.settings.Settings;
-import com.bobrust.util.ResourceUtil;
-import com.bobrust.util.ImageUtil;
-import com.bobrust.util.UrlUtils;
+import com.bobrust.util.*;
 import com.bobrust.util.data.AppConstants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -14,6 +14,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -25,6 +26,8 @@ import java.io.IOException;
  * @author HardCoded
  */
 public class ApplicationWindow extends JDialog {
+	private static final Logger LOGGER = LogManager.getLogger(ApplicationWindow.class);
+	
 	private final RustFileDialog fileDialog;
 	private final SignPickerDialog signPickerDialog;
 	private final SettingsDialog settingsDialog;
@@ -74,6 +77,26 @@ public class ApplicationWindow extends JDialog {
 		panel.add(createToolbar(), BorderLayout.CENTER);
 		panel.add(createVersion(), BorderLayout.SOUTH);
 		setContentPane(panel);
+		
+		// If we are running from an IDE then we want to add some debug stuff
+		if (AppConstants.IS_IDE && AppConstants.DEBUG_AUTO_IMAGE) {
+			canvasAreaButton.setEnabled(true);
+			imageAreaButton.setEnabled(true);
+			drawButton.setEnabled(true);
+			
+			monitor = GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getDefaultScreenDevice()
+				.getDefaultConfiguration();
+			
+			canvasRect.setRect(98, 170, 1348, 671);
+			imageRect.setRect(473, 172, 691, 669);
+			
+			try {
+				drawImage = ImageIO.read(new File("src/test/resources/draw-test/draw_0.png"));
+			} catch (IOException e) {
+				LOGGER.error("Could not find image", e);
+			}
+		}
 	}
 	
 	private JPanel createToolbar() {
@@ -123,9 +146,20 @@ public class ApplicationWindow extends JDialog {
 		}
 		
 		try {
-			drawImage = ImageIO.read(image);
+			BufferedImage bi = ImageIO.read(image);
+			if (bi == null) {
+				LOGGER.warn("Unsupported image file format '{}'", image.getAbsolutePath());
+				RustWindowUtil.showWarningMessage(
+					"The file '%s' is not a readable image format, try converting the image to a png before using"
+						.formatted(image.getAbsolutePath()),
+					"Failed to read image file"
+				);
+				return;
+			}
+			drawImage = bi;
 			canvasAreaButton.setEnabled(true);
 		} catch (IOException e) {
+			LOGGER.error("Invalid file format of image", e);
 			e.printStackTrace();
 		}
 	}
@@ -135,12 +169,31 @@ public class ApplicationWindow extends JDialog {
 		monitor = region.monitor();
 		canvasRect.setBounds(region.selection());
 		imageAreaButton.setEnabled(true);
+		
+		if (region.hasChanged()) {
+			LOGGER.info("Selected canvas region [ monitor={}, size=[x={}, y={}, width={}, height={}] ]",
+				region.monitor().getDevice(),
+				region.selection().x,
+				region.selection().y,
+				region.selection().width,
+				region.selection().height
+			);
+		}
 	}
 	
 	private void selectImageRegion() {
 		var region = regionSelectionDialog.openDialog(monitor, false, drawImage, imageRect);
 		imageRect.setBounds(region.selection());
 		drawButton.setEnabled(true);
+		
+		if (region.hasChanged()) {
+			LOGGER.info("Selected image region [ size=[x={}, y={}, width={}, height={}] ]",
+				region.selection().x,
+				region.selection().y,
+				region.selection().width,
+				region.selection().height
+			);
+		}
 	}
 	
 	private JToolbarButton createButton(String iconPath, String tooltip, int rgb, ActionListener action) {

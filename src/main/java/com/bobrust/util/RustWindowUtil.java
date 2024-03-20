@@ -34,6 +34,10 @@ public class RustWindowUtil {
 		JOptionPane.showMessageDialog(component, message, title, JOptionPane.WARNING_MESSAGE);
 	}
 	
+	public static void showWarningMessage(Component component, Component message, String title) {
+		JOptionPane.showMessageDialog(component, message, title, JOptionPane.WARNING_MESSAGE);
+	}
+	
 	public static BufferedImage captureScreenshot(GraphicsConfiguration gc) {
 		GraphicsDevice device = gc.getDevice();
 		int screenWidth = device.getDisplayMode().getWidth();
