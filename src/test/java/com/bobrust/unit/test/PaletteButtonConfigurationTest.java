@@ -3,6 +3,7 @@ package com.bobrust.unit.test;
 import com.bobrust.robot.BobRustPalette;
 import com.bobrust.robot.BobRustPaletteGenerator;
 import com.bobrust.robot.ButtonConfiguration;
+import com.bobrust.robot.Coordinate;
 import com.bobrust.util.RustWindowUtil;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -120,7 +121,7 @@ public class PaletteButtonConfigurationTest {
 			
 			try {
 				String name = field.getName();
-				var value = (ButtonConfiguration.Coordinate) field.get(config);
+				var value = (Coordinate) field.get(config);
 				
 				g.setColor(Color.red);
 				g.drawRect(value.x() - 20, value.y() - 20, 40, 40);

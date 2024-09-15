@@ -83,14 +83,16 @@ public class BobRustPainter {
 		
 		{
 			Blob startBlob = blobList.get(0);
-			
+
 			// Make sure that we have selected the game
 			clickPoint(robot, palette.getFocusPoint(), 4, 50);
 			
 			// Select first color to prevent exception
 			clickPoint(robot, palette.getColorButton(BorstUtils.getClosestColor(startBlob.color)), 4, 50);
-			clickPoint(robot, palette.getSizeButton(startBlob.sizeIndex), 4, 50);
-			clickPoint(robot, palette.getAlphaButton(startBlob.alphaIndex), 4, 50);
+			Point sizeButton = palette.getSizeButton(startBlob.sizeIndex);
+			clickPoint(robot, sizeButton, 4, 50);
+			Point alphaButton = palette.getAlphaButton(startBlob.alphaIndex);
+			clickPoint(robot, alphaButton, 4, 50);
 			clickPoint(robot, palette.getShapeButton(startBlob.shapeIndex), 4, 50);
 			
 			// Fill in last color information
@@ -102,17 +104,21 @@ public class BobRustPainter {
 		
 		for (int i = 0, actions = 1; i < count; i++, actions++) {
 			Blob blob = blobList.get(i);
-			
+			LOGGER.info("blob "+i+" size "+blob.size+" size index " + blob.sizeIndex);
+			// Change the sizesizeIndex);
 			// Change the size
 			if (lastSize != blob.sizeIndex) {
-				clickSlider(robot, palette.getSizeButton(blob.sizeIndex), 20, autoDelay);
+                var paletteSizeButton=palette.getSizeButton(blob.sizeIndex);
+				LOGGER.info("point: "+paletteSizeButton.toString());
+				clickSlider(robot, paletteSizeButton, 20, autoDelay);
 				lastSize = blob.sizeIndex;
 				actions++;
 			}
 			
 			// Change the color
 			if (lastColor != blob.colorIndex) { // Without 20 here it will not work
-				clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 20, autoDelay);
+                Point colorButton = palette.getColorButton(BorstUtils.getClosestColor(blob.color));
+                clickColor(robot, colorButton, 20, autoDelay);
 				lastColor = blob.colorIndex;
 				actions++;
 			}
@@ -219,7 +225,6 @@ public class BobRustPainter {
 	
 	private void clickPoint(Robot robot, Point point, double delay) throws PaintingInterrupted {
 		point = transformPoint(point);
-		
 		double time = System.nanoTime() / 1000000.0;
 		
 		robot.mouseMove(point.x, point.y);
@@ -246,7 +251,7 @@ public class BobRustPainter {
 		while (maxAttempts-- > 0) {
 			clickPoint(robot, point, delay);
 			
-			/*
+/*
 			DebugUtil.debugShowImage(
 				robot.createScreenCapture(new Rectangle(
 					point.x - 20,
@@ -254,8 +259,8 @@ public class BobRustPainter {
 					40, 40
 				)),
 				1
-			);
-			*/
+			);*/
+
 			
 			// TODO: Potential bugs. Because rust uses those weird random patterns this might not work anymore :/
 			Color after    = robot.getPixelColor(point.x - 1, point.y);

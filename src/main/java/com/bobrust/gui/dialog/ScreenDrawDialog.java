@@ -3,6 +3,7 @@ package com.bobrust.gui.dialog;
 import com.bobrust.gui.ApplicationWindow;
 import com.bobrust.gui.OverlayTopPanel;
 import com.bobrust.gui.render.ShapeRender;
+import com.bobrust.robot.BobRustPalette;
 import com.bobrust.util.data.AppConstants;
 
 import javax.swing.*;
@@ -19,19 +20,28 @@ public class ScreenDrawDialog extends JDialog {
 	
 	Rectangle canvasRect = new Rectangle();
 	Rectangle imageRect = new Rectangle();
-	
+Rectangle paletteRect;
+	public void setPaletteRect(Rectangle r)
+	{
+		paletteRect=r;
+		drawDialog.setPaletteRect(r);
+	}
+	public void setPalette(BobRustPalette p)
+	{
+		drawDialog.setPalette(p);
+	}
 	public ScreenDrawDialog(ApplicationWindow parent) {
 		super(null, "BobRust - Draw", ModalityType.MODELESS);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setIconImage(AppConstants.DIALOG_ICON);
 		setUndecorated(true);
 		setBackground(new Color(0, true));
-		
+
 		this.parent = parent;
 		this.topPanel = new OverlayTopPanel();
 		this.shapeRender = new ShapeRender(2000);
 		this.drawDialog = new DrawDialog(this);
-		
+
 		setLayout(new BorderLayout());
 		topPanel.setPreferredSize(new Dimension(0, 50));
 		add(topPanel, BorderLayout.NORTH);
@@ -54,8 +64,7 @@ public class ScreenDrawDialog extends JDialog {
 		// Create local variables for user selected areas
 		canvasRect.setRect(parent.getCanvasRect());
 		imageRect.setRect(parent.getImageRect());
-		
-		// Open the draw dialog
+
 		setBounds(monitor.getBounds());
 		parent.setVisible(false);
 		setVisible(true);

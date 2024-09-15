@@ -2,6 +2,7 @@ package com.bobrust.experiment;
 
 import com.bobrust.robot.BobRustPaletteGenerator;
 import com.bobrust.robot.ButtonConfiguration;
+import com.bobrust.robot.Coordinate;
 
 import javax.swing.*;
 import java.awt.*;
@@ -125,7 +126,7 @@ public class RustLayoutV3 extends JPanel {
 			
 			try {
 				String name = field.getName();
-				var value = (ButtonConfiguration.Coordinate) field.get(config);
+				var value = (Coordinate) field.get(config);
 				
 				g.setColor(Color.red);
 				g.drawRect(value.x() - 20, value.y() - 20, 40, 40);

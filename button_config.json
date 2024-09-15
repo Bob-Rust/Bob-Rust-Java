@@ -1,0 +1,77 @@
+{
+  "clearCanvas": {
+    "x": 38,
+    "y": 79,
+    "valid": true
+  },
+  "saveToDesktop": {
+    "x": 97,
+    "y": 81,
+    "valid": true
+  },
+  "saveImage": {
+    "x": 1501,
+    "y": 932,
+    "valid": true
+  },
+  "clearRotation": {
+    "x": 257,
+    "y": 86,
+    "valid": true
+  },
+  "tool_paintBrush": {
+    "x": 1558,
+    "y": 177,
+    "valid": true
+  },
+  "brush_circle": {
+    "x": 1571,
+    "y": 245,
+    "valid": true
+  },
+  "brush_square": {
+    "x": 1558,
+    "y": 294,
+    "valid": true
+  },
+  "size_1": {
+    "x": 1568,
+    "y": 279,
+    "valid": true
+  },
+  "size_32": {
+    "x": 1667,
+    "y": 275,
+    "valid": true
+  },
+  "opacity_0": {
+    "x": 1568,
+    "y": 325,
+    "valid": true
+  },
+  "opacity_1": {
+    "x": 1665,
+    "y": 326,
+    "valid": true
+  },
+  "color_topLeft": {
+    "x": 1478,
+    "y": 403,
+    "valid": true
+  },
+  "color_botRight": {
+    "x": 1698,
+    "y": 836,
+    "valid": true
+  },
+  "focus": {
+    "x": 1419,
+    "y": 941,
+    "valid": true
+  },
+  "colorPreview": {
+    "x": 1419,
+    "y": 941,
+    "valid": true
+  }
+}

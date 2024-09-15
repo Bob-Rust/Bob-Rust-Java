@@ -30,8 +30,8 @@ public class DrawDialog extends JDialog {
 	private static final Dimension REGULAR = new Dimension(320, 200);
 	private static final Dimension MINIMIZED = new Dimension(120, 40);
 	
-	private final BobRustPalette rustPalette;
-	private final BobRustPainter rustPainter;
+	private BobRustPalette rustPalette;
+	private BobRustPainter rustPainter;
 	private final RegionSelectionDialog selectionDialog;
 	
 	private final ScreenDrawDialog parent;
@@ -49,12 +49,20 @@ public class DrawDialog extends JDialog {
 	private int drawnShapes;
 	private final BlobList previouslyUsed = new BlobList(); // We need to continue using these instructions
 	final BorstGenerator borstGenerator;
-	
+	Rectangle paletteRect ;
+	public void setPalette(BobRustPalette p)
+	{
+		rustPalette=p;
+		this.rustPainter = new BobRustPainter(rustPalette);
+	}
+	public void setPaletteRect(Rectangle r)
+	{
+		paletteRect=r;
+	}
 	public DrawDialog(ScreenDrawDialog parent) {
 		super(parent, "Draw Settings", ModalityType.APPLICATION_MODAL);
 		this.parent = parent;
-		this.rustPalette = new BobRustPalette();
-		this.rustPainter = new BobRustPainter(rustPalette);
+	;
 		this.borstGenerator = new BorstGenerator(this::onBorstData);
 		this.selectionDialog = new RegionSelectionDialog(this, false);
 		
@@ -194,13 +202,21 @@ public class DrawDialog extends JDialog {
 		});
 		rootPanel.add(colorPaletteButton);
 	}
-	
+
+
 	private void startDrawingAction(Point previous_location) {
 		parent.setAlwaysOnTop(true);
 		parent.repaint();
 		setAlwaysOnTop(true);
 		start = -1;
-		
+		//setVisible(false);
+		if(rustPalette==null)
+		{
+			rustPalette = new BobRustPalette();
+			rustPalette.setButtonConfig(parent.parent.config);
+			rustPalette.setPaletteRect(paletteRect);
+
+		}
 		Thread thread = new Thread(() -> {
 			int offsetShapes = 0;
 			try {
@@ -294,10 +310,21 @@ public class DrawDialog extends JDialog {
 		});
 		JOptionPane.showMessageDialog(this, pane, "Could not find the palette", JOptionPane.WARNING_MESSAGE);
 	}
-	
+	public static BufferedImage captureImageFromRect(Rectangle rect) {
+		try {
+			Robot robot = new Robot();
+
+			BufferedImage screenCapture = robot.createScreenCapture(rect);
+
+			return screenCapture;
+		} catch (AWTException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	private boolean findColorPalette() {
 		// Take a screenshot
-		BufferedImage screenshot = RustWindowUtil.captureScreenshot(monitor);
+		BufferedImage screenshot =captureImageFromRect(paletteRect);
 		if (screenshot == null) {
 			LOGGER.warn("Failed to take screenshot. Was null");
 			return false;
@@ -366,7 +393,11 @@ public class DrawDialog extends JDialog {
 	
 	public void openDialog(GraphicsConfiguration monitor, Point point) {
 		this.monitor = monitor;
-		
+if(rustPalette==null)
+{
+	rustPalette=parent.parent.palette;
+	//rustPalette.setButtonConfig(parent.parent.config);
+}
 		// Force the user to reset the palette
 		previousBorstModel = null;
 		rustPalette.reset();
