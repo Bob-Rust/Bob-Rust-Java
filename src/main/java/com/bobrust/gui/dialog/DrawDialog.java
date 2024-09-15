@@ -30,7 +30,7 @@ public class DrawDialog extends JDialog {
 	private static final Dimension REGULAR = new Dimension(320, 200);
 	private static final Dimension MINIMIZED = new Dimension(120, 40);
 	
-	private final BobRustPalette rustPalette;
+	public final BobRustPalette rustPalette;
 	private final BobRustPainter rustPainter;
 	private final RegionSelectionDialog selectionDialog;
 	
@@ -174,7 +174,7 @@ public class DrawDialog extends JDialog {
 		changeAreaButton.addActionListener((event) -> {
 			parent.setAlwaysOnTop(true);
 			parent.repaint();
-			parent.updateCanvasRect(selectionDialog.openDialog(monitor, false, null, parent.canvasRect).selection());
+			parent.updateCanvasRect(selectionDialog.openDialog(monitor, false, "Update canvas region and press ESC", null, parent.canvasRect).selection());
 			parent.setAlwaysOnTop(false);
 			parent.repaint();
 		});
@@ -235,6 +235,7 @@ public class DrawDialog extends JDialog {
 					LOGGER.warn("The user stopped the drawing process early");
 				}
 			} catch (PaintingInterrupted e) {
+				e.printStackTrace();
 				boolean finished = e.getInterruptType() == PaintingInterrupted.InterruptType.PaintingFinished;
 				Level level = finished
 					? Level.INFO
@@ -303,7 +304,7 @@ public class DrawDialog extends JDialog {
 			return false;
 		}
 		
-		if (!rustPalette.initWith(screenshot, monitor)) {
+		if (!rustPalette.initWith(screenshot, monitor, parent.parent.config)) {
 			LOGGER.warn("User needs to manually select the color palette");
 			return false;
 		}

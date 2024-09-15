@@ -85,7 +85,8 @@ public class PaletteButtonConfigurationTest {
 		BobRustPalette palette = new BobRustPalette();
 		for (BufferedImage image : IMAGES) {
 			GraphicsConfiguration monitor = new DummyConfiguration(0, 0, image.getWidth(), image.getHeight());
-			boolean valid = palette.initWith(image, monitor);
+			var config = BobRustPaletteGenerator.createAutomaticConfiguration(3, image);
+			boolean valid = palette.initWith(image, monitor, config);
 			
 			if (!valid) {
 				test(image, 0);

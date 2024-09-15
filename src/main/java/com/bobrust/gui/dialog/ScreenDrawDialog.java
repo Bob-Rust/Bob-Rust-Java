@@ -10,7 +10,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class ScreenDrawDialog extends JDialog {
-	private final DrawDialog drawDialog;
+	public final DrawDialog drawDialog;
 	
 	// TODO: Make these private
 	final OverlayTopPanel topPanel;
