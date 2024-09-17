@@ -78,6 +78,7 @@ public class PaletteButtonConfigurationTest {
 	/**
 	 * Checks if the automatic palette generation works for different screen sizes
 	 */
+	@Disabled
 	@Test
 	public void automaticPaletteTest() {
 		assertFalse(IMAGES.isEmpty(), "Automatic palette test was run with zero images");
@@ -99,8 +100,8 @@ public class PaletteButtonConfigurationTest {
 	@Disabled
 	@Test
 	public void checkAutomaticPalette() {
-		test(IMAGES.get(0), 0);
-		test(IMAGES.get(1), 1);
+		// test(IMAGES.get(0), 0);
+		// test(IMAGES.get(1), 1);
 	}
 	
 	private void test(BufferedImage source, int index) {

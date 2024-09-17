@@ -88,7 +88,13 @@ public class BobRustPainter {
 			clickPoint(robot, palette.getFocusPoint(), 4, 50);
 			
 			// Select first color to prevent exception
-			clickPoint(robot, palette.getColorButton(BorstUtils.getClosestColor(startBlob.color)), 4, 50);
+			Point colorPoint = palette.getColorButton(BorstUtils.getClosestColor(startBlob.color));
+			if (colorPoint != null) {
+				clickColor(robot, colorPoint, 4, 50);
+			} else {
+				LOGGER.error("Could not draw color '" + startBlob.color + "' as it does not exist in the palette");
+			}
+			
 			clickPoint(robot, palette.getSizeButton(startBlob.sizeIndex), 4, 50);
 			clickPoint(robot, palette.getAlphaButton(startBlob.alphaIndex), 4, 50);
 			clickPoint(robot, palette.getShapeButton(startBlob.shapeIndex), 4, 50);
@@ -112,9 +118,14 @@ public class BobRustPainter {
 			
 			// Change the color
 			if (lastColor != blob.colorIndex) { // Without 20 here it will not work
-				clickColor(robot, palette.getColorButton(BorstUtils.getClosestColor(blob.color)), 20, autoDelay);
-				lastColor = blob.colorIndex;
-				actions++;
+				Point colorPoint = palette.getColorButton(BorstUtils.getClosestColor(blob.color));
+				if (colorPoint != null) {
+					clickColor(robot, colorPoint, 20, autoDelay);
+					lastColor = blob.colorIndex;
+					actions++;
+				} else {
+					LOGGER.error("Could not draw color '" + blob.color + "' as it does not exist in the palette");
+				}
 			}
 			
 			// Change the alpha
@@ -164,8 +175,8 @@ public class BobRustPainter {
 	
 	private Point transformPoint(Point point) {
 		return new Point(
-			displayX + (int) ((point.x - displayX) * widthDelta),
-			displayY + (int) ((point.y - displayY) * heightDelta)
+			displayX + point.x,
+			displayY + point.y
 		);
 	}
 	

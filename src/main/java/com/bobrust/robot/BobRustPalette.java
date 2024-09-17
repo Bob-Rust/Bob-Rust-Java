@@ -38,18 +38,25 @@ public class BobRustPalette {
 		Point a = config.color_topLeft.with(monitor);
 		Point b = config.color_botRight.with(monitor);
 		
-		var rect = monitor.getBounds();
+		int width = b.x - a.x;
+		int height = b.y - a.y;
+		
+		colorMap.clear();
 		for (int x = 0; x < GRID_COLS; x++) {
 			for (int y = 0; y < GRID_ROWS; y++) {
-				int x_pos = a.x + ((b.x - a.x) * x) / (GRID_COLS - 1);
-				int y_pos = a.y + ((b.y - a.y) * y) / (GRID_ROWS - 1);
+				int x_pos = a.x + (int) (((x + 0.5) / (double) GRID_COLS) * width);
+				int y_pos = a.y + (int) (((y + 0.5) / (double) GRID_ROWS) * height);
 				
+				if(x_pos < 0 || x_pos >= screenshot.getWidth()
+				|| y_pos < 0 || y_pos >= screenshot.getHeight()) {
+					// Out of bounds
+					return false;
+				}
+
 				int rgb = screenshot.getRGB(x_pos, y_pos);
 				BorstColor color = BorstUtils.getClosestColor(rgb);
 				
 				Point localPoint = new Point(x_pos, y_pos);
-				localPoint.translate(rect.x, rect.y);
-				
 				colorMap.putIfAbsent(color, localPoint);
 			}
 		}

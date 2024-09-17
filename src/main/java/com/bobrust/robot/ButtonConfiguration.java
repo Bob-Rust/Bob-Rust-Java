@@ -71,6 +71,8 @@ public class ButtonConfiguration {
 	 * Coordinate (x,y) that should be expanded to the screen size used
 	 */
 	public record Coordinate(int x, int y, boolean valid) {
+		public static final Coordinate INVALID = new Coordinate(0, 0, false);
+		
 		public Coordinate(int x, int y) {
 			this(x, y, true);
 		}

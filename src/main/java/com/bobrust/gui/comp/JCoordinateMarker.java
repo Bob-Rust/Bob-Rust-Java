@@ -1,7 +1,5 @@
 package com.bobrust.gui.comp;
 
-import com.bobrust.robot.ButtonConfiguration;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -57,15 +55,28 @@ public class JCoordinateMarker extends JPanel implements MouseListener, MouseMot
 		}
 	}
 
-	public ButtonConfiguration.Coordinate getCoordinate() {
+	public Point getSelectedPoint() {
 		Point point = getLocation();
 		int x = point.x + HANDLE_SIZE / 2;
 		int y = point.y + HANDLE_SIZE / 2;
-		return new ButtonConfiguration.Coordinate(x, y);
+		
+		// TODO: Don't make these values hardcoded
+		x += 10;
+		y += 50;
+		
+		return new Point(x, y);
 	}
 
-	public void setPosition(Point position) {
-		setBounds(position.x - HANDLE_SIZE / 2, position.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);
+	public void setSelectedPoint(Point position) {
+		int x = position.x - HANDLE_SIZE / 2;
+		int y = position.y - HANDLE_SIZE / 2;
+		
+		// TODO: Don't make these values hardcoded
+		x -= 10;
+		y -= 50;
+
+		setBounds(x, y, HANDLE_SIZE, HANDLE_SIZE);
+		revalidateSelection();
 		repaint();
 	}
 
@@ -98,6 +109,10 @@ public class JCoordinateMarker extends JPanel implements MouseListener, MouseMot
 		
 		// Make sure we fit the parent element
 		Rectangle parentBounds = getParent().getBounds();
+		if (parentBounds.width == 0 || parentBounds.height == 0) {
+			return;
+		}
+
 		parentBounds.setLocation(0, 0);
 		
 		Point location = new Point(getLocation());

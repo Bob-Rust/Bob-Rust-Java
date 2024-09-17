@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Objects;
 
 public class JResizeComponent extends JPanel implements MouseListener, MouseMotionListener {
 	private static final int BORDER = 24;
@@ -24,12 +25,23 @@ public class JResizeComponent extends JPanel implements MouseListener, MouseMoti
 	private Point mouseStart = new Point();
 	public Rectangle previousBounds = new Rectangle();
 	
+	public enum RenderType {
+		BASIC,
+		DOTTED_4_16 // Used for palette selection
+	}
+	
+	
+	private RenderType renderType = RenderType.BASIC;
 	
 	public JResizeComponent() {
 		setOpaque(false);
 		setBorder(new EmptyBorder(BORDER, BORDER, BORDER, BORDER));
 		addMouseListener(this);
 		addMouseMotionListener(this);
+	}
+	
+	public void setRenderType(RenderType renderType) {
+		this.renderType = Objects.requireNonNullElse(renderType, RenderType.BASIC);
 	}
 	
 	@Override
@@ -55,6 +67,36 @@ public class JResizeComponent extends JPanel implements MouseListener, MouseMoti
 				g.drawImage(localImage, BORDER + 1, BORDER + 1, width, height, null);
 			}
 		}
+		
+		if (renderType == RenderType.DOTTED_4_16) {
+			int width = getWidth() - MIN_SIZE - 1;
+			int height = getHeight() - MIN_SIZE - 1;
+			int x = BORDER + 1;
+			int y = BORDER + 1;
+			
+			final int sizeA = 2;
+			final int sizeB = 3;
+			
+			for (int xp = 0; xp < 4; xp++) {
+				for (int yp = 0; yp < 16; yp++) {
+					int x_point = x + (int) (((xp + 0.5) / 4.0) * width);
+					int y_point = y + (int) (((yp + 0.5) / 16.0) * height);
+					g.setColor(Color.BLACK);
+					g.fillRect(x_point - sizeB, y_point - sizeB, sizeB + sizeB, sizeB + sizeB);
+					g.setColor(Color.WHITE);
+					g.fillRect(x_point - sizeA, y_point - sizeA, sizeA + sizeA, sizeA + sizeA);
+				}
+			}
+
+			if (width > 0 && height > 0) {
+				g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER).derive(0.5f));
+				g.drawImage(localImage, BORDER + 1, BORDER + 1, width, height, null);
+			}
+		}
+		
+		// Tmp fix
+		revalidateSelection();
 	}
 	
 	private void drawLines(Graphics2D g, boolean back) {
@@ -257,6 +299,11 @@ public class JResizeComponent extends JPanel implements MouseListener, MouseMoti
 		
 		// Make sure we fit the parent element
 		Rectangle parentBounds = getParent().getBounds();
+		if (parentBounds.width == 0 || parentBounds.height == 0) {
+			// Parent has not been initialized yet
+			return;
+		}
+
 		parentBounds.setLocation(0, 0);
 		
 		Rectangle area = getBounds();

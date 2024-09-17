@@ -1,5 +1,6 @@
 package com.bobrust.gui;
 
+import com.bobrust.gui.comp.JResizeComponent;
 import com.bobrust.gui.comp.JToolbarButton;
 import com.bobrust.gui.dialog.*;
 import com.bobrust.robot.ButtonConfiguration;
@@ -48,7 +49,6 @@ public class ApplicationWindow extends JDialog {
 	private GraphicsConfiguration monitor;
 	private final Rectangle canvasRect = new Rectangle(-1, -1);
 	private final Rectangle imageRect = new Rectangle(-1, -1);
-	private final Rectangle paletteRect = new Rectangle(-1, -1);
 	private Image drawImage;
 	
 	// State Toolbar Buttons
@@ -90,7 +90,7 @@ public class ApplicationWindow extends JDialog {
 		setContentPane(panel);
 		
 		// If we are running from an IDE then we want to add some debug stuff
-		if (AppConstants.IS_IDE && AppConstants.DEBUG_AUTO_IMAGE ) {
+		if (AppConstants.IS_IDE && AppConstants.DEBUG_AUTO_IMAGE) {
 			canvasAreaButton.setEnabled(true);
 			imageAreaButton.setEnabled(true);
 			drawButton.setEnabled(true);
@@ -108,9 +108,6 @@ public class ApplicationWindow extends JDialog {
 				LOGGER.error("Could not find image", e);
 			}
 		}
-
-		// Load button configuration
-		loadButtonConfiguration();
 	}
 	
 	private JPanel createToolbar() {
@@ -146,8 +143,9 @@ public class ApplicationWindow extends JDialog {
 		return toolbarPanel;
 	}
 
-	Point[] initialPositions;
 	private void setupButtonRegions() {
+		loadButtonConfiguration();
+		
 		String[] steps = {
 			"Select the Save Button",
 			"Select the Brush Circle",
@@ -157,10 +155,20 @@ public class ApplicationWindow extends JDialog {
 			"Select the Opacity Bar End",
 			"Select Color Preview"
 		};
-
+		
+		// Create initial button config
 		Coordinate[] coords = new Coordinate[steps.length];
+		coords[0] = config.saveImage;
+		coords[1] = config.brush_circle;
+		coords[2] = config.size_1;
+		coords[3] = config.size_32;
+		coords[4] = config.opacity_0;
+		coords[5] = config.opacity_1;
+		coords[6] = config.colorPreview;
+
 		for (int i = 0; i < steps.length; i++) {
-			RegionSelectionDialog.Region region = regionSelectionDialog.openArrowMarker(monitor, false, steps[i] + " or press ESC", initialPositions[i]);
+			RegionSelectionDialog.Region region = regionSelectionDialog.openArrowMarker(
+				monitor, false, steps[i] + " or press ESC", coords[i]);
 			Rectangle rect = region.selection();
 			coords[i] = new Coordinate(rect.x, rect.y);
 
@@ -176,16 +184,25 @@ public class ApplicationWindow extends JDialog {
 		config.opacity_1    = coords[5];
 		config.colorPreview = coords[6];
 		config.focus        = coords[6];
+		selectPaletteRegion();
+
 		saveButtonConfiguration();
 		loadButtonConfiguration();
-		
-		selectPaletteRegion();
 	}
 
 	private void selectPaletteRegion() {
-		var region = regionSelectionDialog.openDialog(monitor, false, "Select palette region and press ESC", null, paletteRect);
+		Rectangle paletteRect = new Rectangle(
+			config.color_topLeft.x(),
+			config.color_topLeft.y(),
+			config.color_botRight.x() - config.color_topLeft.x(),
+			config.color_botRight.y() - config.color_topLeft.y()
+		);
+		var region = regionSelectionDialog.openDialog(
+			monitor, false, JResizeComponent.RenderType.DOTTED_4_16, "Select palette region and press ESC", null, paletteRect);
+		var selection = region.selection();
 		monitor = region.monitor();
-		paletteRect.setBounds(region.selection());
+		config.color_topLeft = ButtonConfiguration.Coordinate.from(selection.x, selection.y);
+		config.color_botRight = ButtonConfiguration.Coordinate.from(selection.x + selection.width, selection.y + selection.height);
 		imageAreaButton.setEnabled(true);
 
 		if (region.hasChanged()) {
@@ -196,8 +213,8 @@ public class ApplicationWindow extends JDialog {
 				region.selection().width,
 				region.selection().height
 			);
-
-			BufferedImage screenshot = RustWindowUtil.captureScreenshot(monitor);
+			
+			BufferedImage screenshot = RustWindowUtil.captureScreenshotWithScale(monitor);
 			if (screenshot == null) {
 				LOGGER.error("Could not capture screenshot");
 				return;
@@ -266,7 +283,8 @@ public class ApplicationWindow extends JDialog {
 	}
 	
 	private void selectCanvasRegion() {
-		var region = regionSelectionDialog.openDialog(null, true, "Select canvas region and press ESC", null, canvasRect);
+		var region = regionSelectionDialog.openDialog(
+			null, true, JResizeComponent.RenderType.BASIC, "Select canvas region and press ESC", null, canvasRect);
 		monitor = region.monitor();
 		canvasRect.setBounds(region.selection());
 		imageAreaButton.setEnabled(true);
@@ -283,7 +301,8 @@ public class ApplicationWindow extends JDialog {
 	}
 	
 	private void selectImageRegion() {
-		var region = regionSelectionDialog.openDialog(monitor, false, "Select image region and press ESC", drawImage, imageRect);
+		var region = regionSelectionDialog.openDialog(
+			monitor, false, JResizeComponent.RenderType.BASIC, "Select image region and press ESC", drawImage, imageRect);
 		imageRect.setBounds(region.selection());
 		drawButton.setEnabled(true);
 		
@@ -373,50 +392,6 @@ public class ApplicationWindow extends JDialog {
 		return imageRect;
 	}
 
-	private void loadButtonConfiguration() {
-		File configFile = new File(CONFIG_FILE_PATH);
-		if (configFile.exists()) {
-			try (FileReader reader = new FileReader(configFile)) {
-				config.update(gson.fromJson(reader, ButtonConfiguration.class));
-				LOGGER.info("Loaded button configuration from {}", CONFIG_FILE_PATH);
-
-				applyLoadedConfiguration();
-			} catch (IOException e) {
-				LOGGER.error("Failed to load button configuration", e);
-			}
-		} else {
-			LOGGER.info("Configuration file not found, creating new one with default values.");
-			saveButtonConfiguration();
-		}
-	}
-
-	private void applyLoadedConfiguration() {
-		if (config.color_topLeft != null && config.color_botRight != null) {
-			paletteRect.setBounds(
-				config.color_topLeft.x(),
-				config.color_topLeft.y(),
-				config.color_botRight.x() - config.color_topLeft.x(),
-				config.color_botRight.y() - config.color_topLeft.y()
-			);
-			LOGGER.info("Applied paletteRect from loaded configuration: {}", paletteRect);
-		}
-
-		// TODO: Use monitor by default
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		int screenWidth = screenSize.width;
-		int screenHeight = screenSize.height;
-		initialPositions = new Point[]{
-			config.saveImage != null ? new Point(config.saveImage.x(), config.saveImage.y()) : new Point((int)(screenWidth * 0.2), screenHeight / 2),
-			config.brush_circle != null ? new Point(config.brush_circle.x(), config.brush_circle.y()) : new Point((int)(screenWidth * 0.2), screenHeight / 2),
-			config.size_1 != null ? new Point(config.size_1.x(), config.size_1.y()) : new Point((int)(screenWidth * 0.2), screenHeight / 2),
-			config.size_32 != null ? new Point(config.size_32.x(), config.size_32.y()) : new Point((int)(screenWidth * 0.2), screenHeight / 2),
-			config.opacity_0 != null ? new Point(config.opacity_0.x(), config.opacity_0.y()) : new Point((int)(screenWidth * 0.2), screenHeight / 2),
-			config.opacity_1 != null ? new Point(config.opacity_1.x(), config.opacity_1.y()) : new Point((int)(screenWidth * 0.2), screenHeight / 2),
-			config.focus != null ? new Point(config.colorPreview.x(), config.colorPreview.y()) : new Point((int)(screenWidth * 0.2), screenHeight / 2)
-		};
-	}
-
-
 	private void saveButtonConfiguration() {
 		try (FileWriter writer = new FileWriter(CONFIG_FILE_PATH)) {
 			gson.toJson(config, writer);
@@ -424,5 +399,40 @@ public class ApplicationWindow extends JDialog {
 		} catch (IOException e) {
 			LOGGER.error("Failed to save button configuration", e);
 		}
+	}
+	
+	private void loadButtonConfiguration() {
+		File configFile = new File(CONFIG_FILE_PATH);
+		if (configFile.exists()) {
+			try (FileReader reader = new FileReader(configFile)) {
+				config.update(gson.fromJson(reader, ButtonConfiguration.class));
+				LOGGER.info("Loaded button configuration from {}", CONFIG_FILE_PATH);
+			} catch (IOException e) {
+				LOGGER.error("Failed to load button configuration", e);
+			}
+		} else {
+			LOGGER.info("Configuration file not found, creating new one with default values.");
+			config.update(new ButtonConfiguration()); // Clear internal configuration
+			saveButtonConfiguration();
+		}
+		
+		GraphicsConfiguration mon = monitor;
+		if (mon == null) {
+			mon = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+		}
+		
+		// Set default configuration
+		double deltaWidth = (double) mon.getBounds().width / 1920.0;
+		double deltaHeight = (double) mon.getBounds().height / 1080.0;
+		if (!config.saveImage.valid()) config.saveImage           = new ButtonConfiguration.Coordinate((int) (deltaWidth *  251), (int) (deltaHeight *  66));
+		if (!config.brush_circle.valid()) config.brush_circle     = new ButtonConfiguration.Coordinate((int) (deltaWidth * 1690), (int) (deltaHeight * 232));
+		if (!config.size_1.valid()) config.size_1                 = new ButtonConfiguration.Coordinate((int) (deltaWidth * 1687), (int) (deltaHeight * 285));
+		if (!config.size_32.valid()) config.size_32               = new ButtonConfiguration.Coordinate((int) (deltaWidth * 1832), (int) (deltaHeight * 283));
+		if (!config.opacity_0.valid()) config.opacity_0           = new ButtonConfiguration.Coordinate((int) (deltaWidth * 1687), (int) (deltaHeight * 367));
+		if (!config.opacity_1.valid()) config.opacity_1           = new ButtonConfiguration.Coordinate((int) (deltaWidth * 1832), (int) (deltaHeight * 368));
+		if (!config.color_topLeft.valid()) config.color_topLeft   = new ButtonConfiguration.Coordinate((int) (deltaWidth * 1571), (int) (deltaHeight * 469));
+		if (!config.color_botRight.valid()) config.color_botRight = new ButtonConfiguration.Coordinate((int) (deltaWidth * 1885), (int) (deltaHeight * 902));
+		if (!config.focus.valid()) config.focus                   = new ButtonConfiguration.Coordinate((int) (deltaWidth * 1446), (int) (deltaHeight * 975));
+		if (!config.colorPreview.valid()) config.colorPreview     = new ButtonConfiguration.Coordinate((int) (deltaWidth * 1446), (int) (deltaHeight * 975));
 	}
 }

@@ -129,20 +129,21 @@ public class RegionSelectionDialog extends JDialog {
 		return graphicsEnvironment.getDefaultScreenDevice().getDefaultConfiguration();
 	}
 
-	public Region openArrowMarker(GraphicsConfiguration monitor, boolean allowChangingMonitor, String topText, Point position) {
+	public Region openArrowMarker(GraphicsConfiguration monitor, boolean allowChangingMonitor, String topText, ButtonConfiguration.Coordinate position) {
 		this.topText.setText(topText);
 
-		if (position == null) {
+		Point point = new Point(position.x(), position.y());
+		if (!position.valid()) {
 			GraphicsConfiguration config = monitor != null ? monitor : getGraphicsConfiguration(getLocation());
 			int screenWidth = config.getBounds().width;
 			int screenHeight = config.getBounds().height;
 
 			int xCoordinate = (int) (screenWidth * 0.8); // 80% from the left
 			int yCoordinate = screenHeight / 2;
-			position = new Point(xCoordinate, yCoordinate);
+			point = new Point(xCoordinate, yCoordinate);
 		}
 
-		coordinateMarker.setPosition(position);
+		coordinateMarker.setSelectedPoint(point);
 
 		if (allowChangingMonitor) {
 			selectMonitorTimer.start();
@@ -175,8 +176,8 @@ public class RegionSelectionDialog extends JDialog {
 				config = nextConfig;
 			}
 
-			ButtonConfiguration.Coordinate selectedCoordinate = coordinateMarker.getCoordinate();
-			Rectangle selectedRectangle = new Rectangle(selectedCoordinate.x(), selectedCoordinate.y(), 1, 1);
+			Point selectedPoint = coordinateMarker.getSelectedPoint();
+			Rectangle selectedRectangle = new Rectangle(selectedPoint.x, selectedPoint.y, 1, 1);
 
 			return new Region(config, selectedRectangle, hasConfigChanged);
 		} finally {
@@ -184,7 +185,7 @@ public class RegionSelectionDialog extends JDialog {
 		}
 	}
 
-	public Region openDialog(GraphicsConfiguration monitor, boolean allowChangingMonitor, String topText, Image displayedImage, Rectangle rect) {
+	public Region openDialog(GraphicsConfiguration monitor, boolean allowChangingMonitor, JResizeComponent.RenderType renderType, String topText, Image displayedImage, Rectangle rect) {
 		this.topText.setText(topText);
 
 		if (allowChangingMonitor) {
@@ -205,9 +206,11 @@ public class RegionSelectionDialog extends JDialog {
 				rect.width = 300;
 				rect.height = 300;
 			}
+			resizeComponent.setRenderType(renderType);
 			resizeComponent.setUnfocused();
 			resizeComponent.setImage(displayedImage);
 			resizeComponent.setSelectedRectangle(rect);
+			resizeComponent.revalidateSelection();
 			resizeComponent.setVisible(true);
 			coordinateMarker.setVisible(false);
 			// This blocks until the monitor has been selected

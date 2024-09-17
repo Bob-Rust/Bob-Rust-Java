@@ -16,6 +16,9 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.Dialog.ModalityType;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
@@ -100,6 +103,13 @@ public class SettingsDialog extends AbstractSettingsDialog {
 		
 		addButtonField(debugPane, Type.DEBUG_OPENCONFIGDIRECTORY_LABEL, null, Type.DEBUG_OPENCONFIGDIRECTORY_BUTTON, e -> {
 			UrlUtils.openDirectory(new File("").getAbsoluteFile());
+		});
+		addButtonField(debugPane, Type.DEBUG_CLEARBUTTONCONFIG_LABEL, null, Type.DEBUG_CLEARBUTTONCONFIG_BUTTON, e -> {
+			try {
+				Files.deleteIfExists(Path.of("button_config.json"));
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
 		});
 	}
 	
