@@ -38,6 +38,13 @@ public class RustWindowUtil {
 		JOptionPane.showMessageDialog(component, message, title, JOptionPane.WARNING_MESSAGE);
 	}
 	
+	public static boolean showConfirmDialog(String message, String title) {
+		JFrame frame = getDisposableFrame();
+		int result = JOptionPane.showConfirmDialog(frame, message, title, JOptionPane.OK_CANCEL_OPTION);
+		frame.dispose();;
+		return result == JOptionPane.OK_OPTION;
+	}
+	
 	public static BufferedImage captureScreenshot(GraphicsConfiguration gc) {
 		GraphicsDevice device = gc.getDevice();
 		int screenWidth = device.getDisplayMode().getWidth();
@@ -48,6 +55,19 @@ public class RustWindowUtil {
 			
 			return (BufferedImage) robot.createMultiResolutionScreenCapture(gc.getBounds())
 				.getResolutionVariant(screenWidth, screenHeight);
+		} catch (AWTException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	public static BufferedImage captureScreenshotWithScale(GraphicsConfiguration gc) {
+		GraphicsDevice device = gc.getDevice();
+		
+		try {
+			Robot robot = new Robot(device);
+			return robot.createScreenCapture(gc.getBounds());
 		} catch (AWTException e) {
 			e.printStackTrace();
 		}

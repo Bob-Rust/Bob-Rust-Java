@@ -41,6 +41,8 @@ public class RustUI {
 		
 		DEBUG_OPENCONFIGDIRECTORY_LABEL("Open config directory"),
 		DEBUG_OPENCONFIGDIRECTORY_BUTTON("Config directory"),
+		DEBUG_CLEARBUTTONCONFIG_LABEL("Clear button configuration"),
+		DEBUG_CLEARBUTTONCONFIG_BUTTON("Clear buttons"),
 		
 		EDITOR_CALLBACKINTERVAL_LABEL("Callback Interval"),
 		EDITOR_CALLBACKINTERVAL_TOOLTIP("The amount of shapes to generate before updating the screen"),

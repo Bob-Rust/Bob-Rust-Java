@@ -6,6 +6,7 @@ import com.bobrust.generator.Model;
 import com.bobrust.generator.sorter.BlobList;
 import com.bobrust.generator.sorter.BorstSorter;
 import com.bobrust.gui.comp.JIntegerField;
+import com.bobrust.gui.comp.JResizeComponent;
 import com.bobrust.robot.BobRustPainter;
 import com.bobrust.robot.BobRustPalette;
 import com.bobrust.robot.error.PaintingInterrupted;
@@ -30,7 +31,7 @@ public class DrawDialog extends JDialog {
 	private static final Dimension REGULAR = new Dimension(320, 200);
 	private static final Dimension MINIMIZED = new Dimension(120, 40);
 	
-	private final BobRustPalette rustPalette;
+	public final BobRustPalette rustPalette;
 	private final BobRustPainter rustPainter;
 	private final RegionSelectionDialog selectionDialog;
 	
@@ -174,7 +175,8 @@ public class DrawDialog extends JDialog {
 		changeAreaButton.addActionListener((event) -> {
 			parent.setAlwaysOnTop(true);
 			parent.repaint();
-			parent.updateCanvasRect(selectionDialog.openDialog(monitor, false, null, parent.canvasRect).selection());
+			parent.updateCanvasRect(selectionDialog.openDialog(
+				monitor, false, JResizeComponent.RenderType.BASIC, "Update canvas region and press ESC", null, parent.canvasRect).selection());
 			parent.setAlwaysOnTop(false);
 			parent.repaint();
 		});
@@ -235,6 +237,7 @@ public class DrawDialog extends JDialog {
 					LOGGER.warn("The user stopped the drawing process early");
 				}
 			} catch (PaintingInterrupted e) {
+				e.printStackTrace();
 				boolean finished = e.getInterruptType() == PaintingInterrupted.InterruptType.PaintingFinished;
 				Level level = finished
 					? Level.INFO
@@ -297,15 +300,22 @@ public class DrawDialog extends JDialog {
 	
 	private boolean findColorPalette() {
 		// Take a screenshot
-		BufferedImage screenshot = RustWindowUtil.captureScreenshot(monitor);
+		BufferedImage screenshot = RustWindowUtil.captureScreenshotWithScale(monitor);
 		if (screenshot == null) {
 			LOGGER.warn("Failed to take screenshot. Was null");
 			return false;
 		}
 		
-		if (!rustPalette.initWith(screenshot, monitor)) {
-			LOGGER.warn("User needs to manually select the color palette");
-			return false;
+		if (!rustPalette.initWith(screenshot, monitor, parent.parent.config)) {
+			if (!RustWindowUtil.showConfirmDialog(
+				"Could not find color panel, do you still wish to proceed",
+				"Could not find color panel"))  {
+				LOGGER.warn("User stopped the drawing because color panel was not found");
+				return false;
+			} else {
+				LOGGER.warn("User allowed drawing even when color panel was not found");
+				return true;
+			}
 		}
 		
 		LOGGER.info("Found the color palette");

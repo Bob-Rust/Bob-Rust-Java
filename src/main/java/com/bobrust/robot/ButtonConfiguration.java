@@ -3,6 +3,7 @@ package com.bobrust.robot;
 import com.google.gson.*;
 
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * A class containing all button configuration data needed to draw
@@ -44,9 +45,34 @@ public class ButtonConfiguration {
 	public Coordinate colorPreview       = DEFAULT;
 	
 	/**
+	 * Update this configuration with values
+	 */
+	public void update(ButtonConfiguration config) {
+		Objects.requireNonNull(config, "ButtonConfiguration was updated with a null value");
+		
+		this.clearCanvas        = Objects.requireNonNullElse(config.clearCanvas,     DEFAULT);
+		this.saveToDesktop      = Objects.requireNonNullElse(config.saveToDesktop,   DEFAULT);
+		this.saveImage          = Objects.requireNonNullElse(config.saveImage,       DEFAULT);
+		this.clearRotation      = Objects.requireNonNullElse(config.clearRotation,   DEFAULT);
+		this.tool_paintBrush    = Objects.requireNonNullElse(config.tool_paintBrush, DEFAULT);
+		this.brush_circle       = Objects.requireNonNullElse(config.brush_circle,    DEFAULT);
+		this.brush_square       = Objects.requireNonNullElse(config.brush_square,    DEFAULT);
+		this.size_1             = Objects.requireNonNullElse(config.size_1,          DEFAULT);
+		this.size_32            = Objects.requireNonNullElse(config.size_32,         DEFAULT);
+		this.opacity_0          = Objects.requireNonNullElse(config.opacity_0,       DEFAULT);
+		this.opacity_1          = Objects.requireNonNullElse(config.opacity_1,       DEFAULT);
+		this.color_topLeft      = Objects.requireNonNullElse(config.color_topLeft,   DEFAULT);
+		this.color_botRight     = Objects.requireNonNullElse(config.color_botRight,  DEFAULT);
+		this.focus              = Objects.requireNonNullElse(config.focus,           DEFAULT);
+		this.colorPreview       = Objects.requireNonNullElse(config.colorPreview,    DEFAULT);
+	}
+	
+	/**
 	 * Coordinate (x,y) that should be expanded to the screen size used
 	 */
 	public record Coordinate(int x, int y, boolean valid) {
+		public static final Coordinate INVALID = new Coordinate(0, 0, false);
+		
 		public Coordinate(int x, int y) {
 			this(x, y, true);
 		}

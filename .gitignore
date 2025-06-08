@@ -24,3 +24,4 @@ bin/
 # project
 bobrust.properties
 hs_err_pid*.log
+button_config.json

@@ -17,76 +17,61 @@ import com.bobrust.generator.BorstUtils;
  */
 public class BobRustPalette {
 	private static final Logger LOGGER = LogManager.getLogger(BobRustPalette.class);
+	private final static int GRID_ROWS = 16;  // 16 rows
+	private final static int GRID_COLS = 4;   // 4 columns
+
 	private final Map<BorstColor, Point> colorMap;
 	private Map<BorstColor, Point> colorMapCopy;
 	
 	// Button configuration map
 	private GraphicsConfiguration monitor;
 	private ButtonConfiguration buttonConfig;
-	
+
 	public BobRustPalette() {
-		colorMap = new HashMap<>();
+		this.colorMap = new HashMap<>();
 	}
-	
-	public synchronized boolean initWith(BufferedImage screenshot, GraphicsConfiguration monitor) {
+
+	public synchronized boolean initWith(BufferedImage screenshot, GraphicsConfiguration monitor, ButtonConfiguration config) {
 		this.monitor = Objects.requireNonNull(monitor);
-		this.buttonConfig = BobRustPaletteGenerator.createAutomaticConfiguration(3, screenshot);
+		this.buttonConfig = Objects.requireNonNull(config);
 		
-		Point a = this.buttonConfig.color_topLeft.with(monitor);
-		Point b = this.buttonConfig.color_botRight.with(monitor);
+		Point a = config.color_topLeft.with(monitor);
+		Point b = config.color_botRight.with(monitor);
 		
-		var rect = monitor.getBounds();
-		final int color_width  = 4;
-		final int color_height = 16;
-		for (int x = 0; x < color_width; x++) {
-			for (int y = 0; y < color_height; y++) {
-				int x_pos = a.x + ((b.x - a.x) * x) / (color_width - 1);
-				int y_pos = a.y + ((b.y - a.y) * y) / (color_height - 1);
+		int width = b.x - a.x;
+		int height = b.y - a.y;
+		
+		colorMap.clear();
+		for (int x = 0; x < GRID_COLS; x++) {
+			for (int y = 0; y < GRID_ROWS; y++) {
+				int x_pos = a.x + (int) (((x + 0.5) / (double) GRID_COLS) * width);
+				int y_pos = a.y + (int) (((y + 0.5) / (double) GRID_ROWS) * height);
 				
+				if(x_pos < 0 || x_pos >= screenshot.getWidth()
+				|| y_pos < 0 || y_pos >= screenshot.getHeight()) {
+					// Out of bounds
+					return false;
+				}
+
 				int rgb = screenshot.getRGB(x_pos, y_pos);
 				BorstColor color = BorstUtils.getClosestColor(rgb);
 				
 				Point localPoint = new Point(x_pos, y_pos);
-				localPoint.translate(rect.x, rect.y);
-				
 				colorMap.putIfAbsent(color, localPoint);
 			}
 		}
-		
-		/*
-		{
-			var image = screenshot.getSubimage(a.x, a.y, b.x - a.x, b.y - a.y);
-			Graphics2D g = image.createGraphics();
-			g.drawImage(image, 0, 0, null);
-			g.setColor(Color.white);
-			for (Map.Entry<BorstColor, Point> entry : colorMap.entrySet()) {
-				Point point = entry.getValue();
-				Point sc = new Point(point.x, point.y);
-				sc.translate(-rect.x, -rect.y);
-				g.drawOval(sc.x - 15, sc.y - 7, 30, 15);
-			}
-			g.dispose();
-			
-			javax.swing.JOptionPane.showConfirmDialog(
-				null,
-				new javax.swing.JLabel(new javax.swing.ImageIcon(image)),
-				"Debug Image Palette",
-				javax.swing.JOptionPane.OK_CANCEL_OPTION,
-				javax.swing.JOptionPane.PLAIN_MESSAGE
-			);
-		}
-		*/
-		
+
+		// Check if all colors were found
 		for (BorstColor color : BorstUtils.COLORS) {
 			if (!colorMap.containsKey(color)) {
 				LOGGER.warn("Could not find all colors in the color palette. Found {}/{} colors", colorMap.size(), BorstUtils.COLORS.length);
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	@SuppressWarnings("unused")
 	private void debugGenerateColorMap(Set<Integer> colors) {
 		StringBuilder sb = new StringBuilder();
@@ -96,64 +81,63 @@ public class BobRustPalette {
 			int g = (rgb >>  8) & 0xff;
 			int b = (rgb      ) & 0xff;
 			sb.append("    new BorstColor(").append(r)
-			  	.append(", ").append(g).append(", ").append(b)
+				.append(", ").append(g).append(", ").append(b)
 				.append("),\n");
 		}
 		sb.append("};");
 		LOGGER.info(sb);
 	}
-	
+
 	public Map<BorstColor, Point> getColorMap() {
 		return colorMapCopy;
 	}
-	
+
 	public void reset() {
 		colorMap.clear();
 		colorMapCopy = null;
 	}
-	
+
 	public Point getColorPreview() {
 		return buttonConfig.colorPreview.with(monitor);
 	}
-	
+
 	public Point getFocusPoint() {
 		return buttonConfig.focus.with(monitor);
 	}
-	
+
 	public Point getClearButton() {
 		return buttonConfig.clearCanvas.with(monitor);
 	}
-	
+
 	public Point getSaveButton() {
 		return buttonConfig.saveImage.with(monitor);
 	}
-	
+
 	public Point getAlphaButton(int index) {
 		Point a = buttonConfig.opacity_0.with(monitor);
 		Point b = buttonConfig.opacity_1.with(monitor);
-		
+
 		// 256 on this span
 		double step = (b.x - a.x) / 256.0;
-		
+
 		// TODO: Check if the opacity is the same as in the precomputed array
 		return new Point(
 			a.x + (int) (step * BorstUtils.ALPHAS[index]),
 			a.y
 		);
 	}
-	
+
 	public Point getSizeButton(int index) {
 		Point a = buttonConfig.size_1.with(monitor);
 		Point b = buttonConfig.size_32.with(monitor);
-		
-		// TODO: Check if the size is the same as the precomputed array
-		double step = (b.x - a.x) / (double) (BorstUtils.SIZES.length - 1);
+
+		int x_pos = a.x + (int)((b.x - a.x) * (BorstUtils.SIZES[index] / 100.0));
 		return new Point(
-			a.x + (int) (step * index),
+			x_pos,
 			a.y
 		);
 	}
-	
+
 	public Point getShapeButton(int index) {
 		return switch (index) {
 			case AppConstants.CIRCLE_SHAPE -> buttonConfig.brush_circle.with(monitor);
@@ -161,7 +145,7 @@ public class BobRustPalette {
 			default -> throw new RuntimeException("Invalid shape button index = " + index);
 		};
 	}
-	
+
 	public Point getColorButton(BorstColor color) {
 		return colorMap.get(color);
 	}

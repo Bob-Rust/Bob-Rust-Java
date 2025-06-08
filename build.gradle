@@ -20,7 +20,7 @@ project.ext {
     gsonVersion  = '2.10.1'
 
     majorVersion = '0'
-    minorVersion = '5'
+    minorVersion = '6'
 }
 
 version = "${majorVersion}.${minorVersion}.${getBuildId()}" + ""
