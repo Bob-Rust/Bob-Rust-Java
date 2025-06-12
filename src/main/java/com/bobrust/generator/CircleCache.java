@@ -20,10 +20,10 @@ class CircleCache {
 	// Default circle values
     public static final int DEFAULT_CIRCLE_0_VALUE = 3;
     public static final int DEFAULT_CIRCLE_1_VALUE = 6;
-    public static final int DEFAULT_CIRCLE_2_VALUE = 12;
-    public static final int DEFAULT_CIRCLE_3_VALUE = 25;
-    public static final int DEFAULT_CIRCLE_4_VALUE = 50;
-    public static final int DEFAULT_CIRCLE_5_VALUE = 100;
+    public static final int DEFAULT_CIRCLE_2_VALUE = 11; // Should be 12
+    public static final int DEFAULT_CIRCLE_3_VALUE = 21; // Should be 25
+    public static final int DEFAULT_CIRCLE_4_VALUE = 43; // Should be 50
+    public static final int DEFAULT_CIRCLE_5_VALUE = 88; // Should be 100
 
     static {
 		CIRCLE_0 = generateCircle(DEFAULT_CIRCLE_0_VALUE);
