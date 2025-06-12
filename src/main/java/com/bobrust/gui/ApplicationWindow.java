@@ -206,6 +206,8 @@ public class ApplicationWindow extends JDialog {
 		imageAreaButton.setEnabled(true);
 
 		if (region.hasChanged()) {
+			paletteRect.setRect(selection);
+
 			LOGGER.info("Selected palette region [ monitor={}, size=[x={}, y={}, width={}, height={}] ]",
 				region.monitor().getDevice(),
 				region.selection().x,
