@@ -157,7 +157,7 @@ public class BobRustPainter {
 			lastPoint.setLocation(sx, sy);
 			clickPointScaledDrawColor(robot, lastPoint, autoDelay);
 			
-			if ((i % autosaveInterval) == 0) {
+			if (i > 0 && (i % autosaveInterval) == 0) {
 				clickPoint(robot, palette.getSaveButton(), autoDelay);
 				actions++;
 			}
@@ -190,65 +190,71 @@ public class BobRustPainter {
 	 * Click a point on the screen with a scaled point
 	 */
 	private void clickPointScaledDrawColor(Robot robot, Point point, double delay) throws PaintingInterrupted {
-		double time = System.nanoTime() / 1000000.0;
-		
 		robot.mouseMove(point.x, point.y);
-		addTimeDelay(time + delay);
-		
+		addTimeDelay(System.nanoTime() / 1000000.0 + delay);
+
 		Color before = robot.getPixelColor(point.x, point.y);
-		
+
 		int maxAttempts = 3;
 		do {
+			double retryTime = System.nanoTime() / 1000000.0;
+
 			if (ALLOW_PRESSES) {
 				robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 			}
-			addTimeDelay(time + delay * 2.0);
-			
+			addTimeDelay(retryTime + delay);
+
 			if (ALLOW_PRESSES) {
 				robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 			}
-			addTimeDelay(time + delay * 3.0);
-			
+			addTimeDelay(retryTime + delay * 2.0);
+
 			Color after = robot.getPixelColor(point.x, point.y);
 			if (!before.equals(after)) {
 				break;
 			}
-			
-			addTimeDelay(time + delay);
+
+			addTimeDelay(retryTime + delay * 3.0);
 		} while (maxAttempts-- > 0);
-		
-		if (maxAttempts == 0) {
-			LOGGER.warn("Potentially failed to paint color! Will still keep try drawing");
+
+		if (maxAttempts < 0) {
+			LOGGER.warn("Potentially failed to paint color! Will still keep trying to draw");
 		}
-		
-		// TODO: This can return null for scaled monitors!
-		double distance = point.distance(MouseInfo.getPointerInfo().getLocation());
-		if (distance > MAXIMUM_DISPLACEMENT) {
-			throw new PaintingInterrupted(drawnShapes, PaintingInterrupted.InterruptType.MouseMoved);
+
+		// Check if the user moved the mouse
+		var pointerInfo = MouseInfo.getPointerInfo();
+		if (pointerInfo != null) {
+			double distance = point.distance(pointerInfo.getLocation());
+			if (distance > MAXIMUM_DISPLACEMENT) {
+				throw new PaintingInterrupted(drawnShapes, PaintingInterrupted.InterruptType.MouseMoved);
+			}
 		}
 	}
 	
 	private void clickPoint(Robot robot, Point point, double delay) throws PaintingInterrupted {
 		point = transformPoint(point);
-		
+
 		double time = System.nanoTime() / 1000000.0;
-		
+
 		robot.mouseMove(point.x, point.y);
 		addTimeDelay(time + delay);
-		
+
 		if (ALLOW_PRESSES) {
 			robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 		}
 		addTimeDelay(time + delay * 2.0);
-		
+
 		if (ALLOW_PRESSES) {
 			robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 		}
 		addTimeDelay(time + delay * 3.0);
-		
-		double distance = point.distance(MouseInfo.getPointerInfo().getLocation());
-		if (distance > MAXIMUM_DISPLACEMENT) {
-			throw new PaintingInterrupted(drawnShapes, PaintingInterrupted.InterruptType.MouseMoved);
+
+		var pointerInfo = MouseInfo.getPointerInfo();
+		if (pointerInfo != null) {
+			double distance = point.distance(pointerInfo.getLocation());
+			if (distance > MAXIMUM_DISPLACEMENT) {
+				throw new PaintingInterrupted(drawnShapes, PaintingInterrupted.InterruptType.MouseMoved);
+			}
 		}
 	}
 	

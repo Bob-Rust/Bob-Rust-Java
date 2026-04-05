@@ -133,87 +133,75 @@ public class BorstSorter {
 		}
 	}
 	
-	private static IntList[] map;
 	public static BlobList sort(BlobList data) {
 		return sort(data, 512);
 	}
-	
+
 	public static BlobList sort(BlobList data, int size) {
-		try {
-			/*
-			Piece[] pieces = new Piece[data.size()];
-			map = new IntList[data.size()];
-			
-			for(int i = 0; i < data.size(); i++) {
-				pieces[i] = new Piece(data.get(i), i);
+		long start = System.nanoTime();
+		int len = data.size();
+		List<Blob> blobs = new ArrayList<>();
+		for (int i = 0; i < data.size(); i += AppConstants.MAX_SORT_GROUP) {
+			Piece[] pieces = new Piece[Math.min(AppConstants.MAX_SORT_GROUP, len - i)];
+			for (int j = 0; j < pieces.length; j++) {
+				pieces[j] = new Piece(data.get(i + j), j);
 			}
-			
-			return new BlobList(Arrays.asList(sort0(pieces, size)));
-			*/
-			
-			long start = System.nanoTime();
-			int len = data.size();
-			List<Blob> blobs = new ArrayList<>();
-			for (int i = 0; i < data.size(); i += AppConstants.MAX_SORT_GROUP) {
-				Piece[] pieces = new Piece[Math.min(AppConstants.MAX_SORT_GROUP, len - i)];
-				for (int j = 0; j < pieces.length; j++) {
-					pieces[j] = new Piece(data.get(i + j), j);
-				}
-				map = new IntList[pieces.length];
-				blobs.addAll(Arrays.asList(sort0(pieces, size)));
-			}
-			
-			if (AppConstants.DEBUG_TIME) {
-				long time = System.nanoTime() - start;
-				AppConstants.LOGGER.info("BorstSorter.sort(data, size) took {} ms for {} shapes", time / 1000000.0, data.size());
-			}
-			
-			return new BlobList(blobs);
-		} finally {
-			map = null;
+			IntList[] localMap = new IntList[pieces.length];
+			blobs.addAll(Arrays.asList(sort0(pieces, size, localMap)));
 		}
+
+		BlobList result = new BlobList(blobs);
+
+		// Apply 2-opt local search to reduce palette changes + travel distance
+		if (AppConstants.USE_TSP_OPTIMIZATION && result.size() > 2) {
+			TwoOptOptimizer optimizer = new TwoOptOptimizer(size, size);
+			result = optimizer.optimize(result);
+		}
+
+		if (AppConstants.DEBUG_TIME) {
+			long time = System.nanoTime() - start;
+			AppConstants.LOGGER.info("BorstSorter.sort(data, size) took {} ms for {} shapes", time / 1000000.0, data.size());
+		}
+
+		return result;
 	}
 	
-	private static Blob[] sort0(Piece[] array, int size) {
+	private static Blob[] sort0(Piece[] array, int size, IntList[] map) {
 		Blob[] out = new Blob[array.length];
 		out[0] = array[0].blob;
 		array[0] = null;
-		
+
 		QTree tree = new QTree(size, size);
 		/* Calculate the intersections */ {
-			// Takes 36 ms for 60000 shapes
 			for(int i = 1; i < array.length; i++) {
 				tree.add_piece(array[i]);
 			}
-			
-			// Takes 4600 ms for 60000 shapes
+
 			// Use the quad tree to efficiently calculate the collisions
 			IntStream.range(1, array.length).parallel().forEach((i) -> {
-				// Worst case senario O(N^2) if every circle is in the same position
 				map[i] = get_intersections(array[i], array, tree);
 				map[i].reverse();
 			});
 		}
-		
+
 		IntList[][] cache = create_cache(array);
-		
+
 		int start = 1;
 		int i = 0;
-		// Takes 1500 ms for 60000 shapes
 		while(++i < array.length) {
 			Blob last = out[i - 1];
-			int index = find_best_fast_cache(last.sizeIndex, last.colorIndex, start, cache, array);
+			int index = find_best_fast_cache(last.sizeIndex, last.colorIndex, start, cache, array, map);
 			out[i] = array[index].blob;
 			array[index] = null;
-			
-			// Make the starting point shift place.. Will most of the time half the calculations
+
+			// Make the starting point shift place
 			if(index == start) {
 				for(; start < array.length; start++) {
 					if(array[start] != null) break;
 				}
 			}
 		}
-		
+
 		return out;
 	}
 	
@@ -279,7 +267,7 @@ public class BorstSorter {
 		return new IntList[][] { list_all, list_either };
 	}
 	
-	private static int find_best_fast_cache(int size, int color, int first_non_null_index, IntList[][] cache, Piece[] array) {
+	private static int find_best_fast_cache(int size, int color, int first_non_null_index, IntList[][] cache, Piece[] array, IntList[] map) {
 		for(int type = 0; type < 2; type++) {
 			IntList list = cache[type][size + color * 6];
 			for(int i = 0; i < list.size(); i++) {

@@ -1,5 +1,7 @@
 package com.bobrust.generator;
 
+import com.bobrust.util.data.AppConstants;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +23,9 @@ public class Model {
 	public final int height;
 	protected float score;
 
+	private ErrorMap errorMap;
+	private GradientMap gradientMap;
+
 	public Model(BorstImage target, int backgroundRGB, int alpha) {
 		int w = target.width;
 		int h = target.height;
@@ -33,11 +38,25 @@ public class Model {
 		this.current = new BorstImage(w, h);
 		Arrays.fill(this.current.pixels, backgroundRGB);
 		this.beforeImage = new BorstImage(w, h);
-		
+
 		this.score = BorstCore.differenceFull(target, current);
 		this.context = new BorstImage(w, h);
 		this.worker = new Worker(target, alpha);
 		this.alpha = alpha;
+
+		// Initialize error map if error-guided placement is enabled
+		if (AppConstants.USE_ERROR_GUIDED_PLACEMENT) {
+			this.errorMap = new ErrorMap(w, h);
+			this.errorMap.computeFull(target, current);
+			this.worker.setErrorMap(this.errorMap);
+		}
+
+		// Initialize gradient map if adaptive size selection is enabled
+		if (AppConstants.USE_ADAPTIVE_SIZE) {
+			this.gradientMap = new GradientMap(w, h);
+			this.gradientMap.compute(target);
+			this.worker.setGradientMap(this.gradientMap);
+		}
 	}
 
 	private void addShape(Circle shape) {
@@ -45,18 +64,41 @@ public class Model {
 
 		int cache_index = BorstUtils.getClosestSizeIndex(shape.r);
 		BorstColor color = BorstCore.computeColor(target, current, alpha, cache_index, shape.x, shape.y);
-		
+
 		BorstCore.drawLines(current, color, alpha, cache_index, shape.x, shape.y);
 		this.score = BorstCore.differencePartial(target, beforeImage, current, score, cache_index, shape.x, shape.y);
 		shapes.add(shape);
 		colors.add(color);
-		
+
 		BorstCore.drawLines(context, color, alpha, cache_index, shape.x, shape.y);
+
+		// Incrementally update the error map after drawing the new shape
+		if (errorMap != null) {
+			errorMap.updateIncremental(target, current, shape.x, shape.y, cache_index);
+		}
 	}
 	
+	/**
+	 * Add a pre-defined shape to this model without running optimization.
+	 * Used by MultiResModel to propagate shapes from lower to higher resolutions.
+	 */
+	public void addExternalShape(Circle shape) {
+		addShape(shape);
+	}
+
+	/** Returns the current model score. */
+	public float getScore() {
+		return score;
+	}
+
+	/** Package-private accessor for the worker (used by MultiResModel). */
+	Worker getWorker() {
+		return worker;
+	}
+
 	private static final int max_random_states = 1000;
 	private static final int age = 100;
-	private static final int times = 1;
+	private static final int times = 1; // SA explores well enough without multiple chains; keeps speed comparable to original
 	
 	private List<State> randomStates;
 	
@@ -69,9 +111,9 @@ public class Model {
 			}
 		}
 		
-		State state = HillClimbGenerator.getBestHillClimbState(randomStates, age, times);
+		State state = HillClimbGenerator.getBestHillClimbState(randomStates, age, times, errorMap);
 		addShape(state.shape);
 
-		return worker.counter;
+		return worker.getCounter();
 	}
-};
+}

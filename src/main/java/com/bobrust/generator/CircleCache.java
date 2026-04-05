@@ -4,7 +4,7 @@ import com.bobrust.robot.BobRustPainter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-class CircleCache {
+public class CircleCache {
 	private static final Logger LOGGER = LogManager.getLogger(BobRustPainter.class);
 
 	private static final Scanline[] CIRCLE_0;
@@ -17,7 +17,7 @@ class CircleCache {
 	public static final Scanline[][] CIRCLE_CACHE;
 	public static final int[] CIRCLE_CACHE_LENGTH;
 
-	// Default circle values
+	// Default circle diameter values
     public static final int DEFAULT_CIRCLE_0_VALUE = 3;
     public static final int DEFAULT_CIRCLE_1_VALUE = 6;
     public static final int DEFAULT_CIRCLE_2_VALUE = 12;
@@ -35,18 +35,19 @@ class CircleCache {
 		CIRCLE_CACHE = new Scanline[][] {
 			CIRCLE_0, CIRCLE_1, CIRCLE_2, CIRCLE_3, CIRCLE_4, CIRCLE_5
         };
-		CIRCLE_CACHE_LENGTH = new int[CIRCLE_CACHE.length];
-		for (int i = 0; i < CIRCLE_CACHE.length; i++) {
-			CIRCLE_CACHE_LENGTH[i] = CIRCLE_CACHE[i].length;
-		}
+		// Store the circle diameter values (not scanline array lengths) for use as SIZES
+		CIRCLE_CACHE_LENGTH = new int[] {
+			DEFAULT_CIRCLE_0_VALUE, DEFAULT_CIRCLE_1_VALUE, DEFAULT_CIRCLE_2_VALUE,
+			DEFAULT_CIRCLE_3_VALUE, DEFAULT_CIRCLE_4_VALUE, DEFAULT_CIRCLE_5_VALUE
+		};
 	}
 
 	private static Scanline[] generateCircle(int size) {
-		LOGGER.info("circle size " +size);
+		LOGGER.info("Generating circle cache for size {}", size);
 		boolean[] grid = new boolean[size * size];
 		for (int i = 0; i < size * size; i++) {
-			double px = (int) (i % size) + 0.5;
-			double py = (int) (i / size) + 0.5;
+			double px = (i % size) + 0.5;
+			double py = (i / size) + 0.5;
 			double x = (px / (double) size) * 2.0 - 1;
 			double y = (py / (double) size) * 2.0 - 1;
 
@@ -54,7 +55,25 @@ class CircleCache {
 			grid[i] = magnitudeSqr <= 1;
 		}
 
-		Scanline[] scanlines = new Scanline[size];
+		// First pass: count non-null scanlines
+		int validCount = 0;
+		for (int i = 0; i < size; i++) {
+			int start = size;
+			int end = 0;
+			for (int j = 0; j < size; j++) {
+				if (grid[i * size + j]) {
+					start = Math.min(start, j);
+					end = Math.max(end, j);
+				}
+			}
+			if (start <= end) {
+				validCount++;
+			}
+		}
+
+		// Second pass: build compact array with no null entries
+		Scanline[] scanlines = new Scanline[validCount];
+		int idx = 0;
 		for (int i = 0; i < size; i++) {
 			int start = size;
 			int end = 0;
@@ -67,7 +86,7 @@ class CircleCache {
 
 			if (start <= end) {
 				int off = size / 2;
-				scanlines[i] = new Scanline(i - off, start - off, end - off);
+				scanlines[idx++] = new Scanline(i - off, start - off, end - off);
 			}
 		}
 		return scanlines;

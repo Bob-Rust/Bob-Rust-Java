@@ -1,6 +1,6 @@
 package com.bobrust.generator;
 
-class Scanline {
+public class Scanline {
 	public int y;
 	public int x1;
 	public int x2; // inclusive

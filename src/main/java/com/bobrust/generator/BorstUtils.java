@@ -95,32 +95,55 @@ public class BorstUtils {
 		return SizeLookup.getClosestIndex(size);
 	}
 	
-	public static BorstColor getClosestColor(int color) {
-		return COLORS[getClosestColorIndex(color)];
+	// Precomputed color lookup table: quantize RGB to 6 bits per channel (64 levels each)
+	// This gives a 64x64x64 = 262144 entry table, ~256KB, for O(1) color matching
+	private static final int COLOR_LUT_BITS = 6;
+	private static final int COLOR_LUT_SIZE = 1 << COLOR_LUT_BITS;
+	private static final int COLOR_LUT_SHIFT = 8 - COLOR_LUT_BITS;
+	private static final byte[] COLOR_INDEX_LUT;
+
+	static {
+		COLOR_INDEX_LUT = new byte[COLOR_LUT_SIZE * COLOR_LUT_SIZE * COLOR_LUT_SIZE];
+		for (int ri = 0; ri < COLOR_LUT_SIZE; ri++) {
+			int r = (ri << COLOR_LUT_SHIFT) | ((1 << COLOR_LUT_SHIFT) - 1) >> 1;
+			for (int gi = 0; gi < COLOR_LUT_SIZE; gi++) {
+				int g = (gi << COLOR_LUT_SHIFT) | ((1 << COLOR_LUT_SHIFT) - 1) >> 1;
+				for (int bi = 0; bi < COLOR_LUT_SIZE; bi++) {
+					int b = (bi << COLOR_LUT_SHIFT) | ((1 << COLOR_LUT_SHIFT) - 1) >> 1;
+					COLOR_INDEX_LUT[(ri << (COLOR_LUT_BITS * 2)) | (gi << COLOR_LUT_BITS) | bi] =
+						(byte) getClosestColorIndexLinear(r, g, b);
+				}
+			}
+		}
 	}
-	
-	public static int getClosestColorIndex(int color) {
-		double current_diff = 0;
+
+	/** Linear scan fallback used during LUT initialization */
+	private static int getClosestColorIndexLinear(int b_r, int b_g, int b_b) {
+		int current_diff = Integer.MAX_VALUE;
 		int result = 0;
-		
-		int b_r = (color >> 16) & 0xff;
-		int b_g = (color >>  8) & 0xff;
-		int b_b = (color      ) & 0xff;
 		for (int i = 0, len = COLORS.length; i < len; i++) {
 			BorstColor a = COLORS[i];
-			// Weighted
-			double rd = (a.r - b_r);
-			double gd = (a.g - b_g);
-			double bd = (a.b - b_b);
-			double diff = rd * rd + gd * gd + bd * bd;
-			
-			if (i == 0 || current_diff > diff) {
+			int rd = a.r - b_r;
+			int gd = a.g - b_g;
+			int bd = a.b - b_b;
+			int diff = rd * rd + gd * gd + bd * bd;
+			if (diff < current_diff) {
 				current_diff = diff;
 				result = i;
 			}
 		}
-		
 		return result;
+	}
+
+	public static BorstColor getClosestColor(int color) {
+		return COLORS[getClosestColorIndex(color)];
+	}
+
+	public static int getClosestColorIndex(int color) {
+		int r = ((color >> 16) & 0xff) >> COLOR_LUT_SHIFT;
+		int g = ((color >>  8) & 0xff) >> COLOR_LUT_SHIFT;
+		int b = ( color        & 0xff) >> COLOR_LUT_SHIFT;
+		return COLOR_INDEX_LUT[(r << (COLOR_LUT_BITS * 2)) | (g << COLOR_LUT_BITS) | b] & 0xff;
 	}
 	
 	public static int clampInt(int value, int min, int max) {

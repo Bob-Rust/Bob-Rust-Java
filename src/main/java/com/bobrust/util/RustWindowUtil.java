@@ -41,7 +41,7 @@ public class RustWindowUtil {
 	public static boolean showConfirmDialog(String message, String title) {
 		JFrame frame = getDisposableFrame();
 		int result = JOptionPane.showConfirmDialog(frame, message, title, JOptionPane.OK_CANCEL_OPTION);
-		frame.dispose();;
+		frame.dispose();
 		return result == JOptionPane.OK_OPTION;
 	}
 	

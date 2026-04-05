@@ -20,7 +20,8 @@ public class BorstColor {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if(!(obj instanceof BorstColor)) return false;
-		return rgb == obj.hashCode();
+		if (this == obj) return true;
+		if (!(obj instanceof BorstColor other)) return false;
+		return rgb == other.rgb;
 	}
 }

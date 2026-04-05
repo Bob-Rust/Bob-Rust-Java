@@ -24,6 +24,32 @@ public interface AppConstants {
 	boolean DEBUG_DRAWN_COLORS = false;
 	boolean DEBUG_TIME = false;
 	int MAX_SORT_GROUP = 1000; // Max 1000 elements per sort
+
+	// When true, use simulated annealing instead of pure hill climbing for shape optimization
+	boolean USE_SIMULATED_ANNEALING = true;
+
+	// When true, bias random circle placement toward high-error regions using importance sampling
+	boolean USE_ERROR_GUIDED_PLACEMENT = true;
+
+	// When true, use local gradient magnitude to bias circle size selection:
+	// small circles near edges/detail, large circles in smooth areas
+	boolean USE_ADAPTIVE_SIZE = true;
+
+	// When true, use batch-parallel energy evaluation with combined color+energy pass,
+	// spatial batching for cache locality, and precomputed alpha blend tables
+	boolean USE_BATCH_PARALLEL = true;
+
+	// When true, apply 2-opt local search on top of greedy BorstSorter output
+	// to reduce total cost (palette changes + cursor travel distance)
+	boolean USE_TSP_OPTIMIZATION = true;
+
+	// TSP cost function weights
+	float TSP_W_PALETTE = 3.0f;   // Weight for palette change cost
+	float TSP_W_DISTANCE = 1.0f;  // Weight for Euclidean distance cost
+
+	// When true, use progressive multi-resolution generation:
+	// first 10% shapes at quarter res, next 30% at half res, remaining 60% at full res
+	boolean USE_PROGRESSIVE_RESOLUTION = true;
 	
 	// Average canvas colors. Used as default colors
 	Color CANVAS_AVERAGE = new Color(0xb3aba0);

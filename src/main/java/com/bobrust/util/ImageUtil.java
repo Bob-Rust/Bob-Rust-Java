@@ -46,7 +46,7 @@ public class ImageUtil {
 		}
 		
 		iccCmykLut = lut;
-		bits = Integer.numberOfTrailingZeros(lut.length) / 3;
+		bits = lut != null ? Integer.numberOfTrailingZeros(lut.length) / 3 : 0;
 	}
 	
 	public static BufferedImage applyFilters(Image scaled) {
@@ -55,20 +55,25 @@ public class ImageUtil {
 		Graphics2D g = image.createGraphics();
 		g.drawImage(scaled, 0, 0, null);
 		g.dispose();
-		
+
+		final int[] lut = iccCmykLut;
+		if (lut == null) {
+			LOGGER.warn("ICC CMYK LUT not loaded, skipping color conversion");
+			return image;
+		}
+
 		final int r_shift = bits * 2;
 		final int g_shift = bits;
 		final int d_shift = 8 - bits;
-		
+
 		final int[] src = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
-		final int[] lut = iccCmykLut;
 		for (int i = 0, len = src.length; i < len; i++) {
 			int col = src[i] & 0xffffff;
 			int cr = ((col >> 16) & 255) >> d_shift;
 			int cg = ((col >> 8) & 255) >> d_shift;
 			int cb = (col & 255) >> d_shift;
 			int lut_idx = (cr << r_shift) | (cg << g_shift) | cb;
-			src[i] = lut[lut_idx] | col;
+			src[i] = (src[i] & 0xff000000) | (lut[lut_idx] & 0x00ffffff);
 		}
 		
 		return image;
